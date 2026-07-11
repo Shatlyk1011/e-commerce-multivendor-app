@@ -13,7 +13,7 @@ Below are the secure, auto-generated credentials configured in your [docker-comp
 | **PostgreSQL** | `5432` | `5433` | **Database:** `medusa_db`<br>**User:** `medusa`<br>**Password:** `pg_pass_secure_dtc_839` |
 | **Redis** | `6379` | `6379` | *Internal networking, no password* |
 | **MinIO API** | `9000` | `9010` | **Access Key:** `medusa_admin`<br>**Secret Key:** `minio_secret_pass_7291` |
-| **MinIO Console** | `9001` | `9001` | **Access Key:** `medusa_admin`<br>**Secret Key:** `minio_secret_pass_7291` |
+| **MinIO Console** | `9001` | `9001` | **Access Key:** `minio_admin`<br>**Secret Key:** `change_me_strong_password` |
 | **Meilisearch** | `7700` | `7700` | **Master Key:** `meili_master_key_secure_92018374` |
 | **Mailpit SMTP** | `1025` | `1025` | *Internal SMTP, no authentication* |
 | **Mailpit Web UI** | `8025` | `8025` | *Web inbox access* |

@@ -62,3 +62,7 @@ medusa-e-commerce/
 - Export input/update types as `type CreateVendorInput = Pick<Vendor, ...>` in a `types/index.ts` file per module
 - For types shared with **frontend** → define explicit `interface` / `type` in a `shared/types/` directory
 - Drizzle may only be used as a **read-only secondary query client** for a completely isolated analytics microservice (not for any Medusa module data)
+
+### 7. UI Design Mandate
+- **ALWAYS** refer to and follow the specifications, colors, typography, and styling principles outlined in [.agents/DESIGN.md](file:///Users/shatlyk1011/Documents/GitHub/medusa-e-commerce/.agents/DESIGN.md) before writing or modifying any storefront or vendor portal UI components.
+

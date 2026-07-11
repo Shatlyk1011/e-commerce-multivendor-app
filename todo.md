@@ -1,1 +1,0 @@
-create a file in which write all instructions on how to run the entire app using docker. within this new file, write the login and passwords (generate if needed) for tools like minio, redis, meili, postgres etc. create a script if needed to run entire app 
