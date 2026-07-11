@@ -1,18 +1,18 @@
-version: '3.9'
-
 services:
+  # ── Database ──────────────────────────────────────────────────
   postgres:
     image: postgres:15-alpine
     restart: always
     environment:
       POSTGRES_DB: medusa_db
       POSTGRES_USER: medusa
-      POSTGRES_PASSWORD: change_me_strong_password
+      POSTGRES_PASSWORD: pg_pass_secure_dtc_839
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432" # Local port 5433 to avoid conflict with host Postgres on 5432
+      - "5433:5432" # Exposed on port 5433 to avoid clashing with host Postgres
 
+  # ── Cache + Event Bus ─────────────────────────────────────────
   redis:
     image: redis:7-alpine
     restart: always
@@ -21,35 +21,100 @@ services:
     volumes:
       - redis_data:/data
 
+  # ── Object Storage (S3-compatible) ───────────────────────────
   minio:
     image: minio/minio:latest
     restart: always
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minio_admin
-      MINIO_ROOT_PASSWORD: change_me_strong_password
+      MINIO_ROOT_USER: medusa_admin
+      MINIO_ROOT_PASSWORD: minio_secret_pass_7291
     ports:
       - "9010:9000"
       - "9001:9001"
     volumes:
       - minio_data:/data
 
+  # ── Full-text Search ──────────────────────────────────────────
   meilisearch:
     image: getmeili/meilisearch:latest
     restart: always
     environment:
-      MEILI_MASTER_KEY: change_me_master_key_minimum_32_characters
+      MEILI_MASTER_KEY: meili_master_key_secure_92018374
     ports:
       - "7700:7700"
     volumes:
       - meilisearch_data:/meili_data
 
+  # ── Email Server (SMTP) ───────────────────────────────────────
   mailpit:
     image: axllent/mailpit
     restart: always
     ports:
       - "1025:1025"
       - "8025:8025"
+
+  # ── Medusa Backend ────────────────────────────────────────────
+  medusa:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+      - minio
+      - meilisearch
+      - mailpit
+    ports:
+      - "9000:9000"
+    environment:
+      DATABASE_URL: postgres://medusa:pg_pass_secure_dtc_839@postgres:5432/medusa_db
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: medusa_admin
+      MINIO_SECRET_KEY: minio_secret_pass_7291
+      MINIO_BUCKET: medusa-media
+      MEILISEARCH_HOST: http://meilisearch:7700
+      MEILISEARCH_API_KEY: meili_master_key_secure_92018374
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      JWT_SECRET: supersecretjwt32charsminimumforsecurity
+      COOKIE_SECRET: supersecretcookie32charsminimumforsecurity
+      STORE_CORS: http://localhost:3000
+      ADMIN_CORS: http://localhost:9000,http://localhost:5173
+      AUTH_CORS: http://localhost:3000,http://localhost:3001,http://localhost:9000
+      MEDUSA_ADMIN_ONBOARDING_TYPE: default
+      MEDUSA_BACKEND_URL: http://localhost:9000
+
+  # ── Storefront (Next.js — Buyer) ──────────────────────────────
+  storefront:
+    build:
+      context: .
+      dockerfile: apps/storefront/Dockerfile
+    restart: always
+    depends_on:
+      - medusa
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_375224aa579aea26ae27b233572132f02876d210985b6d1a1beab3689f2940cd
+      NEXT_PUBLIC_MEILISEARCH_HOST: http://localhost:7700
+      NEXT_PUBLIC_MEILISEARCH_API_KEY: meili_master_key_secure_92018374
+
+  # ── Vendor Portal (Next.js — Sellers) ─────────────────────────
+  vendor-portal:
+    build:
+      context: .
+      dockerfile: apps/vendor-portal/Dockerfile
+    restart: always
+    depends_on:
+      - medusa
+    ports:
+      - "3001:3001"
+    environment:
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
 
 volumes:
   postgres_data:
