@@ -35,16 +35,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-
-  /* Font Families */
-  --font-display: "Geist", system-ui, -apple-system, sans-serif;
-  --font-text: "Inter", system-ui, -apple-system, sans-serif;
 }
 
 @theme inline {
   /* Fonts */
-  --font-heading: var(--font-display);
-  --font-sans: var(--font-text);
+  --font-heading:"Geist", system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 
   /* Colors */
   --color-apple-primary: #0066cc;
@@ -168,7 +164,7 @@ a {
 
 /* Usage: Main hero title at the very top of product landing pages (e.g. "iPhone 17 Pro") */
 @utility text-apple-hero-display {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: 56px;
   font-weight: 600;
   line-height: 1.07;
@@ -177,7 +173,7 @@ a {
 
 /* Usage: Section title atop full-bleed product tiles and feature grids */
 @utility text-apple-display-lg {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: 40px;
   font-weight: 600;
   line-height: 1.1;
@@ -186,7 +182,7 @@ a {
 
 /* Usage: Medium headers, sub-sections, or card headlines on product grids */
 @utility text-apple-display-md {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 34px;
   font-weight: 600;
   line-height: 1.47;
@@ -195,7 +191,7 @@ a {
 
 /* Usage: Descriptive subtitle immediately below the hero title (e.g. "Hello, Apple Intelligence.") */
 @utility text-apple-lead {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: 28px;
   font-weight: 400;
   line-height: 1.14;
@@ -204,7 +200,7 @@ a {
 
 /* Usage: Editorial lead paragraphs or light-styled introductory text blocks */
 @utility text-apple-lead-airy {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 24px;
   font-weight: 300;
   line-height: 1.5;
@@ -213,7 +209,7 @@ a {
 
 /* Usage: Small uppercase taglines, category markers, or sub-nav product titles */
 @utility text-apple-tagline {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: 21px;
   font-weight: 600;
   line-height: 1.19;
@@ -222,7 +218,7 @@ a {
 
 /* Usage: Standard paragraph copy and descriptive body text (premium 17px reading size) */
 @utility text-apple-body {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 17px;
   font-weight: 400;
   line-height: 1.47;
@@ -231,7 +227,7 @@ a {
 
 /* Usage: Bold emphasis inside body paragraphs or primary labels that need assertion */
 @utility text-apple-body-strong {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 17px;
   font-weight: 600;
   line-height: 1.24;
@@ -240,7 +236,7 @@ a {
 
 /* Usage: Small captions, details inside product grid cards, and secondary details */
 @utility text-apple-caption {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 400;
   line-height: 1.43;
@@ -249,7 +245,7 @@ a {
 
 /* Usage: Small bold cards descriptions, highlighted specs, or label accents */
 @utility text-apple-caption-strong {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.29;
@@ -258,7 +254,7 @@ a {
 
 /* Usage: Large primary CTA action buttons (e.g. store hero CTA buttons) */
 @utility text-apple-button-large {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 300;
   line-height: 1.0;
@@ -267,7 +263,7 @@ a {
 
 /* Usage: Medium utility action links, nav menu items, and pill CTAs (e.g. "Buy" in sub-nav) */
 @utility text-apple-button-utility {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 400;
   line-height: 1.29;
@@ -276,7 +272,7 @@ a {
 
 /* Usage: Footer nav links, dense footer structures, and minor legal footnotes */
 @utility text-apple-fine-print {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.0;
@@ -285,7 +281,7 @@ a {
 
 /* Usage: Bottom disclaimers, micro copyright notices, or detailed legal requirements */
 @utility text-apple-micro-legal {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 10px;
   font-weight: 400;
   line-height: 1.3;
@@ -294,7 +290,7 @@ a {
 
 /* Usage: Footer / store utility link lists (relaxed leading) */
 @utility text-apple-dense-link {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 17px;
   font-weight: 400;
   line-height: 2.41;
@@ -303,7 +299,7 @@ a {
 
 /* Usage: Global nav menu items */
 @utility text-apple-nav-link {
-  font-family: var(--font-text);
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.0;
@@ -322,4 +318,9 @@ a {
   html {
     @apply font-sans;
   }
+}
+
+.custom-container {
+  max-width: 1180px;
+  margin: 0 auto;
 }

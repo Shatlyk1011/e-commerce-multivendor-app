@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import "../../public/fonts.css";
+import { Header } from "@/components/layout/Header";
 
 export const metadata: Metadata = {
   title: "Medusa Marketplace Storefront",
@@ -15,9 +16,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="font-sans">
-      <body className="antialiased text-apple-lead">{children}</body>
+      <body className="antialiased text-apple-body">
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
+
 
 
