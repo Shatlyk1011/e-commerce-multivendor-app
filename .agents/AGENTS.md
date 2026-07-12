@@ -66,3 +66,7 @@ medusa-e-commerce/
 ### 7. UI Design Mandate
 - **ALWAYS** refer to and follow the specifications, colors, typography, and styling principles outlined in [.agents/DESIGN.md](file:///Users/shatlyk1011/Documents/GitHub/medusa-e-commerce/.agents/DESIGN.md) before writing or modifying any storefront or vendor portal UI components.
 
+### 8. Desktop-First Responsive Design
+- **ALWAYS** use a **desktop-first** approach for styling and layouts in Tailwind / CSS.
+- For responsive media queries/modifiers, use max-width breakpoints (e.g., `max-xl:`, `max-lg:`, `max-md:`, `max-sm:`, `max-xs:`) to override desktop styles down for mobile/tablet screens.
+- Avoid using `sm:`, `md:`, `lg:`, etc., which are mobile-first (min-width) breakpoints, unless explicitly required.
