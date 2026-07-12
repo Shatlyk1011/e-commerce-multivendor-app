@@ -1,9 +1,32 @@
-"use client"
 
-import * as React from "react"
 import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
+
+const FOOTER_COLUMNS = [
+  {
+    title: "О нас",
+    links: [
+      { label: "Пункты выдачи", href: "#" },
+      { label: "Вакансии", href: "#" },
+    ],
+  },
+  {
+    title: "Пользователям",
+    links: [
+      { label: "Связаться с нами", href: "#" },
+      { label: "Вопрос - Ответ", href: "#" },
+    ],
+  },
+  {
+    title: "Для предпринимателей",
+    links: [
+      { label: "Продавайте с нами", href: "#" },
+      { label: "Вход для продавцов", href: "#" },
+      { label: "Открыть пункт выдачи", href: "#" },
+    ],
+  },
+]
 
 export function Footer() {
   return (
@@ -11,55 +34,27 @@ export function Footer() {
       <div className="max-w-[1240px] mx-auto px-4 select-none">
         
         {/* LINK COLUMNS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 font-sans lg:grid-cols-4 gap-8">
           
-          {/* Column 1: О нас */}
-          <div className="flex flex-col">
-            <h4 className="text-[13px] font-heading font-semibold leading-[1.29] text-apple-ink mb-3 uppercase tracking-wider">
-              О нас
-            </h4>
-            <div className="flex flex-col text-[12px] font-sans font-normal leading-[2.2] text-apple-ink-muted-80">
-              <Link href="#" className="hover:text-apple-primary transition-colors w-fit">
-                Пункты выдачи
-              </Link>
-              <Link href="#" className="hover:text-apple-primary transition-colors w-fit">
-                Вакансии
-              </Link>
+          {/* Columns 1-3 */}
+          {FOOTER_COLUMNS.map((column, idx) => (
+            <div key={idx} className="flex flex-col">
+              <h4 className="text-[12px] font-heading font-semibold leading-[1.29] text-apple-ink mb-3 uppercase tracking-wider">
+                {column.title}
+              </h4>
+              <div className="flex flex-col text-[12px] font-normal leading-[2.2] text-apple-ink-muted-80">
+                {column.links.map((link, linkIdx) => (
+                  <Link
+                    key={linkIdx}
+                    href={link.href}
+                    className="hover:text-apple-primary transition-colors w-fit"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-
-          {/* Column 2: Пользователям */}
-          <div className="flex flex-col">
-            <h4 className="text-[13px] font-heading font-semibold leading-[1.29] text-apple-ink mb-3 uppercase tracking-wider">
-              Пользователям
-            </h4>
-            <div className="flex flex-col text-[12px] font-sans font-normal leading-[2.2] text-apple-ink-muted-80">
-              <Link href="#" className="hover:text-apple-primary transition-colors w-fit">
-                Связаться с нами
-              </Link>
-              <Link href="#" className="hover:text-apple-primary transition-colors w-fit">
-                Вопрос - Ответ
-              </Link>
-            </div>
-          </div>
-
-          {/* Column 3: Для предпринимателей */}
-          <div className="flex flex-col">
-            <h4 className="text-[13px] font-heading font-semibold leading-[1.29] text-apple-ink mb-3 uppercase tracking-wider">
-              Для предпринимателей
-            </h4>
-            <div className="flex flex-col text-[12px] font-sans font-normal leading-[2.2] text-apple-ink-muted-80">
-              <Link href="#" className="hover:text-apple-primary transition-colors w-fit">
-                Продавайте на Uzum
-              </Link>
-              <Link href="#" className="hover:text-apple-primary transition-colors w-fit">
-                Вход для продавцов
-              </Link>
-              <Link href="#" className="hover:text-apple-primary transition-colors w-fit">
-                Открыть пункт выдачи
-              </Link>
-            </div>
-          </div>
+          ))}
 
           {/* Column 4: Скачать приложение */}
           <div className="flex flex-col gap-4">

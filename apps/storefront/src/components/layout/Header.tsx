@@ -215,7 +215,7 @@ export function Header() {
             size="md"
             className="px-4   font-semibold cursor-pointer shrink-0"
           >
-            <Grid2x2 className="size-4.5" />
+            <Grid2x2 className="" />
             <span>Каталог</span>
           </Button>
 
@@ -343,7 +343,7 @@ export function Header() {
               asChild
             >
               <Link href="/favorites">
-                <Heart className="size-5 text-apple-ink-muted-80" />
+                <Heart className="text-apple-ink-muted-80" />
                 <span>Избранное</span>
               </Link>
             </Button>
@@ -357,7 +357,7 @@ export function Header() {
                   className="px-3 font-medium cursor-pointer"
                 >
                   <div className="relative">
-                    <ShoppingBag className="size-5 text-apple-ink-muted-80" />
+                    <ShoppingBag className="text-apple-ink-muted-80" />
                     <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold text-white bg-apple-primary rounded-apple-full">
                       0
                     </span>
