@@ -7,6 +7,7 @@ import "./globals.css";
 
 import "../../public/fonts.css";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 export default function RootLayout({
   children,
@@ -30,6 +31,7 @@ export default function RootLayout({
         <QueryClientProvider client={queryClient}>
           <Header />
           {children}
+          <Footer />
         </QueryClientProvider>
       </body>
     </html>
