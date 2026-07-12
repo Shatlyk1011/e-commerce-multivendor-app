@@ -1,2 +1,3 @@
 Please set up formatting, linting, and Husky in this project. Install the required dev dependencies (`prettier`, `@trivago/prettier-plugin-sort-imports`, `prettier-plugin-tailwindcss`, `husky`, and `lint-staged`), set up a `.prettierrc` configuration (using single quotes, no semicolons, print width of 120, sorted imports, and sorted Tailwind classes), configure `"lint-staged"` in `package.json` to run Prettier formatting on staged files before commits, and initialize Husky with a pre-commit hook that triggers `lint-staged`.
 
+update the project rules for agents so they will use the desktop first approach so we for querying we will use max lg max mg max sm and so on
