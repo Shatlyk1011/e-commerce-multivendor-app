@@ -2,52 +2,68 @@
 
 import * as React from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { Heart, Star, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import type { HttpTypes } from "@medusajs/types"
 
 export interface ProductCardProps {
-  id: string | number
-  title: string
-  price: string
-  originalPrice: string | null
-  installmentPrice: string
-  rating: number
-  reviewsCount: number
-  badges: string[]
-  image: string
+  product: HttpTypes.StoreProduct
 }
 
-export function ProductCard({
-  id,
-  title,
-  price,
-  originalPrice,
-  installmentPrice,
-  rating,
-  reviewsCount,
-  badges,
-  image,
-}: ProductCardProps) {
+function formatPrice(amount: number) {
+  return new Intl.NumberFormat("ru-RU").format(amount)
+}
+
+export function ProductCard({ product }: ProductCardProps) {
   const [isFavorite, setIsFavorite] = React.useState(false)
+
+  // Extract variables from Medusa API product object
+  const title = product.title ?? ""
+  const image = product.thumbnail ?? product.images?.[0]?.url ?? ""
+  
+  const variant = product.variants?.[0]
+  const amount = variant?.calculated_price?.calculated_amount ?? 0
+  const originalAmount = variant?.calculated_price?.original_amount ?? null
+
+  const price = `${formatPrice(amount)} тмт`
+  const originalPrice = originalAmount ? `${formatPrice(originalAmount)} тмт` : null
+  const installmentPrice = `${formatPrice(Math.round(amount / 12))} тмт/мес`
+
+  // Gather tags/badges
+  const badges: string[] = []
+  if (product.collection?.title) {
+    badges.push(product.collection.title.toUpperCase())
+  }
+  if (product.type?.value) {
+    badges.push(product.type.value.toUpperCase())
+  }
+
+  // Seller / Store name (via custom vendor module link or fallback)
+  const storeName = (product as any).vendor?.name ?? "Магазин"
+
+  // Defaults
+  const rating = 4.5
+  const reviewsCount = 0
 
   return (
     <Card className="group relative flex flex-col justify-between transition-all duration-200 h-full border border-apple-hairline bg-apple-canvas rounded-apple-lg p-1">
       {/* Card Content Top wrapped in Link to Product page */}
-      <Link href={`/product/${id}`} className="flex flex-col flex-1">
+      <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
         {/* Product Image Container */}
         <div
           className="relative aspect-3/4 w-full rounded-[16px] overflow-hidden flex items-center justify-center p-2 group-hover:opacity-95 transition-opacity bg-apple-canvas-parchment"
         >
-          <img
-            src={image}
-            alt={title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
-          />
+          {image ? (
+            <img
+              src={image}
+              alt={title}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <span className="text-apple-ink-muted-48 text-xs text-center p-4">{title}</span>
+          )}
 
           {/* Heart/Favorite Button overlay */}
           <button
@@ -69,27 +85,34 @@ export function ProductCard({
           </button>
 
           {/* Badges Overlays */}
-          <div className="absolute bottom-2.5 left-2.5 flex flex-col gap-1 max-w-[90%] z-10">
-            {badges.map((badge, idx) => (
-              <span
-                key={idx}
-                className={cn(
-                  "text-[9px] font-semibold px-2 py-0.5 rounded-apple-pill tracking-wide uppercase select-none w-fit border",
-                  badge === "ОРИГИНАЛ"
-                    ? "bg-apple-primary/10 text-apple-primary border-apple-primary/20"
-                    : "bg-apple-canvas text-apple-ink border-apple-hairline"
-                )}
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
+          {badges.length > 0 && (
+            <div className="absolute bottom-2.5 left-2.5 flex flex-col gap-1 max-w-[90%] z-10">
+              {badges.map((badge, idx) => (
+                <span
+                  key={idx}
+                  className={cn(
+                    "text-[9px] font-semibold px-2 py-0.5 rounded-apple-pill tracking-wide uppercase select-none w-fit border",
+                    badge === "ОРИГИНАЛ"
+                      ? "bg-apple-primary/10 text-apple-primary border-apple-primary/20"
+                      : "bg-apple-canvas text-apple-ink border-apple-hairline"
+                  )}
+                >
+                  {badge}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product Details inside CardContent */}
         <CardContent className="flex flex-col mt-2.5 px-1">
+          {/* Store / Vendor Name */}
+          <div className="text-[11px] font-semibold text-apple-ink-muted-48 uppercase tracking-wide">
+            {storeName}
+          </div>
+
           {/* Pricing row */}
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex items-baseline gap-1.5 mt-1">
             <span className="text-[16px] font-bold text-apple-ink font-sans">
               {price}
             </span>
