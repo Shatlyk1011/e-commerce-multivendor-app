@@ -1,79 +1,41 @@
-import { ChevronRight } from "lucide-react"
-import { ProductCard } from "@/features/home/components/ProductCard"
+"use client";
 
-interface Product {
-  id: number
-  title: string
-  price: string
-  originalPrice: string | null
-  installmentPrice: string
-  rating: number
-  reviewsCount: number
-  badges: string[]
-  color: string
+import { ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { ProductCard } from "@/features/home/components/ProductCard";
+import { useProducts } from "@/features/home/API";
+
+function formatPrice(amount: number) {
+  return new Intl.NumberFormat("ru-RU").format(amount);
 }
 
-const POPULAR_PRODUCTS: Product[] = [
-  {
-    id: 1,
-    title: "Очиститель двигателя Axma Avtoproseries, 500 г",
-    price: "27 000",
-    originalPrice: null,
-    installmentPrice: "1 912 сум/мес",
-    rating: 4.7,
-    reviewsCount: 511,
-    badges: ["ГАРАНТИЯ НИЗКОЙ ЦЕНЫ"],
-    color: "#fae8ff" // Soft pink-purple
-  },
-  {
-    id: 2,
-    title: "Подводка водостойкая для глаз Dip Eyeliner, чёрный, 5.1 мл",
-    price: "37 990",
-    originalPrice: "43 990",
-    installmentPrice: "2 690 сум/мес",
-    rating: 4.9,
-    reviewsCount: 2114,
-    badges: ["ОРИГИНАЛ"],
-    color: "#f3f4f6" // Soft grey
-  },
-  {
-    id: 3,
-    title: "Nivea men ultra extreme, 50 мл",
-    price: "31 990",
-    originalPrice: "43 990",
-    installmentPrice: "2 265 сум/мес",
-    rating: 4.9,
-    reviewsCount: 306,
-    badges: ["ОРИГИНАЛ", "ГАРАНТИЯ НИЗКОЙ ЦЕНЫ"],
-    color: "#e0e7ff" // Soft indigo
-  },
-  {
-    id: 4,
-    title: "Дезодорант-спрей для мужчин NIVEA MEN, невидимая защита для...",
-    price: "35 990",
-    originalPrice: "47 990",
-    installmentPrice: "2 549 сум/мес",
-    rating: 4.9,
-    reviewsCount: 2170,
-    badges: ["ОРИГИНАЛ"],
-    color: "#e2e8f0" // Soft slate-grey
-  },
-  {
-    id: 5,
-    title: "Дезодорант-спрей для женщин Nivea Pearl Beauty, с экстрактом жемчуга",
-    price: "34 990",
-    originalPrice: "43 990",
-    installmentPrice: "2 478 сум/мес",
-    rating: 4.9,
-    reviewsCount: 3266,
-    badges: ["ОРИГИНАЛ", "ГАРАНТИЯ НИЗКОЙ ЦЕНЫ"],
-    color: "#fdf2f8" // Soft rose-pink
+function getProductImage(product: {
+  images: { url: string }[] | null;
+}): string {
+  const firstImage = product.images?.[0];
+  return firstImage?.url ?? "";
+}
+
+function getProductBadges(product: {
+  collection?: { title?: string | null } | null;
+  type?: { value?: string | null } | null;
+  tags?: { value?: string | null }[] | null;
+}): string[] {
+  const badges: string[] = [];
+  if (product.collection?.title) {
+    badges.push(product.collection.title.toUpperCase());
   }
-]
+  if (product.type?.value) {
+    badges.push(product.type.value.toUpperCase());
+  }
+  return badges;
+}
 
 export default function Home() {
+  const { data, isLoading, isError } = useProducts({ limit: 12 });
+
   return (
-    <main className="min-h-screen bg-apple-canvas text-apple-ink antialiased px-4 py-8 max-w-[1240px] mx-auto">
+    <main className="min-h-screen bg-apple-canvas text-apple-ink antialiased px-4 w-full custom-container py-8 ">
       {/* Title Header Section */}
       <div className="flex items-center gap-2 mb-6 select-none group w-fit cursor-pointer">
         <h2 className="text-[22px] font-heading font-bold text-apple-ink tracking-tight hover:text-apple-primary transition-colors">
@@ -83,11 +45,42 @@ export default function Home() {
       </div>
 
       {/* Grid containing 5 items */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {POPULAR_PRODUCTS.map((product) => (
-          <ProductCard key={product.id} {...product} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-80 animate-pulse rounded-apple-lg bg-apple-canvas-parchment border border-apple-hairline"
+            />
+          ))}
+        </div>
+      ) : isError ? (
+        <p className="text-apple-ink-muted-48 text-sm">Не удалось загрузить товары.</p>
+      ) : (
+        <div className="grid grid-cols-5 gap-4 w-full ">
+          {data?.products.map((product) => {
+            const variant = product.variants?.[0];
+            const amount = variant?.calculated_price?.calculated_amount ?? 0;
+            const imageUrl = getProductImage(product);
+            const badges = getProductBadges(product);
+
+            return (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                title={product.title ?? ""}
+                price={`${formatPrice(amount)} тмт`}
+                originalPrice={null}
+                installmentPrice={`${formatPrice(Math.round(amount / 12))} тмт/мес`}
+                rating={4.5}
+                reviewsCount={0}
+                badges={badges}
+                image={imageUrl}
+              />
+            );
+          })}
+        </div>
+      )}
     </main>
-  )
+  );
 }

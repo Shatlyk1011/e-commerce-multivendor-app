@@ -392,7 +392,7 @@ export function Header() {
                 <SheetFooter className="p-6 border-t border-apple-divider-soft bg-apple-canvas-parchment mt-auto">
                   <div className="flex items-center justify-between w-full mb-4">
                     <span className="text-[14px] text-apple-ink font-medium">Итого:</span>
-                    <span className="text-[16px] text-apple-ink font-bold font-sans">0 сум</span>
+                    <span className="text-[16px] text-apple-ink font-bold font-sans">0 тмт</span>
                   </div>
                   <Button
                     variant="default"

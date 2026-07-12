@@ -124,6 +124,12 @@ importers:
       '@medusajs/js-sdk':
         specifier: ^2.17.2
         version: 2.17.2
+      '@medusajs/types':
+        specifier: ^2.17.2
+        version: 2.17.2(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.26)(lightningcss@1.32.0)(terser@5.44.1))
+      '@tanstack/react-query':
+        specifier: 5.64.2
+        version: 5.64.2(react@19.2.4)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -15978,6 +15984,11 @@ snapshots:
     dependencies:
       '@tanstack/query-core': 5.64.2
       react: 18.3.1
+
+  '@tanstack/react-query@5.64.2(react@19.2.4)':
+    dependencies:
+      '@tanstack/query-core': 5.64.2
+      react: 19.2.4
 
   '@tanstack/react-table@8.20.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:

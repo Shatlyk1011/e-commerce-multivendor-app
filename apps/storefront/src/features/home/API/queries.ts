@@ -1,0 +1,21 @@
+import { useQuery } from "@tanstack/react-query";
+import { fetchProducts } from "./client";
+import type { HttpTypes } from "@medusajs/types";
+
+export const productKeys = {
+  all: ["products"] as const,
+  lists: () => [...productKeys.all, "list"] as const,
+  list: (filters: { limit?: number; offset?: number; collection_id?: string }) =>
+    [...productKeys.lists(), filters] as const,
+};
+
+export function useProducts(filters?: {
+  limit?: number;
+  offset?: number;
+  collection_id?: string;
+}) {
+  return useQuery<HttpTypes.StoreProductListResponse>({
+    queryKey: productKeys.list(filters ?? {}),
+    queryFn: () => fetchProducts(filters),
+  });
+}
