@@ -2,10 +2,32 @@
 
 import { ChevronRight } from "lucide-react";
 import { ProductCard } from "@/features/home/components/ProductCard";
-import { useProducts } from "@/features/home/API";
+import { HttpTypes, useProducts } from "@/features/home/API";
+import { useEffect, useState } from "react";
+import { medusa } from "@/lib/medusa";
 
 export default function Home() {
   const { data, isLoading, isError } = useProducts({ limit: 12 });
+
+  // DEMO FETCHING
+  const [loading, setLoading] = useState(true)
+  const [collections, setCollections] = useState<
+    HttpTypes.StoreCollection[]>([])
+
+  console.log('collections', collections)
+
+  useEffect(() => {
+    if (!loading) {
+      return
+    }
+
+    medusa.store.collection.list()
+      .then(({ collections: dataCollections }) => {
+        setCollections(dataCollections)
+        setLoading(false)
+      })
+  }, [loading])
+
 
   return (
     <main className="min-h-screen bg-apple-canvas text-apple-ink antialiased px-4 w-full custom-container py-8 ">

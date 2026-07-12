@@ -29,7 +29,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const price = `${formatPrice(amount)} тмт`
   const originalPrice = originalAmount ? `${formatPrice(originalAmount)} тмт` : null
-  const installmentPrice = `${formatPrice(Math.round(amount / 12))} тмт/мес`
 
   // Gather tags/badges
   const badges: string[] = []
@@ -40,10 +39,6 @@ export function ProductCard({ product }: ProductCardProps) {
     badges.push(product.type.value.toUpperCase())
   }
 
-  // Seller / Store name (via custom vendor module link or fallback)
-  const storeName = (product as any).vendor?.name ?? "Магазин"
-
-  // Defaults
   const rating = 4.5
   const reviewsCount = 0
 
@@ -53,17 +48,13 @@ export function ProductCard({ product }: ProductCardProps) {
       <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
         {/* Product Image Container */}
         <div
-          className="relative aspect-3/4 w-full rounded-[16px] overflow-hidden flex items-center justify-center p-2 group-hover:opacity-95 transition-opacity bg-apple-canvas-parchment"
+          className="relative aspect-3/4 w-full rounded-[16px] overflow-hidden flex items-center justify-center p-2 group-hover:opacity-95 hover:scale-104 transition-all hover:rounded-none duration-200 ease-in-out bg-apple-canvas-parchment"
         >
-          {image ? (
-            <img
-              src={image}
-              alt={title}
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <span className="text-apple-ink-muted-48 text-xs text-center p-4">{title}</span>
-          )}
+          <img
+            src={image}
+            alt={title}
+            className="object-cover w-full h-full"
+          />
 
           {/* Heart/Favorite Button overlay */}
           <button
@@ -108,7 +99,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardContent className="flex flex-col mt-2.5 px-1">
           {/* Store / Vendor Name */}
           <div className="text-[11px] font-semibold text-apple-ink-muted-48 uppercase tracking-wide">
-            {storeName}
+            {"storeName"}
           </div>
 
           {/* Pricing row */}
@@ -121,13 +112,6 @@ export function ProductCard({ product }: ProductCardProps) {
                 {originalPrice}
               </span>
             )}
-          </div>
-
-          {/* Installment Badge */}
-          <div className="mt-1.5">
-            <span className="bg-apple-canvas-parchment text-apple-ink-muted-80 text-[11px] font-semibold px-2 py-0.5 rounded-apple-sm border border-apple-hairline font-sans inline-block">
-              {installmentPrice}
-            </span>
           </div>
 
           {/* Product Title */}
