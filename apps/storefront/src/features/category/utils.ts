@@ -1,4 +1,4 @@
-import { CategoryTreeNode } from "./api";
+import { CategoryTreeNode } from "./api/types";
 
 // Helper to find a category by ID in the tree
 export function findCategoryInTree(categories: CategoryTreeNode[], id: string): CategoryTreeNode | null {

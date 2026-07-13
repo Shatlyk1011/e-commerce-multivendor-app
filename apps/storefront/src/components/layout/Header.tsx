@@ -18,6 +18,11 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -212,7 +217,7 @@ export function Header() {
           {/* Catalog Button */}
           <Button
             variant="secondary"
-            size="md"
+            size="sm"
             className="px-4   font-semibold cursor-pointer shrink-0"
           >
             <Grid2x2 className="" />
@@ -242,7 +247,7 @@ export function Header() {
               <DialogTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="md"
+                  size="sm"
                   className="px-4   font-semibold gap-2.5 cursor-pointer"
                 >
                   <User />
@@ -256,7 +261,7 @@ export function Header() {
                   </DialogTitle>
                   <div className="text-[13px] text-apple-ink-muted-48 mt-1  ">
                     {smsSent
-                      ? `Мы отправили код на номер +998 ${phone}`
+                      ? `Мы отправили код на номер +993 ${phone}`
                       : "Отправим СМС-код для подтверждения входа"}
                   </div>
                 </DialogHeader>
@@ -265,7 +270,7 @@ export function Header() {
                   <form onSubmit={handleSendCode} className="space-y-4">
                     <div className="flex items-center border border-apple-hairline rounded-apple-sm overflow-hidden px-3 bg-apple-canvas focus-within:border-apple-primary-focus focus-within:ring-1 focus-within:ring-apple-primary-focus transition-all">
                       <span className="text-[14px] font-semibold text-apple-ink-muted-48   pr-2 border-r border-apple-hairline mr-2">
-                        +998
+                        +993
                       </span>
                       <Input
                         type="tel"
@@ -289,17 +294,31 @@ export function Header() {
                   </form>
                 ) : (
                   <form onSubmit={handleVerifyCode} className="space-y-4">
-                    <div className="flex justify-center">
-                      <Input
-                        type="text"
+                      <div className="flex justify-center py-2">
+                        <InputOTP
+                          maxLength={4}
                         value={smsCode}
-                        onChange={(e) =>
-                          setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 4))
-                        }
-                        className="w-32 text-center text-lg font-bold tracking-widest h-11 border border-apple-hairline rounded-apple-sm focus-visible:border-apple-primary-focus focus-visible:ring-apple-primary-focus   bg-apple-canvas text-apple-ink placeholder:text-apple-ink-muted-48"
-                        placeholder="0000"
-                        required
-                      />
+                          onChange={(value) => setSmsCode(value.replace(/\D/g, ""))}
+                        >
+                          <InputOTPGroup className="gap-3">
+                            <InputOTPSlot
+                              index={0}
+                              className="w-12 h-12 text-[17px] font-semibold border border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline"
+                            />
+                            <InputOTPSlot
+                              index={1}
+                              className="w-12 h-12 text-[17px] font-semibold border border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline"
+                            />
+                            <InputOTPSlot
+                              index={2}
+                              className="w-12 h-12 text-[17px] font-semibold border border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline"
+                            />
+                            <InputOTPSlot
+                              index={3}
+                              className="w-12 h-12 text-[17px] font-semibold border border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline"
+                            />
+                          </InputOTPGroup>
+                        </InputOTP>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -338,7 +357,7 @@ export function Header() {
             {/* Favorites Button */}
             <Button
               variant="ghost"
-              size="md"
+              size="sm"
               className="px-3   font-medium cursor-pointer"
               asChild
             >
@@ -353,7 +372,7 @@ export function Header() {
               <SheetTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="md"
+                  size="sm"
                   className="px-3 font-medium cursor-pointer"
                 >
                   <div className="relative">

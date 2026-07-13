@@ -197,22 +197,11 @@ export default function ProductDetailPage() {
         {/* Top actions */}
         <div className="flex items-center gap-6 text-apple-ink-muted-80 font-medium">
           <span className="text-apple-ink-muted-48 select-text">Артикул: {product.articleNumber}</span>
-          
-          <button 
-            onClick={() => setCompareState(!compareState)}
-            className={cn(
-              "flex items-center gap-1 hover:text-apple-primary cursor-pointer transition-colors active:scale-95 duration-100",
-              compareState && "text-apple-primary"
-            )}
-          >
-            <GitCompare className="size-4" />
-            <span>{compareState ? "В сравнении" : "В сравнение"}</span>
-          </button>
 
-          <button className="flex items-center gap-1 hover:text-apple-primary cursor-pointer transition-colors active:scale-95 duration-100">
+          <Button variant={"ghost"} size="xs">
             <Share2 className="size-4" />
             <span>Поделиться</span>
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -21,8 +21,8 @@ export default function Home() {
       return
     }
 
-    medusa.store.collection.list()
-      .then(({ collections: dataCollections }) => {
+    medusa.store.product.retrieve('prod_01KX8QWS49M36N6GSXGWMKYMEF', { fields: "*sales_channels" })
+      .then(({ product: dataCollections }) => {
         setCollections(dataCollections)
         setLoading(false)
       })

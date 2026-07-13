@@ -132,17 +132,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Custom base styles */
-html {
-  height: 100%;
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
 body {
   min-height: 100%;
   display: flex;
@@ -154,11 +143,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
 
 /* Typographic utility classes mapping the Apple Design System hierarchy */
 
