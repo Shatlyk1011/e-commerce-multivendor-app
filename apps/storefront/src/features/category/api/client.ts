@@ -24,26 +24,11 @@ export async function fetchProductsByCategory(params?: {
   limit?: number;
   offset?: number;
   category_id?: string | string[];
-  min_price?: number;
-  max_price?: number;
 }): Promise<HttpTypes.StoreProductListResponse> {
   const response = await medusa.store.product.list({
     limit: params?.limit,
     offset: params?.offset,
     category_id: params?.category_id,
   });
-
-  let products = response.products ?? [];
-
-  if (params?.min_price !== undefined || params?.max_price !== undefined) {
-    products = products.filter((p) => {
-      const price = p.variants?.[0]?.calculated_price?.calculated_amount;
-      if (price === undefined) return false;
-      if (params.min_price !== undefined && Number(price) < params.min_price) return false;
-      if (params.max_price !== undefined && Number(price) > params.max_price) return false;
-      return true;
-    });
-  }
-
-  return { ...response, products };
+  return response;
 }

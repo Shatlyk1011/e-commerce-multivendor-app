@@ -23,7 +23,6 @@ interface CategoryViewProps {
 export function CategoryView({ categoryId }: CategoryViewProps) {
   const router = useRouter();
   const [page, setPage] = useState(0);
-  const [priceRange, setPriceRange] = useState<{ min?: string; max?: string }>({});
 
   // Fetch all root categories with full tree
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
@@ -43,8 +42,6 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
     limit: PAGE_SIZE,
     offset: page * PAGE_SIZE,
     category_id: selectedCategory?.id,
-    min_price: priceRange.min ? Number(priceRange.min) : undefined,
-    max_price: priceRange.max ? Number(priceRange.max) : undefined,
   });
 
   const products = productsData?.products ?? [];
@@ -59,17 +56,11 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
 
   const handleCategorySelect = (category: CategoryTreeNode) => {
     setPage(0);
-    setPriceRange({});
     if (!category.id) {
       router.push("/category", { scroll: false });
     } else {
       router.push(`/category/${category.id}`, { scroll: false });
     }
-  };
-
-  const handlePriceChange = (min: string, max: string) => {
-    setPage(0);
-    setPriceRange({ min: min || undefined, max: max || undefined });
   };
 
   return (
@@ -131,9 +122,6 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
                   categories={categories}
                   selectedId={selectedCategory?.id}
                   onSelect={handleCategorySelect}
-                  minPrice={priceRange.min}
-                  maxPrice={priceRange.max}
-                  onPriceChange={handlePriceChange}
                 />
               )}
             </div>

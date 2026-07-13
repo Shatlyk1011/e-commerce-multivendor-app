@@ -3,56 +3,27 @@
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { findCategoryInTree, findCategoryPath } from "../utils";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { CategoryTreeNode } from "../api/types";
 
 interface CategorySidebarProps {
   categories: CategoryTreeNode[];
   selectedId?: string | null;
   onSelect: (category: CategoryTreeNode) => void;
-  minPrice?: string;
-  maxPrice?: string;
-  onPriceChange?: (min: string, max: string) => void;
 }
 
 export function CategorySidebar({
   categories,
   selectedId,
   onSelect,
-  minPrice: externalMinPrice,
-  maxPrice: externalMaxPrice,
-  onPriceChange,
 }: CategorySidebarProps) {
-  const [localMin, setLocalMin] = useState(externalMinPrice ?? "");
-  const [localMax, setLocalMax] = useState(externalMaxPrice ?? "");
-
-  useEffect(() => {
-    setLocalMin(externalMinPrice ?? "");
-    setLocalMax(externalMaxPrice ?? "");
-  }, [externalMinPrice, externalMaxPrice]);
-
-  const handleApply = () => {
-    onPriceChange?.(localMin, localMax);
-  };
-
   const selectedCategory = selectedId ? findCategoryInTree(categories, selectedId) : null;
   const path = selectedId ? findCategoryPath(categories, selectedId) : null;
 
-  // Sibling categories are the children of the immediate parent
-  // If the path length is 1, the parent is null (roots are siblings)
-  // If path is empty, roots are the active list
   const hasSelection = path && path.length > 0;
   const immediateParent = hasSelection && path.length > 1 ? path[path.length - 2] : null;
   const siblings: CategoryTreeNode[] = hasSelection
     ? (immediateParent?.category_children ?? categories)
     : categories;
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleApply();
-    }
-  };
 
   return (
     <div className="w-full flex flex-col gap-6 select-none font-sans">
@@ -134,9 +105,6 @@ export function CategorySidebar({
             </span>
             <input
               type="number"
-              value={localMin}
-              onChange={(e) => setLocalMin(e.target.value)}
-              onKeyDown={handleKeyDown}
               placeholder="0"
               className="w-full bg-apple-canvas border border-apple-hairline rounded-apple-sm pl-7 pr-2 py-1.5 text-[13px] text-apple-ink placeholder-apple-ink-muted-48 focus:outline-none focus:border-apple-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
@@ -147,24 +115,11 @@ export function CategorySidebar({
             </span>
             <input
               type="number"
-              value={localMax}
-              onChange={(e) => setLocalMax(e.target.value)}
-              onKeyDown={handleKeyDown}
               placeholder="100 000"
               className="w-full bg-apple-canvas border border-apple-hairline rounded-apple-sm pl-7 pr-2 py-1.5 text-[13px] text-apple-ink placeholder-apple-ink-muted-48 focus:outline-none focus:border-apple-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
         </div>
-        {(localMin !== (externalMinPrice ?? "") || localMax !== (externalMaxPrice ?? "")) && (
-          <Button
-          variant={'secondary'}
-          className="mt-2 w-full"
-          size={'xs'}
-            onClick={handleApply}
-          >
-            Применить
-          </Button>
-        )}
       </div>
     </div>
   );

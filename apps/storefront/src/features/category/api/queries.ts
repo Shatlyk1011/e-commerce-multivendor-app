@@ -31,8 +31,6 @@ export function useProductsByCategory(params?: {
   limit?: number;
   offset?: number;
   category_id?: string | string[];
-  min_price?: number;
-  max_price?: number;
 }) {
   return useQuery<HttpTypes.StoreProductListResponse>({
     queryKey: [
@@ -40,8 +38,6 @@ export function useProductsByCategory(params?: {
       "category",
       params?.category_id ?? "all",
       params?.offset ?? 0,
-      params?.min_price ?? "none",
-      params?.max_price ?? "none",
     ],
     queryFn: () => fetchProductsByCategory(params),
   });
