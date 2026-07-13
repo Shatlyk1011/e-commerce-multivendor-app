@@ -10,10 +10,21 @@ import { formatPrice, getCartItemCount, getCartSubtotal } from '../utils'
 import { CartItem } from './CartItem'
 
 export function CartSheet() {
+  const { data: cart } = useCart()
+  const count = getCartItemCount(cart)
+
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <CartSheetTrigger />
+        <Button variant="ghost" size="sm" className="cursor-pointer px-3 font-medium">
+          <div className="relative">
+            <ShoppingBag className="text-apple-ink-muted-80" />
+            <span className="bg-apple-primary rounded-apple-full absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center px-1 text-[9px] font-bold text-white">
+              {count}
+            </span>
+          </div>
+          <span>Корзина</span>
+        </Button>
       </SheetTrigger>
       <SheetContent className="bg-apple-canvas border-apple-hairline flex w-full flex-col overflow-hidden border-l p-0 sm:max-w-md">
         <SheetHeader className="border-apple-divider-soft shrink-0 border-b p-6">
@@ -24,22 +35,6 @@ export function CartSheet() {
         <CartFooter />
       </SheetContent>
     </Sheet>
-  )
-}
-
-function CartSheetTrigger() {
-  const { data: cart } = useCart()
-  const count = getCartItemCount(cart)
-  return (
-    <Button variant="ghost" size="sm" className="cursor-pointer px-3 font-medium">
-      <div className="relative">
-        <ShoppingBag className="text-apple-ink-muted-80" />
-        <span className="bg-apple-primary rounded-apple-full absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center px-1 text-[9px] font-bold text-white">
-          {count}
-        </span>
-      </div>
-      <span>Корзина</span>
-    </Button>
   )
 }
 

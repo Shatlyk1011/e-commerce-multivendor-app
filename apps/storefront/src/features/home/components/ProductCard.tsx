@@ -5,7 +5,7 @@ import * as React from 'react'
 import Link from 'next/link'
 
 import type { HttpTypes } from '@medusajs/types'
-import { Check, Heart, ShoppingBag, Star } from 'lucide-react'
+import { Heart, Loader, Star } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
@@ -132,16 +132,19 @@ interface AddToCartButtonProps {
 }
 
 function AddToCartButton({ product }: AddToCartButtonProps) {
-  const [state, setState] = React.useState<'idle' | 'added'>('idle')
-  const addToCart = useAddLineItem()
+  const [state, setState] = React.useState<'idle' | 'pending' | 'added'>('idle')
+  const { mutateAsync: handleAddItem, isPending } = useAddLineItem()
 
   const variant = product.variants?.[0]
   const variantId = variant?.id
 
-  const handleAdd = () => {
+  console.log('variantId', variantId)
+
+  const handleAdd = async () => {
     if (!variantId) return
     const cartId = getCartId()
-    addToCart.mutate(
+    setState('pending')
+    await handleAddItem(
       {
         cartId: cartId ?? '',
         payload: {
@@ -165,20 +168,27 @@ function AddToCartButton({ product }: AddToCartButtonProps) {
       variant="default"
       size="sm"
       onClick={handleAdd}
-      disabled={addToCart.isPending || !variantId}
+      disabled={isPending || !variantId || state === 'pending'}
       className="w-full cursor-pointer font-semibold disabled:opacity-60"
     >
-      {state === 'added' ? (
+      {state === 'pending' && (
+        <>
+          <Loader className="size-4 animate-spin" />
+          <span>Добавляем...</span>
+        </>
+      )}
+      {/* {state === 'added' && (
         <>
           <Check className="size-4" />
           <span>В корзине</span>
         </>
-      ) : (
+      )}
+      {state === 'idle' &&
         <>
           <ShoppingBag className="size-4" />
           <span>Завтра</span>
         </>
-      )}
+      } */}
     </Button>
   )
 }
