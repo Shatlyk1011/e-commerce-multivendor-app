@@ -1,28 +1,33 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import Link from "next/link"
-import { Heart, Star, ShoppingBag } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
-import type { HttpTypes } from "@medusajs/types"
+import * as React from 'react'
+
+import Link from 'next/link'
+
+import type { HttpTypes } from '@medusajs/types'
+import { Check, Heart, ShoppingBag, Star } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { useAddLineItem } from '@/features/cart/api/queries'
+import { getCartId } from '@/lib/cart-cookies'
+import { cn } from '@/lib/utils'
 
 export interface ProductCardProps {
   product: HttpTypes.StoreProduct
 }
 
 function formatPrice(amount: number) {
-  return new Intl.NumberFormat("ru-RU").format(amount)
+  return new Intl.NumberFormat('ru-RU').format(amount)
 }
 
 export function ProductCard({ product }: ProductCardProps) {
   const [isFavorite, setIsFavorite] = React.useState(false)
 
   // Extract variables from Medusa API product object
-  const title = product.title ?? ""
-  const image = product.thumbnail ?? product.images?.[0]?.url ?? ""
-  
+  const title = product.title ?? ''
+  const image = product.thumbnail ?? product.images?.[0]?.url ?? ''
+
   const variant = product.variants?.[0]
   const amount = variant?.calculated_price?.calculated_amount ?? 0
   const originalAmount = variant?.calculated_price?.original_amount ?? null
@@ -43,18 +48,12 @@ export function ProductCard({ product }: ProductCardProps) {
   const reviewsCount = 0
 
   return (
-    <Card className="group relative flex flex-col justify-between transition-all duration-200 h-full border border-apple-hairline bg-apple-canvas rounded-apple-lg p-1">
+    <Card className="group border-apple-hairline bg-apple-canvas rounded-apple-lg relative flex h-full flex-col justify-between border p-1 transition-all duration-200">
       {/* Card Content Top wrapped in Link to Product page */}
-      <Link href={`/product/${product.id}`} className="flex flex-col flex-1">
+      <Link href={`/product/${product.id}`} className="flex flex-1 flex-col">
         {/* Product Image Container */}
-        <div
-          className="relative aspect-3/4 w-full rounded-[16px] overflow-hidden flex items-center justify-center p-2 group-hover:opacity-95 hover:scale-104 transition-all hover:rounded-none duration-200 ease-in-out bg-apple-canvas-parchment"
-        >
-          <img
-            src={image}
-            alt={title}
-            className="object-cover w-full h-full"
-          />
+        <div className="bg-apple-canvas-parchment relative flex aspect-3/4 w-full items-center justify-center overflow-hidden rounded-[16px] p-2 transition-all duration-200 ease-in-out group-hover:opacity-95 hover:scale-104 hover:rounded-none">
+          <img src={image} alt={title} className="h-full w-full object-cover" />
 
           {/* Heart/Favorite Button overlay */}
           <button
@@ -63,29 +62,27 @@ export function ProductCard({ product }: ProductCardProps) {
               e.stopPropagation()
               setIsFavorite(!isFavorite)
             }}
-            className="absolute top-2.5 right-2.5 size-7 rounded-apple-full bg-apple-canvas/80 hover:bg-apple-canvas flex items-center justify-center border border-apple-divider-soft shadow-xs active:scale-95 transition-all cursor-pointer z-10"
+            className="rounded-apple-full bg-apple-canvas/80 hover:bg-apple-canvas border-apple-divider-soft absolute top-2.5 right-2.5 z-10 flex size-7 cursor-pointer items-center justify-center border shadow-xs transition-all active:scale-95"
           >
             <Heart
               className={cn(
-                "size-4 transition-colors",
-                isFavorite
-                  ? "text-red-500 fill-red-500"
-                  : "text-apple-ink-muted-80 hover:text-red-500"
+                'size-4 transition-colors',
+                isFavorite ? 'fill-red-500 text-red-500' : 'text-apple-ink-muted-80 hover:text-red-500',
               )}
             />
           </button>
 
           {/* Badges Overlays */}
           {badges.length > 0 && (
-            <div className="absolute bottom-2.5 left-2.5 flex flex-col gap-1 max-w-[90%] z-10">
+            <div className="absolute bottom-2.5 left-2.5 z-10 flex max-w-[90%] flex-col gap-1">
               {badges.map((badge, idx) => (
                 <span
                   key={idx}
                   className={cn(
-                    "text-[9px] font-semibold px-2 py-0.5 rounded-apple-pill tracking-wide uppercase select-none w-fit border",
-                    badge === "ОРИГИНАЛ"
-                      ? "bg-apple-primary/10 text-apple-primary border-apple-primary/20"
-                      : "bg-apple-canvas text-apple-ink border-apple-hairline"
+                    'rounded-apple-pill w-fit border px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase select-none',
+                    badge === 'ОРИГИНАЛ'
+                      ? 'bg-apple-primary/10 text-apple-primary border-apple-primary/20'
+                      : 'bg-apple-canvas text-apple-ink border-apple-hairline',
                   )}
                 >
                   {badge}
@@ -96,49 +93,92 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Product Details inside CardContent */}
-        <CardContent className="flex flex-col mt-2.5 px-1">
+        <CardContent className="mt-2.5 flex flex-col px-1">
           {/* Store / Vendor Name */}
-          <div className="text-[11px] font-semibold text-apple-ink-muted-48 uppercase tracking-wide">
-            {"storeName"}
-          </div>
+          <div className="text-apple-ink-muted-48 text-[11px] font-semibold tracking-wide uppercase">{'storeName'}</div>
 
           {/* Pricing row */}
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-[16px] font-bold text-apple-ink font-sans">
-              {price}
-            </span>
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="text-apple-ink font-sans text-[16px] font-bold">{price}</span>
             {originalPrice && (
-              <span className="text-[13px] text-apple-ink-muted-48 line-through font-sans">
-                {originalPrice}
-              </span>
+              <span className="text-apple-ink-muted-48 font-sans text-[13px] line-through">{originalPrice}</span>
             )}
           </div>
 
           {/* Product Title */}
-          <h3 className="text-[13px] text-apple-ink leading-tight mt-2 font-text line-clamp-2 min-h-[32px] group-hover:text-apple-primary transition-colors">
+          <h3 className="text-apple-ink font-text group-hover:text-apple-primary mt-2 line-clamp-2 min-h-[32px] text-[13px] leading-tight transition-colors">
             {title}
           </h3>
 
           {/* Rating and Reviews Row */}
-          <div className="flex items-center gap-1 mt-1 text-[11px] text-apple-ink-muted-48">
+          <div className="text-apple-ink-muted-48 mt-1 flex items-center gap-1 text-[11px]">
             <Star className="size-3.5 fill-amber-400 stroke-amber-400" strokeWidth={0} />
-            <span className="font-semibold text-apple-ink font-sans">{rating}</span>
+            <span className="text-apple-ink font-sans font-semibold">{rating}</span>
             <span className="font-sans">({reviewsCount} отзывов)</span>
           </div>
         </CardContent>
       </Link>
 
       {/* Cart Add Button inside CardFooter */}
-      <CardFooter className="mt-3 p-0 pb-2 border-t-0 bg-transparent rounded-none">
-        <Button
-          variant="default"
-          size="sm"
-          className="w-full font-semibold cursor-pointer"
-        >
-          <ShoppingBag className="size-4" />
-          <span>Завтра</span>
-        </Button>
+      <CardFooter className="mt-3 rounded-none border-t-0 bg-transparent p-0 pb-2">
+        <AddToCartButton product={product} />
       </CardFooter>
     </Card>
+  )
+}
+
+interface AddToCartButtonProps {
+  product: HttpTypes.StoreProduct
+}
+
+function AddToCartButton({ product }: AddToCartButtonProps) {
+  const [state, setState] = React.useState<'idle' | 'added'>('idle')
+  const addToCart = useAddLineItem()
+
+  const variant = product.variants?.[0]
+  const variantId = variant?.id
+
+  const handleAdd = () => {
+    if (!variantId) return
+    const cartId = getCartId()
+    addToCart.mutate(
+      {
+        cartId: cartId ?? '',
+        payload: {
+          quantity: 1,
+          variant_id: variantId,
+          title: product.title,
+          thumbnail: product.thumbnail ?? product.images?.[0]?.url,
+        },
+      },
+      {
+        onSuccess: () => {
+          setState('added')
+          setTimeout(() => setState('idle'), 2000)
+        },
+      },
+    )
+  }
+
+  return (
+    <Button
+      variant="default"
+      size="sm"
+      onClick={handleAdd}
+      disabled={addToCart.isPending || !variantId}
+      className="w-full cursor-pointer font-semibold disabled:opacity-60"
+    >
+      {state === 'added' ? (
+        <>
+          <Check className="size-4" />
+          <span>В корзине</span>
+        </>
+      ) : (
+        <>
+          <ShoppingBag className="size-4" />
+          <span>Завтра</span>
+        </>
+      )}
+    </Button>
   )
 }

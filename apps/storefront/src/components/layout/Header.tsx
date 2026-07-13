@@ -1,66 +1,35 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { useState } from "react"
-import Link from "next/link"
-import {
-  MapPin,
-  ChevronDown,
-  Search,
-  User,
-  Heart,
-  ShoppingBag,
-  Check,
-  Grid2x2,
-} from "lucide-react"
+import * as React from 'react'
+import { useState } from 'react'
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-} from "@/components/ui/sheet"
+import Link from 'next/link'
+
+import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, ShoppingBag, User } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CartSheet } from '@/features/cart/components/CartSheet'
+import { cn } from '@/lib/utils'
 
 // Cities list in Uzbekistan
-const CITIES = [
-  "Туркменабад",
-]
+const CITIES = ['Туркменабад']
 
 export function Header() {
   const [selectedCity, setSelectedCity] = useState(CITIES[0])
-  const [selectedLang, setSelectedLang] = useState("ru") // 'ru' or 'uz'
+  const [selectedLang, setSelectedLang] = useState('ru') // 'ru' or 'uz'
   const [cityOpen, setCityOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Authentication Dialog states
   const [loginOpen, setLoginOpen] = useState(false)
-  const [phone, setPhone] = useState("")
+  const [phone, setPhone] = useState('')
   const [smsSent, setSmsSent] = useState(false)
-  const [smsCode, setSmsCode] = useState("")
+  const [smsCode, setSmsCode] = useState('')
 
   const handleSendCode = (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,36 +43,37 @@ export function Header() {
     if (smsCode.length === 4) {
       // Simulate successful login
       setLoginOpen(false)
-      setPhone("")
-      setSmsCode("")
+      setPhone('')
+      setSmsCode('')
       setSmsSent(false)
-      alert("Вход выполнен успешно!")
+      alert('Вход выполнен успешно!')
     }
   }
 
   return (
-    <header className="w-full bg-apple-canvas border-b border-apple-divider-soft sticky top-0 z-40 select-none">
+    <header className="bg-apple-canvas border-apple-divider-soft sticky top-0 z-40 w-full border-b select-none">
       {/* ROW 1: TOP BAR */}
-      <div className="w-full bg-apple-canvas-parchment text-[13px] text-apple-ink-muted-80 py-1.5 px-4  ">
-        <div className="max-w-[1240px] mx-auto flex items-center justify-between">
+      <div className="bg-apple-canvas-parchment text-apple-ink-muted-80 w-full px-4 py-1.5 text-[13px]">
+        <div className="mx-auto flex max-w-[1240px] items-center justify-between">
           {/* Top Bar Left: Location & Pick-up points */}
           <div className="flex items-center gap-6">
             {/* City Selector */}
             <Popover open={cityOpen} onOpenChange={setCityOpen}>
               <PopoverTrigger asChild>
-                <button className="flex items-center gap-1 hover:text-apple-primary cursor-pointer transition-colors outline-hidden">
-                  <MapPin className="size-4 text-apple-ink-muted-48" />
+                <button className="hover:text-apple-primary flex cursor-pointer items-center gap-1 outline-hidden transition-colors">
+                  <MapPin className="text-apple-ink-muted-48 size-4" />
                   <span className="text-apple-ink-muted-48">Город:</span>
-                  <span className="font-medium text-apple-ink hover:text-apple-primary transition-colors underline decoration-dotted underline-offset-4 decoration-apple-ink-muted-48">
+                  <span className="text-apple-ink hover:text-apple-primary decoration-apple-ink-muted-48 font-medium underline decoration-dotted underline-offset-4 transition-colors">
                     {selectedCity}
                   </span>
-                  <ChevronDown className="size-3.5 text-apple-ink-muted-48" />
+                  <ChevronDown className="text-apple-ink-muted-48 size-3.5" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-1 bg-apple-canvas border border-apple-hairline shadow-xs rounded-apple-sm" align="start">
-                <div className="py-1 text-[13px] font-medium text-apple-ink-muted-48 px-3">
-                  Выберите город
-                </div>
+              <PopoverContent
+                className="bg-apple-canvas border-apple-hairline rounded-apple-sm w-48 border p-1 shadow-xs"
+                align="start"
+              >
+                <div className="text-apple-ink-muted-48 px-3 py-1 text-[13px] font-medium">Выберите город</div>
                 <div className="max-h-60 overflow-y-auto">
                   {CITIES.map((city) => (
                     <button
@@ -113,16 +83,14 @@ export function Header() {
                         setCityOpen(false)
                       }}
                       className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 text-left rounded-apple-sm transition-colors hover:bg-apple-canvas-parchment",
+                        'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center justify-between px-3 py-2 text-left transition-colors',
                         selectedCity === city
-                          ? "text-apple-primary font-semibold bg-apple-canvas-parchment"
-                          : "text-apple-ink-muted-80"
+                          ? 'text-apple-primary bg-apple-canvas-parchment font-semibold'
+                          : 'text-apple-ink-muted-80',
                       )}
                     >
                       <span>{city}</span>
-                      {selectedCity === city && (
-                        <Check className="size-4 text-apple-primary" />
-                      )}
+                      {selectedCity === city && <Check className="text-apple-primary size-4" />}
                     </button>
                   ))}
                 </div>
@@ -132,7 +100,7 @@ export function Header() {
             {/* Pick-up points */}
             <Link
               href="/pickup-points"
-              className="text-apple-ink-muted-80 hover:text-apple-primary transition-colors font-medium"
+              className="text-apple-ink-muted-80 hover:text-apple-primary font-medium transition-colors"
             >
               Пункты выдачи
             </Link>
@@ -142,63 +110,67 @@ export function Header() {
           <div className="flex items-center gap-6">
             <Link
               href="/become-vendor"
-              className="text-apple-primary font-semibold hover:text-apple-primary-focus transition-colors"
+              className="text-apple-primary hover:text-apple-primary-focus font-semibold transition-colors"
             >
               Стать продавцом
             </Link>
             <Link
               href="/open-pickup"
-              className="text-apple-primary font-semibold hover:text-apple-primary-focus transition-colors"
+              className="text-apple-primary hover:text-apple-primary-focus font-semibold transition-colors"
             >
               Открыть пункт выдачи
             </Link>
             <Link href="/faq" className="text-apple-ink-muted-80 hover:text-apple-primary transition-colors">
               Вопрос-ответ
             </Link>
-            <Link href="/orders" className="text-apple-ink-muted-80 hover:text-apple-primary transition-colors font-medium">
+            <Link
+              href="/orders"
+              className="text-apple-ink-muted-80 hover:text-apple-primary font-medium transition-colors"
+            >
               Мои заказы
             </Link>
 
             {/* Language Selector */}
             <Popover open={langOpen} onOpenChange={setLangOpen}>
               <PopoverTrigger asChild>
-                <button className="flex items-center gap-1.5 text-apple-ink-muted-80 hover:text-apple-primary cursor-pointer transition-colors outline-hidden">
-                  <span className="font-medium">
-                    {selectedLang === "ru" ? "Русский" : "Turkmen"}
-                  </span>
-                  <ChevronDown className="size-3.5 text-apple-ink-muted-48" />
+                <button className="text-apple-ink-muted-80 hover:text-apple-primary flex cursor-pointer items-center gap-1.5 outline-hidden transition-colors">
+                  <span className="font-medium">{selectedLang === 'ru' ? 'Русский' : 'Turkmen'}</span>
+                  <ChevronDown className="text-apple-ink-muted-48 size-3.5" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-36 p-1 bg-apple-canvas border border-apple-hairline shadow-xs rounded-apple-sm" align="end">
+              <PopoverContent
+                className="bg-apple-canvas border-apple-hairline rounded-apple-sm w-36 border p-1 shadow-xs"
+                align="end"
+              >
                 <button
                   onClick={() => {
-                    setSelectedLang("ru")
+                    setSelectedLang('ru')
                     setLangOpen(false)
                   }}
                   className={cn(
-                    "w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left rounded-apple-sm transition-colors hover:bg-apple-canvas-parchment",
-                    selectedLang === "ru" ? "font-semibold text-apple-ink bg-apple-canvas-parchment" : "text-apple-ink-muted-80"
+                    'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
+                    selectedLang === 'ru'
+                      ? 'text-apple-ink bg-apple-canvas-parchment font-semibold'
+                      : 'text-apple-ink-muted-80',
                   )}
                 >
                   <span>Русский</span>
-                  {selectedLang === "ru" && (
-                    <Check className="size-3.5 text-apple-primary ml-auto" />
-                  )}
+                  {selectedLang === 'ru' && <Check className="text-apple-primary ml-auto size-3.5" />}
                 </button>
                 <button
                   onClick={() => {
-                    setSelectedLang("uz")
+                    setSelectedLang('uz')
                     setLangOpen(false)
                   }}
                   className={cn(
-                    "w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left rounded-apple-sm transition-colors hover:bg-apple-canvas-parchment",
-                    selectedLang === "uz" ? "font-semibold text-apple-ink bg-apple-canvas-parchment" : "text-apple-ink-muted-80"
+                    'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
+                    selectedLang === 'uz'
+                      ? 'text-apple-ink bg-apple-canvas-parchment font-semibold'
+                      : 'text-apple-ink-muted-80',
                   )}
                 >
                   <span>Turkmen</span>
-                  {selectedLang === "tk" && (
-                    <Check className="size-3.5 text-apple-primary ml-auto" />
-                  )}
+                  {selectedLang === 'tk' && <Check className="text-apple-primary ml-auto size-3.5" />}
                 </button>
               </PopoverContent>
             </Popover>
@@ -207,78 +179,66 @@ export function Header() {
       </div>
 
       {/* ROW 2: MAIN HEADER */}
-      <div className="w-full py-4 px-4 bg-apple-canvas">
+      <div className="bg-apple-canvas w-full px-4 py-4">
         <div className="custom-container mx-auto flex items-center gap-6">
           {/* Logo Brand */}
-          <Link href="/" className="flex items-center gap-2 select-none group shrink-0">
+          <Link href="/" className="group flex shrink-0 items-center gap-2 select-none">
             logo
           </Link>
 
           {/* Catalog Button */}
-          <Button
-            variant="secondary"
-            size="sm"
-            className="px-4   font-semibold cursor-pointer shrink-0"
-          >
+          <Button variant="secondary" size="sm" className="shrink-0 cursor-pointer px-4 font-semibold">
             <Grid2x2 className="" />
             <span>Каталог</span>
           </Button>
 
           {/* Wide Search Bar */}
-          <div className="flex-1 max-w-2xl">
-            <div className="flex items-center h-11 border border-apple-hairline rounded-apple-pill overflow-hidden focus-within:border-apple-primary-focus focus-within:ring-1 focus-within:ring-apple-primary-focus transition-all bg-apple-canvas">
+          <div className="max-w-2xl flex-1">
+            <div className="border-apple-hairline rounded-apple-pill focus-within:border-apple-primary-focus focus-within:ring-apple-primary-focus bg-apple-canvas flex h-11 items-center overflow-hidden border transition-all focus-within:ring-1">
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 h-full px-4 border-none shadow-none text-[14px]  outline-hidden focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-apple-ink-muted-48 text-apple-ink"
+                className="placeholder:text-apple-ink-muted-48 text-apple-ink h-full flex-1 border-none px-4 text-[14px] shadow-none outline-hidden focus-visible:ring-0 focus-visible:ring-offset-0"
                 placeholder="Искать товары и категории"
               />
-              <button className="flex items-center justify-center w-18 h-full bg-apple-canvas-parchment border-l border-apple-hairline hover:bg-apple-surface-pearl active:scale-95 cursor-pointer transition-all duration-150 text-apple-ink-muted-80 shrink-0">
+              <button className="bg-apple-canvas-parchment border-apple-hairline hover:bg-apple-surface-pearl text-apple-ink-muted-80 flex h-full w-18 shrink-0 cursor-pointer items-center justify-center border-l transition-all duration-150 active:scale-95">
                 <Search className="size-5" />
               </button>
             </div>
           </div>
 
           {/* Right Controls: Actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex shrink-0 items-center gap-2">
             {/* Login Dialog */}
             <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
               <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="px-4   font-semibold gap-2.5 cursor-pointer"
-                >
+                <Button variant="ghost" size="sm" className="cursor-pointer gap-2.5 px-4 font-semibold">
                   <User />
                   <span>Войти</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[360px] p-6 bg-apple-canvas rounded-apple-lg border border-apple-hairline shadow-lg">
+              <DialogContent className="bg-apple-canvas rounded-apple-lg border-apple-hairline max-w-[360px] border p-6 shadow-lg">
                 <DialogHeader className="mb-4">
-                  <DialogTitle className="text-xl font-bold font-heading text-apple-ink">
-                    {smsSent ? "Подтверждение входа" : "Введите номер телефона"}
+                  <DialogTitle className="font-heading text-apple-ink text-xl font-bold">
+                    {smsSent ? 'Подтверждение входа' : 'Введите номер телефона'}
                   </DialogTitle>
-                  <div className="text-[13px] text-apple-ink-muted-48 mt-1  ">
-                    {smsSent
-                      ? `Мы отправили код на номер +993 ${phone}`
-                      : "Отправим СМС-код для подтверждения входа"}
+                  <div className="text-apple-ink-muted-48 mt-1 text-[13px]">
+                    {smsSent ? `Мы отправили код на номер +993 ${phone}` : 'Отправим СМС-код для подтверждения входа'}
                   </div>
                 </DialogHeader>
 
                 {!smsSent ? (
                   <form onSubmit={handleSendCode} className="space-y-4">
-                    <div className="flex items-center border border-apple-hairline rounded-apple-sm overflow-hidden px-3 bg-apple-canvas focus-within:border-apple-primary-focus focus-within:ring-1 focus-within:ring-apple-primary-focus transition-all">
-                      <span className="text-[14px] font-semibold text-apple-ink-muted-48   pr-2 border-r border-apple-hairline mr-2">
+                    <div className="border-apple-hairline rounded-apple-sm bg-apple-canvas focus-within:border-apple-primary-focus focus-within:ring-apple-primary-focus flex items-center overflow-hidden border px-3 transition-all focus-within:ring-1">
+                      <span className="text-apple-ink-muted-48 border-apple-hairline mr-2 border-r pr-2 text-[14px] font-semibold">
                         +993
                       </span>
                       <Input
                         type="tel"
                         value={phone}
-                        onChange={(e) =>
-                          setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))
-                        }
-                        className="border-none shadow-none text-[15px] p-0 h-10 w-full focus-visible:ring-0 focus-visible:ring-offset-0   bg-transparent text-apple-ink placeholder:text-apple-ink-muted-48"
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                        className="text-apple-ink placeholder:text-apple-ink-muted-48 h-10 w-full border-none bg-transparent p-0 text-[15px] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                         placeholder="90 123 45 67"
                         required
                       />
@@ -287,38 +247,38 @@ export function Header() {
                       type="submit"
                       disabled={phone.length < 9}
                       size="sm"
-                      className="w-full font-semibold cursor-pointer"
+                      className="w-full cursor-pointer font-semibold"
                     >
                       Получить код
                     </Button>
                   </form>
                 ) : (
                   <form onSubmit={handleVerifyCode} className="space-y-4">
-                      <div className="flex justify-center py-2">
-                        <InputOTP
-                          maxLength={4}
+                    <div className="flex justify-center py-2">
+                      <InputOTP
+                        maxLength={4}
                         value={smsCode}
-                          onChange={(value) => setSmsCode(value.replace(/\D/g, ""))}
-                        >
-                          <InputOTPGroup className="gap-3">
-                            <InputOTPSlot
-                              index={0}
-                              className="w-12 h-12 text-[17px] font-semibold border border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline"
-                            />
-                            <InputOTPSlot
-                              index={1}
-                              className="w-12 h-12 text-[17px] font-semibold border border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline"
-                            />
-                            <InputOTPSlot
-                              index={2}
-                              className="w-12 h-12 text-[17px] font-semibold border border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline"
-                            />
-                            <InputOTPSlot
-                              index={3}
-                              className="w-12 h-12 text-[17px] font-semibold border border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline"
-                            />
-                          </InputOTPGroup>
-                        </InputOTP>
+                        onChange={(value) => setSmsCode(value.replace(/\D/g, ''))}
+                      >
+                        <InputOTPGroup className="gap-3">
+                          <InputOTPSlot
+                            index={0}
+                            className="border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline h-12 w-12 border text-[17px] font-semibold"
+                          />
+                          <InputOTPSlot
+                            index={1}
+                            className="border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline h-12 w-12 border text-[17px] font-semibold"
+                          />
+                          <InputOTPSlot
+                            index={2}
+                            className="border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline h-12 w-12 border text-[17px] font-semibold"
+                          />
+                          <InputOTPSlot
+                            index={3}
+                            className="border-apple-hairline rounded-apple-sm bg-apple-canvas text-apple-ink first:rounded-l-apple-sm last:rounded-r-apple-sm first:border-l-apple-hairline h-12 w-12 border text-[17px] font-semibold"
+                          />
+                        </InputOTPGroup>
+                      </InputOTP>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -326,14 +286,14 @@ export function Header() {
                         variant="outline"
                         size={'md'}
                         onClick={() => setSmsSent(false)}
-                        className="w-1/2 font-semibold text-apple-ink-muted-80 cursor-pointer"
+                        className="text-apple-ink-muted-80 w-1/2 cursor-pointer font-semibold"
                       >
                         Назад
                       </Button>
                       <Button
                         type="submit"
                         disabled={smsCode.length < 4}
-                        className="w-1/2 font-semibold cursor-pointer"
+                        className="w-1/2 cursor-pointer font-semibold"
                       >
                         Войти
                       </Button>
@@ -341,12 +301,12 @@ export function Header() {
                   </form>
                 )}
 
-                <div className="text-[12px] text-apple-ink-muted-48 text-center mt-4 leading-relaxed  ">
-                  Авторизуясь, вы согласяетесь с{" "}
+                <div className="text-apple-ink-muted-48 mt-4 text-center text-[12px] leading-relaxed">
+                  Авторизуясь, вы согласяетесь с{' '}
                   <Link href="/terms" className="text-apple-primary hover:underline">
                     Пользовательским соглашением
-                  </Link>{" "}
-                  и{" "}
+                  </Link>{' '}
+                  и{' '}
                   <Link href="/privacy" className="text-apple-primary hover:underline">
                     Политикой конфиденциальности
                   </Link>
@@ -355,12 +315,7 @@ export function Header() {
             </Dialog>
 
             {/* Favorites Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="px-3   font-medium cursor-pointer"
-              asChild
-            >
+            <Button variant="ghost" size="sm" className="cursor-pointer px-3 font-medium" asChild>
               <Link href="/favorites">
                 <Heart className="text-apple-ink-muted-80" />
                 <span>Избранное</span>
@@ -368,61 +323,7 @@ export function Header() {
             </Button>
 
             {/* Cart Sheet Drawer */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="px-3 font-medium cursor-pointer"
-                >
-                  <div className="relative">
-                    <ShoppingBag className="text-apple-ink-muted-80" />
-                    <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold text-white bg-apple-primary rounded-apple-full">
-                      0
-                    </span>
-                  </div>
-                  <span>Корзина</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-apple-canvas border-l border-apple-hairline p-0">
-                <SheetHeader className="p-6 border-b border-apple-divider-soft">
-                  <SheetTitle className="text-xl font-heading font-bold text-apple-ink">
-                    Корзина
-                  </SheetTitle>
-                  <SheetDescription className="text-apple-ink-muted-48 text-[13px]">
-                    У вас пока нет товаров в корзине
-                  </SheetDescription>
-                </SheetHeader>
-
-                {/* Empty State */}
-                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                  <div className="size-16 rounded-apple-full bg-apple-canvas-parchment flex items-center justify-center mb-4">
-                    <ShoppingBag className="size-8 text-apple-ink-muted-48" strokeWidth={1.5} />
-                  </div>
-                  <h3 className="text-base font-semibold text-apple-ink font-heading">
-                    В вашей корзине пусто
-                  </h3>
-                  <p className="text-[13px] text-apple-ink-muted-48 mt-1 max-w-[240px]">
-                    Перейдите в каталог и добавьте интересующие вас товары
-                  </p>
-                </div>
-
-                {/* Footer Checkout Summary */}
-                <SheetFooter className="p-6 border-t border-apple-divider-soft bg-apple-canvas-parchment mt-auto">
-                  <div className="flex items-center justify-between w-full mb-4">
-                    <span className="text-[14px] text-apple-ink font-medium">Итого:</span>
-                    <span className="text-[16px] text-apple-ink font-bold font-sans">0 тмт</span>
-                  </div>
-                  <Button
-                    variant="default"
-                    className="w-full font-semibold cursor-pointer"
-                    disabled
-                  >
-                    Перейти к оформлению
-                  </Button>
-                </SheetFooter>
-              </SheetContent>
-            </Sheet>
+            <CartSheet />
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 :root {
   --background: oklch(1 0 0);
@@ -39,8 +39,8 @@
 
 @theme inline {
   /* Fonts */
-  --font-heading:"Geist", system-ui, -apple-system, sans-serif;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
   /* Colors */
   --color-apple-primary: #0066cc;
@@ -83,7 +83,6 @@
   --radius-apple-lg: 18px;
   --radius-apple-pill: 9999px;
   --radius-apple-full: 9999px;
-
 
   /* Sidebar */
   --color-sidebar-ring: var(--sidebar-ring);
@@ -142,7 +141,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 
 /* Typographic utility classes mapping the Apple Design System hierarchy */
 
@@ -241,7 +239,7 @@ body {
   font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 300;
-  line-height: 1.0;
+  line-height: 1;
   letter-spacing: 0;
 }
 
@@ -259,7 +257,7 @@ body {
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 400;
-  line-height: 1.0;
+  line-height: 1;
   letter-spacing: -0.12px;
 }
 
@@ -286,11 +284,9 @@ body {
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 400;
-  line-height: 1.0;
+  line-height: 1;
   letter-spacing: -0.12px;
 }
-
-
 
 @layer base {
   * {

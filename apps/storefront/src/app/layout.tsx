@@ -1,18 +1,21 @@
-"use client";
+'use client'
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
-import type { Metadata } from "next";
-import "./globals.css";
+import { useState } from 'react'
 
-import "../../public/fonts.css";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import type { Metadata } from 'next'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+import { Footer } from '@/components/layout/Footer'
+import { Header } from '@/components/layout/Header'
+
+import '../../public/fonts.css'
+import './globals.css'
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   const [queryClient] = useState(
     () =>
@@ -22,12 +25,12 @@ export default function RootLayout({
             staleTime: 60 * 1000,
           },
         },
-      })
-  );
+      }),
+  )
 
   return (
     <html lang="en" className="font-sans">
-      <body className="antialiased text-apple-body">
+      <body className="text-apple-body antialiased">
         <QueryClientProvider client={queryClient}>
           <Header />
           {children}
@@ -35,8 +38,5 @@ export default function RootLayout({
         </QueryClientProvider>
       </body>
     </html>
-  );
+  )
 }
-
-
-
