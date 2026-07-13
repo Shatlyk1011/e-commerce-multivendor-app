@@ -13,7 +13,9 @@
     "test": "turbo test",
     "backend:seed": "turbo seed --filter=@dtc/backend",
     "backend:dev": "turbo dev --filter=@dtc/backend",
-    "storefront:dev": "turbo dev --filter=@dtc/storefront"
+    "storefront:dev": "turbo dev --filter=@dtc/storefront",
+    "storefront:format": "pnpm --filter @dtc/storefront exec prettier --write .",
+    "prepare": "husky"
   },
   "pnpm": {
     "overrides": {
@@ -24,8 +26,13 @@
   "devDependencies": {
     "@medusajs/eslint-plugin": "2.16.0",
     "eslint": "^9.39.4",
+    "husky": "^9.1.7",
     "jiti": "^2.7.0",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.2.5",
     "turbo": "^2.0.14"
+  },
+  "lint-staged": {
+    "apps/storefront/**/*.{js,jsx,ts,tsx,css,json,md}": "prettier --write --config apps/storefront/.prettierrc"
   }
 }
