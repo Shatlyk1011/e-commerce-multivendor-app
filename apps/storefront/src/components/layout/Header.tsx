@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import Link from 'next/link'
 
-import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, ShoppingBag, User } from 'lucide-react'
+import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, User } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -16,7 +16,7 @@ import { CartSheet } from '@/features/cart/components/CartSheet'
 import { cn } from '@/lib/utils'
 
 // Cities list in Uzbekistan
-const CITIES = ['Туркменабад']
+const CITIES = ['Туркменабад', 'Ашхабад']
 
 export function Header() {
   const [selectedCity, setSelectedCity] = useState(CITIES[0])
@@ -78,12 +78,13 @@ export function Header() {
                   {CITIES.map((city) => (
                     <button
                       key={city}
+                      disabled={city === 'Ашхабад'}
                       onClick={() => {
                         setSelectedCity(city)
                         setCityOpen(false)
                       }}
                       className={cn(
-                        'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center justify-between px-3 py-2 text-left transition-colors',
+                        'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center justify-between px-3 py-2 text-left transition-colors disabled:opacity-50',
                         selectedCity === city
                           ? 'text-apple-primary bg-apple-canvas-parchment font-semibold'
                           : 'text-apple-ink-muted-80',
@@ -239,7 +240,7 @@ export function Header() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
                         className="text-apple-ink placeholder:text-apple-ink-muted-48 h-10 w-full border-none bg-transparent p-0 text-[15px] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                        placeholder="90 123 45 67"
+                        placeholder="61 415926"
                         required
                       />
                     </div>

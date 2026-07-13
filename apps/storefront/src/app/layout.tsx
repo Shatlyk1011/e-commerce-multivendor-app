@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 
-import type { Metadata } from 'next'
-
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
@@ -32,6 +31,7 @@ export default function RootLayout({
     <html lang="en" className="font-sans">
       <body className="text-apple-body antialiased">
         <QueryClientProvider client={queryClient}>
+          <Toaster position="top-center" />
           <Header />
           {children}
           <Footer />

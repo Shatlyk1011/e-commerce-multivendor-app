@@ -5,7 +5,7 @@ import * as React from 'react'
 import Link from 'next/link'
 
 import type { HttpTypes } from '@medusajs/types'
-import { Heart, Loader, Star } from 'lucide-react'
+import { Check, Heart, Loader, ShoppingBag, Star } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
@@ -177,18 +177,18 @@ function AddToCartButton({ product }: AddToCartButtonProps) {
           <span>Добавляем...</span>
         </>
       )}
-      {/* {state === 'added' && (
+      {state === 'added' && (
         <>
           <Check className="size-4" />
           <span>В корзине</span>
         </>
       )}
-      {state === 'idle' &&
+      {state === 'idle' && (
         <>
           <ShoppingBag className="size-4" />
           <span>Завтра</span>
         </>
-      } */}
+      )}
     </Button>
   )
 }

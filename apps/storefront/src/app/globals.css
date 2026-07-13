@@ -304,3 +304,38 @@ body {
   max-width: 1180px;
   margin: 0 auto;
 }
+
+/* Sonner Toast Apple-Design Customization */
+[data-sonner-toast] {
+  font-family: var(--font-sans) !important;
+  background-color: var(--color-apple-canvas) !important;
+  border: 1px solid var(--color-apple-hairline) !important;
+  border-radius: var(--radius-apple-sm) !important;
+  box-shadow: none !important;
+  padding: 12px 16px !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: var(--color-apple-ink) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.12px !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: var(--color-apple-ink-muted-48) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+[data-sonner-toast] [data-icon] {
+  margin-right: 4px !important;
+}
+
+[data-sonner-toast][data-type='success'] [data-icon] {
+  color: var(--color-apple-primary) !important;
+}
+
+[data-sonner-toast][data-type='error'] [data-icon] {
+  color: #ff453a !important; /* Apple system red */
+}

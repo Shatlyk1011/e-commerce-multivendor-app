@@ -1,6 +1,6 @@
 import type { StoreCartResponse } from '@medusajs/types'
 
-import { getCartId } from '@/lib/cart-cookies'
+import { getCartId, removeCartId } from '@/lib/cart-cookies'
 import { medusa } from '@/lib/medusa'
 
 export async function createCart(): Promise<StoreCartResponse['cart']> {
@@ -15,6 +15,7 @@ export async function getCart(cartId?: string): Promise<StoreCartResponse['cart'
     const { cart } = await medusa.store.cart.retrieve(id)
     return cart
   } catch {
+    removeCartId()
     return null
   }
 }
