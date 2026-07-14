@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, User, X } from 'lucide-react'
 
@@ -13,7 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Spinner } from '@/components/ui/spinner'
 import { CartSheet } from '@/features/cart/components/CartSheet'
 import { cn } from '@/lib/utils'
+import { useSearchStore } from '@/store/use-search-store'
 import { useUIStore } from '@/store/use-ui-store'
+
+import OnClickOutside from './OnClickOutside'
 
 const AuthDialog = dynamic(() => import('./AuthDialog').then((mod) => mod.AuthDialog), {
   ssr: false,
@@ -23,6 +27,15 @@ const AuthDialog = dynamic(() => import('./AuthDialog').then((mod) => mod.AuthDi
 const CatalogMenu = dynamic(() => import('./CatalogMenu'), {
   ssr: false,
   loading: () => <Spinner fullPage size="lg" />,
+})
+
+const SearchOverlay = dynamic(() => import('./SearchOverlay'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-apple-canvas rounded-apple-lg border-apple-hairline absolute top-full left-1/2 z-50 mt-2 flex h-[400px] w-[720px] -translate-x-1/2 items-center justify-center overflow-hidden border shadow-xl">
+      <Spinner size="lg" />
+    </div>
+  ),
 })
 
 // Cities list in Uzbekistan
@@ -41,6 +54,27 @@ export function Header() {
 
   // Authentication Dialog states
   const [loginOpen, setLoginOpen] = useState(false)
+
+  // Search suggestions states and handlers
+  const [searchFocused, setSearchFocused] = useState(false)
+  const router = useRouter()
+  const addHistory = useSearchStore((state) => state.addHistory)
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = searchQuery.trim()
+    if (!trimmed) return
+    addHistory(trimmed)
+    setSearchFocused(false)
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`)
+  }
+
+  const handleSelectQuery = (query: string) => {
+    setSearchQuery(query)
+    addHistory(query)
+    setSearchFocused(false)
+    router.push(`/search?q=${encodeURIComponent(query)}`)
+  }
 
   return (
     <header className="bg-apple-canvas border-apple-divider-soft sticky top-0 z-40 w-full border-b select-none">
@@ -182,20 +216,35 @@ export function Header() {
           </Button>
 
           {/* Wide Search Bar */}
-          <div className="max-w-2xl flex-1">
-            <div className="border-apple-hairline rounded-apple-pill focus-within:border-apple-primary-focus focus-within:ring-apple-primary-focus bg-apple-canvas flex h-11 items-center overflow-hidden border transition-all focus-within:ring-1">
+          <OnClickOutside onClickOutside={() => setSearchFocused(false)} classes="relative max-w-2xl flex-1">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="border-apple-hairline rounded-apple-pill focus-within:border-apple-primary-focus focus-within:ring-apple-primary-focus bg-apple-canvas flex h-11 items-center overflow-hidden border transition-all focus-within:ring-1"
+            >
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => {
+                  setSearchFocused(true)
+                  if (catalogOpen) {
+                    setCatalogOpen(false)
+                  }
+                }}
                 className="placeholder:text-apple-ink-muted-48 text-apple-ink h-full flex-1 border-none px-4 text-[14px] shadow-none outline-hidden focus-visible:ring-0 focus-visible:ring-offset-0"
                 placeholder="Искать товары и категории"
               />
-              <button className="bg-apple-canvas-parchment border-apple-hairline hover:bg-apple-surface-pearl text-apple-ink-muted-80 flex h-full w-18 shrink-0 cursor-pointer items-center justify-center border-l transition-all duration-150 active:scale-95">
+              <button
+                type="submit"
+                className="bg-apple-canvas-parchment border-apple-hairline hover:bg-apple-surface-pearl text-apple-ink-muted-80 flex h-full w-18 shrink-0 cursor-pointer items-center justify-center border-l transition-all duration-150 active:scale-95"
+              >
                 <Search className="size-5" />
               </button>
-            </div>
-          </div>
+            </form>
+            {searchFocused && (
+              <SearchOverlay onSelectQuery={handleSelectQuery} onClose={() => setSearchFocused(false)} />
+            )}
+          </OnClickOutside>
 
           {/* Right Controls: Actions */}
           <div className="flex shrink-0 items-center gap-2">
