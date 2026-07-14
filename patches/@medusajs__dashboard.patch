@@ -1,0 +1,33 @@
+diff --git a/dist/chunk-C3PA6CLK.mjs b/dist/chunk-C3PA6CLK.mjs
+index 6862c36327e3d69fc5f31f151f8c3022b45b23ce..fbc22544d89c7543ad34610cc1249c7968801696 100644
+--- a/dist/chunk-C3PA6CLK.mjs
++++ b/dist/chunk-C3PA6CLK.mjs
+@@ -1,5 +1,11 @@
+ // src/lib/data/currencies.ts
+ var currencies = {
++  TMT: {
++    code: "TMT",
++    name: "Turkmenistani Manat",
++    symbol_native: "TMT",
++    decimal_digits: 2
++  },
+   USD: {
+     code: "USD",
+     name: "US Dollar",
+diff --git a/src/lib/data/currencies.ts b/src/lib/data/currencies.ts
+index 46e08fdddee4009386ace2320e2dbef78665f0a4..8163022aa8121b4083a798a6fa0a86561d3c2472 100644
+--- a/src/lib/data/currencies.ts
++++ b/src/lib/data/currencies.ts
+@@ -7,6 +7,12 @@ export type CurrencyInfo = {
+ }
+ 
+ export const currencies: Record<string, CurrencyInfo> = {
++  TMT: {
++    code: "TMT",
++    name: "Turkmenistani Manat",
++    symbol_native: "TMT",
++    decimal_digits: 2,
++  },
+   USD: {
+     code: "USD",
+     name: "US Dollar",

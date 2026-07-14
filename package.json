@@ -21,6 +21,9 @@
     "overrides": {
       "@types/react": "19.0.5",
       "@types/react-dom": "19.0.5"
+    },
+    "patchedDependencies": {
+      "@medusajs/dashboard": "patches/@medusajs__dashboard.patch"
     }
   },
   "devDependencies": {
