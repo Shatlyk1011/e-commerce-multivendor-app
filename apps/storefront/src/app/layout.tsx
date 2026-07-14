@@ -21,7 +21,7 @@ export default function RootLayout({
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000,
+            staleTime: 60 * 1000 * 5, // 5 minutes
           },
         },
       }),
