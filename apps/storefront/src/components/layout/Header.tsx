@@ -14,15 +14,17 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CartSheet } from '@/features/cart/components/CartSheet'
 import { cn } from '@/lib/utils'
+import { useUIStore } from '@/store/use-ui-store'
 
 // Cities list in Uzbekistan
 const CITIES = ['Туркменабад', 'Ашхабад']
 
 export function Header() {
-  const [selectedCity, setSelectedCity] = useState(CITIES[0])
-  const [selectedLang, setSelectedLang] = useState('ru') // 'ru' or 'uz'
-  const [cityOpen, setCityOpen] = useState(false)
-  const [langOpen, setLangOpen] = useState(false)
+  const storeCity = useUIStore((state) => state.selectedCity)
+  const setSelectedCity = useUIStore((state) => state.setSelectedCity)
+
+  const selectedCity = storeCity || CITIES[0]
+  const [selectedLang, setSelectedLang] = useState('ru') // 'ru' or 'tk'
   const [searchQuery, setSearchQuery] = useState('')
 
   // Authentication Dialog states
@@ -58,7 +60,7 @@ export function Header() {
           {/* Top Bar Left: Location & Pick-up points */}
           <div className="flex items-center gap-6">
             {/* City Selector */}
-            <Popover open={cityOpen} onOpenChange={setCityOpen}>
+            <Popover>
               <PopoverTrigger asChild>
                 <button className="hover:text-apple-primary flex cursor-pointer items-center gap-1 outline-hidden transition-colors">
                   <MapPin className="text-apple-ink-muted-48 size-4" />
@@ -79,10 +81,7 @@ export function Header() {
                     <button
                       key={city}
                       disabled={city === 'Ашхабад'}
-                      onClick={() => {
-                        setSelectedCity(city)
-                        setCityOpen(false)
-                      }}
+                      onClick={() => setSelectedCity(city)}
                       className={cn(
                         'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center justify-between px-3 py-2 text-left transition-colors disabled:opacity-50',
                         selectedCity === city
@@ -132,7 +131,7 @@ export function Header() {
             </Link>
 
             {/* Language Selector */}
-            <Popover open={langOpen} onOpenChange={setLangOpen}>
+            <Popover>
               <PopoverTrigger asChild>
                 <button className="text-apple-ink-muted-80 hover:text-apple-primary flex cursor-pointer items-center gap-1.5 outline-hidden transition-colors">
                   <span className="font-medium">{selectedLang === 'ru' ? 'Русский' : 'Turkmen'}</span>
@@ -144,10 +143,7 @@ export function Header() {
                 align="end"
               >
                 <button
-                  onClick={() => {
-                    setSelectedLang('ru')
-                    setLangOpen(false)
-                  }}
+                  onClick={() => setSelectedLang('ru')}
                   className={cn(
                     'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
                     selectedLang === 'ru'
@@ -159,10 +155,7 @@ export function Header() {
                   {selectedLang === 'ru' && <Check className="text-apple-primary ml-auto size-3.5" />}
                 </button>
                 <button
-                  onClick={() => {
-                    setSelectedLang('uz')
-                    setLangOpen(false)
-                  }}
+                  onClick={() => setSelectedLang('tk')}
                   className={cn(
                     'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
                     selectedLang === 'uz'

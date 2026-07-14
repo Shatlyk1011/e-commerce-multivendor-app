@@ -26,8 +26,8 @@ export function CartSheet() {
           <span>Корзина</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="bg-apple-canvas border-apple-hairline flex w-full flex-col overflow-hidden border-l p-0 sm:max-w-md">
-        <SheetHeader className="border-apple-divider-soft shrink-0 border-b p-6">
+      <SheetContent className="bg-apple-canvas border-apple-hairline flex w-full flex-col gap-0 overflow-hidden border-l p-0 sm:max-w-md">
+        <SheetHeader className="border-apple-divider-soft mb-4 shrink-0 border-b p-6">
           <SheetTitle className="font-heading text-apple-ink text-xl font-bold">Корзина</SheetTitle>
           <CartDescription />
         </SheetHeader>
@@ -77,7 +77,7 @@ function CartBody() {
   const items = cart!.items!
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 scrollbar-thin overflow-y-auto p-6">
       <ul className="flex flex-col gap-4">
         {items.map((item) => (
           <CartItem key={item.id} item={item} />
