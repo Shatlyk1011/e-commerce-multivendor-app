@@ -5,7 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { CategoryTreeNode } from '../api/types'
-import { findCategoryInTree, findCategoryPath } from '../utils'
+import { findCategoryPath } from '../utils'
 
 interface CategorySidebarProps {
   categories: CategoryTreeNode[]
@@ -14,7 +14,6 @@ interface CategorySidebarProps {
 }
 
 export function CategorySidebar({ categories, selectedId, onSelect }: CategorySidebarProps) {
-  const selectedCategory = selectedId ? findCategoryInTree(categories, selectedId) : null
   const path = selectedId ? findCategoryPath(categories, selectedId) : null
 
   const hasSelection = path && path.length > 0

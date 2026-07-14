@@ -138,8 +138,6 @@ function AddToCartButton({ product }: AddToCartButtonProps) {
   const variant = product.variants?.[0]
   const variantId = variant?.id
 
-  console.log('variantId', variantId)
-
   const handleAdd = async () => {
     if (!variantId) return
     const cartId = getCartId()

@@ -1,12 +1,11 @@
 'use client'
 
-import * as React from 'react'
 import { useState } from 'react'
 
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
-import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, User } from 'lucide-react'
+import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, User, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +20,11 @@ const AuthDialog = dynamic(() => import('./AuthDialog').then((mod) => mod.AuthDi
   loading: () => <Spinner fullPage size="lg" />,
 })
 
+const CatalogMenu = dynamic(() => import('./CatalogMenu'), {
+  ssr: false,
+  loading: () => <Spinner fullPage size="lg" />,
+})
+
 // Cities list in Uzbekistan
 const CITIES = ['Туркменабад', 'Ашхабад']
 
@@ -31,6 +35,9 @@ export function Header() {
   const selectedCity = storeCity || CITIES[0]
   const [selectedLang, setSelectedLang] = useState('ru') // 'ru' or 'tk'
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Catalog Menu state
+  const [catalogOpen, setCatalogOpen] = useState(false)
 
   // Authentication Dialog states
   const [loginOpen, setLoginOpen] = useState(false)
@@ -164,8 +171,13 @@ export function Header() {
           </Link>
 
           {/* Catalog Button */}
-          <Button variant="secondary" size="sm" className="shrink-0 cursor-pointer px-4 font-semibold">
-            <Grid2x2 className="" />
+          <Button
+            variant={catalogOpen ? 'default' : 'secondary'}
+            size="sm"
+            onClick={() => setCatalogOpen(!catalogOpen)}
+            className="shrink-0 cursor-pointer gap-2 px-4 font-semibold transition-all"
+          >
+            {catalogOpen ? <X className="size-4" /> : <Grid2x2 className="size-4" />}
             <span>Каталог</span>
           </Button>
 
@@ -212,6 +224,7 @@ export function Header() {
           </div>
         </div>
       </div>
+      {catalogOpen && <CatalogMenu onClose={() => setCatalogOpen(false)} />}
     </header>
   )
 }
