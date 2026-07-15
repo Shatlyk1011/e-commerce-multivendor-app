@@ -8,6 +8,20 @@ import { AdminCreateProduct } from "@medusajs/medusa/api/admin/products/validato
 
 export default defineMiddlewares({
   routes: [
+    // Admin vendor management routes (protected by admin auth)
+    {
+      matcher: "/admin/vendors",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/vendors/*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    // Vendor-portal facing routes
     {
       matcher: "/vendors",
       method: ["POST"],
@@ -31,6 +45,5 @@ export default defineMiddlewares({
         validateAndTransformBody(AdminCreateProduct),
       ],
     },
-
   ],
 })
