@@ -17,14 +17,34 @@ import {
   Hashtag,
   Photo,
   User,
+  Calendar,
+  LockClosedSolid,
+  ExclamationCircle,
+
 } from "@medusajs/icons"
 import { useVendor, useDeleteVendor } from "../../../hooks/api/vendors"
-import { EditVendorDrawer } from "../../../components/vendors/edit-vendor-drawer"
+import { GeneralEditDrawer } from "../../../components/vendors/general-edit-drawer"
+import { AccountEditDrawer } from "../../../components/vendors/account-edit-drawer"
+import { StoreInfoEditDrawer } from "../../../components/vendors/store-info-edit-drawer"
+import { ResetPasswordDrawer } from "../../../components/vendors/reset-password-drawer"
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "—"
+  return new Date(dateString).toLocaleDateString(undefined, {
+    dateStyle: "medium",
+    // timeStyle: "short",
+  })
+}
 
 const VendorDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [editOpen, setEditOpen] = useState(false)
+
+  // Drawer states
+  const [generalEditOpen, setGeneralEditOpen] = useState(false)
+  const [accountEditOpen, setAccountEditOpen] = useState(false)
+  const [storeInfoEditOpen, setStoreInfoEditOpen] = useState(false)
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   const { data, isLoading, error } = useVendor(id!)
@@ -59,6 +79,8 @@ const VendorDetailPage = () => {
     })
   }
 
+  const admin = vendor.admins?.[0]
+
   return (
     <>
       <div className="flex flex-col gap-y-6 p-6">
@@ -88,19 +110,11 @@ const VendorDetailPage = () => {
           <div className="flex items-center gap-x-2">
             <Button
               size="small"
-              variant="secondary"
-              onClick={() => setEditOpen(true)}
-            >
-              <PencilSquare />
-              Edit
-            </Button>
-            <Button
-              size="small"
               variant="danger"
               onClick={() => setDeleteOpen(true)}
             >
               <Trash />
-              Delete
+              Delete Vendor
             </Button>
           </div>
         </div>
@@ -128,21 +142,34 @@ const VendorDetailPage = () => {
                 /{vendor.handle}
               </Text>
               <div className="mt-2 flex items-center gap-x-2">
-                <Badge size="2xsmall" color="blue">
-                  {(vendor.admins ?? []).length} admin
-                  {(vendor.admins ?? []).length !== 1 ? "s" : ""}
+                <Badge size="2xsmall" color={vendor.status === "active" ? "green" : "red"}>
+                  {vendor.status === "active" ? "Active" : "Disabled"}
                 </Badge>
+                {vendor.store_name && (
+                  <Badge size="2xsmall" color="blue">
+                    {vendor.store_name}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </Container>
 
         {/* Details grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* General info */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+          {/* SECTION 1: GENERAL */}
           <Container className="divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <Heading level="h2">Details</Heading>
+              <Heading level="h2">General</Heading>
+              <Button
+                size="small"
+                variant="secondary"
+                onClick={() => setGeneralEditOpen(true)}
+              >
+                <PencilSquare />
+                Edit
+              </Button>
             </div>
 
             <div className="px-6 py-4">
@@ -163,7 +190,7 @@ const VendorDetailPage = () => {
                   <Hashtag className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Handle
+                      Slug
                     </Text>
                     <Text
                       size="small"
@@ -192,6 +219,189 @@ const VendorDetailPage = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </Container>
+
+          {/* SECTION 2: ACCOUNT */}
+          <Container className="divide-y p-0">
+            <div className="flex items-center justify-between px-6 py-4">
+              <Heading level="h2">Account</Heading>
+              <div className="flex items-center gap-x-2">
+                <Button
+                  size="small"
+                  variant="secondary"
+                  onClick={() => setResetPasswordOpen(true)}
+                >
+                  <LockClosedSolid />
+                  Reset Password
+                </Button>
+                <Button
+                  size="small"
+                  variant="secondary"
+                  onClick={() => setAccountEditOpen(true)}
+                >
+                  <PencilSquare />
+                  Edit
+                </Button>
+              </div>
+            </div>
+
+            <div className="px-6 py-4">
+              <div className="flex flex-col gap-y-4">
+                <div className="flex items-start gap-x-3">
+                  <User className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      Email
+                    </Text>
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      {admin?.email || "—"}
+                    </Text>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-x-3">
+                  <ExclamationCircle className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      Status
+                    </Text>
+                    <div>
+                      <Badge size="2xsmall" color={vendor.status === "active" ? "green" : "red"}>
+                        {vendor.status === "active" ? "Active" : "Disabled"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {vendor.status === "disabled" && vendor.status_reason && (
+                  <div className="flex items-start gap-x-3 bg-ui-bg-error-subtle rounded-md border p-3">
+                    <ExclamationCircle className="text-ui-fg-error mt-0.5 h-4 w-4 shrink-0" />
+                    <div className="flex flex-col gap-y-0.5">
+                      <Text size="small" leading="compact" weight="plus" className="text-ui-fg-error">
+                        Reason for Disabling
+                      </Text>
+                      <Text size="small" className="text-ui-fg-error-strong">
+                        {vendor.status_reason}
+                      </Text>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-start gap-x-3">
+                  <Calendar className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      Last Login
+                    </Text>
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      {admin?.last_login ? formatDate(admin.last_login) : "Never"}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Container>
+
+          {/* SECTION 3: STORE INFORMATION */}
+          <Container className="divide-y p-0">
+            <div className="flex items-center justify-between px-6 py-4">
+              <Heading level="h2">Store Information</Heading>
+              <Button
+                size="small"
+                variant="secondary"
+                onClick={() => setStoreInfoEditOpen(true)}
+              >
+                <PencilSquare />
+                Edit
+              </Button>
+            </div>
+
+            <div className="px-6 py-4">
+              <div className="flex flex-col gap-y-4">
+                <div className="flex items-start gap-x-3">
+                  <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      Store Name
+                    </Text>
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      {vendor.store_name || "—"}
+                    </Text>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-x-3">
+                  <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      City
+                    </Text>
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      {vendor.city || "—"}
+                    </Text>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-x-3">
+                  <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      Address
+                    </Text>
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      {vendor.address || "—"}
+                    </Text>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-x-3">
+                  <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      Store Description
+                    </Text>
+                    <Text size="small" className="text-ui-fg-subtle whitespace-pre-wrap">
+                      {vendor.store_description || "—"}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Container>
+
+          {/* SECTION 4: SYSTEM */}
+          <Container className="divide-y p-0">
+            <div className="flex items-center justify-between px-6 py-4">
+              <Heading level="h2">System</Heading>
+            </div>
+
+            <div className="px-6 py-4">
+              <div className="flex flex-col gap-y-4">
+                <div className="flex items-start gap-x-3">
+                  <Calendar className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      Created At
+                    </Text>
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      {formatDate(vendor.created_at)}
+                    </Text>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-x-3">
+                  <Calendar className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="flex flex-col gap-y-0.5">
+                    <Text size="small" leading="compact" weight="plus">
+                      Updated At
+                    </Text>
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      {formatDate(vendor.updated_at)}
+                    </Text>
+                  </div>
+                </div>
 
                 <div className="flex items-start gap-x-3">
                   <div className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0 text-xs font-mono">
@@ -214,56 +424,32 @@ const VendorDetailPage = () => {
             </div>
           </Container>
 
-          {/* Admins */}
-          <Container className="divide-y p-0">
-            <div className="flex items-center justify-between px-6 py-4">
-              <Heading level="h2">Admins</Heading>
-              <Badge size="2xsmall">{(vendor.admins ?? []).length}</Badge>
-            </div>
-
-            <div className="px-6 py-4">
-              {(vendor.admins ?? []).length === 0 ? (
-                <Text size="small" className="text-ui-fg-subtle">
-                  No admins assigned to this vendor yet.
-                </Text>
-              ) : (
-                <div className="flex flex-col gap-y-3">
-                  {vendor.admins!.map((admin) => (
-                    <div
-                      key={admin.id}
-                      className="bg-ui-bg-component shadow-elevation-card-rest flex items-center gap-x-3 rounded-md px-4 py-3"
-                    >
-                      <div className="bg-ui-bg-base flex h-8 w-8 items-center justify-center rounded-full">
-                        <User className="text-ui-fg-subtle h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <Text size="small" leading="compact" weight="plus">
-                          {[admin.first_name, admin.last_name]
-                            .filter(Boolean)
-                            .join(" ") || "—"}
-                        </Text>
-                        <Text
-                          size="small"
-                          leading="compact"
-                          className="text-ui-fg-subtle"
-                        >
-                          {admin.email}
-                        </Text>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </Container>
         </div>
       </div>
 
-      {/* Edit Drawer */}
-      <EditVendorDrawer
+      {/* Edit Drawers */}
+      <GeneralEditDrawer
         vendor={vendor}
-        open={editOpen}
-        onOpenChange={setEditOpen}
+        open={generalEditOpen}
+        onOpenChange={setGeneralEditOpen}
+      />
+
+      <AccountEditDrawer
+        vendor={vendor}
+        open={accountEditOpen}
+        onOpenChange={setAccountEditOpen}
+      />
+
+      <StoreInfoEditDrawer
+        vendor={vendor}
+        open={storeInfoEditOpen}
+        onOpenChange={setStoreInfoEditOpen}
+      />
+
+      <ResetPasswordDrawer
+        vendor={vendor}
+        open={resetPasswordOpen}
+        onOpenChange={setResetPasswordOpen}
       />
 
       {/* Delete Confirmation */}

@@ -13,7 +13,6 @@ import {
   Prompt,
 } from "@medusajs/ui"
 import {
-  PencilSquare,
   Trash,
   BuildingStorefront,
   Plus,
@@ -21,12 +20,19 @@ import {
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { useVendors, useDeleteVendor } from "../../hooks/api/vendors"
 import { CreateVendorForm } from "../../components/vendors/create-vendor-form"
-import { EditVendorDrawer } from "../../components/vendors/edit-vendor-drawer"
 import type { Vendor } from "../../types/vendor"
 
 // ─── Column helper ────────────────────────────────────────────────────────────
 
 const colHelper = createDataTableColumnHelper<Vendor>()
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "—"
+  return new Date(dateString).toLocaleDateString(undefined, {
+    dateStyle: "medium",
+    // timeStyle: "short",
+  })
+}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -38,7 +44,6 @@ const VendorsPage = () => {
     pageSize: 20,
   })
   const [createOpen, setCreateOpen] = useState(false)
-  const [editVendor, setEditVendor] = useState<Vendor | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Vendor | null>(null)
 
   const offset = pagination.pageIndex * pagination.pageSize
@@ -79,40 +84,62 @@ const VendorsPage = () => {
           </div>
         ),
       }),
-      colHelper.accessor("handle", {
-        header: "Handle",
+      colHelper.display({
+        id: "email",
+        header: "Email",
+        cell: ({ row }) => {
+          const admin = row.original.admins?.[0]
+          return (
+            <Text size="small" className="text-ui-fg-subtle">
+              {admin?.email || "—"}
+            </Text>
+          )
+        },
+      }),
+      colHelper.accessor("store_name", {
+        header: "Store Name",
         cell: ({ getValue }) => (
-          <Text size="small" leading="compact" className="text-ui-fg-subtle font-mono">
-            /{getValue()}
+          <Text size="small" className="text-ui-fg-subtle">
+            {getValue() || "—"}
           </Text>
         ),
       }),
-      colHelper.accessor("admins", {
-        header: "Admins",
+      colHelper.accessor("status", {
+        header: "Status",
         cell: ({ getValue }) => {
-          const admins = getValue() ?? []
+          const status = getValue() ?? "active"
           return (
-            <Badge size="2xsmall" color="blue">
-              {admins.length} admin{admins.length !== 1 ? "s" : ""}
+            <Badge size="2xsmall" color={status === "active" ? "green" : "red"}>
+              {status === "active" ? "Active" : "Disabled"}
             </Badge>
           )
         },
+      }),
+      colHelper.display({
+        id: "last_login",
+        header: "Last Login",
+        cell: ({ row }) => {
+          const admin = row.original.admins?.[0]
+          return (
+            <Text size="small" className="text-ui-fg-subtle">
+              {admin?.last_login ? formatDate(admin.last_login) : "Never"}
+            </Text>
+          )
+        },
+      }),
+      colHelper.accessor("created_at", {
+        header: "Created At",
+        cell: ({ getValue }) => (
+          <Text size="small" className="text-ui-fg-subtle">
+            {formatDate(getValue())}
+          </Text>
+        ),
       }),
       colHelper.display({
         id: "actions",
         header: "",
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-x-2">
-            <Button
-              size="small"
-              variant="transparent"
-              onClick={(e) => {
-                e.stopPropagation()
-                setEditVendor(row.original)
-              }}
-            >
-              <PencilSquare className="text-ui-fg-subtle" />
-            </Button>
             <Button
               size="small"
               variant="transparent"
@@ -199,17 +226,6 @@ const VendorsPage = () => {
 
       {/* Create FocusModal */}
       <CreateVendorForm open={createOpen} onOpenChange={setCreateOpen} />
-
-      {/* Edit Drawer */}
-      {editVendor && (
-        <EditVendorDrawer
-          vendor={editVendor}
-          open={!!editVendor}
-          onOpenChange={(open) => {
-            if (!open) setEditVendor(null)
-          }}
-        />
-      )}
 
       {/* Delete Confirmation Prompt */}
       <Prompt open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }} variant="danger">

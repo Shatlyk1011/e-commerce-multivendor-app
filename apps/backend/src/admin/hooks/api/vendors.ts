@@ -115,3 +115,22 @@ export const useDeleteVendor = () => {
     },
   })
 }
+
+// ─── Reset Vendor Password ───────────────────────────────────────────────────
+
+export const useResetVendorPassword = (id: string) => {
+  return useMutation({
+    mutationFn: (data: { email: string; password?: string }) =>
+      sdk.client.fetch<{ success: boolean }>(`/admin/vendors/${id}/reset-password`, {
+        method: "POST",
+        body: data,
+      }),
+    onSuccess: () => {
+      toast.success("Password reset successfully")
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to reset password")
+    },
+  })
+}
+
