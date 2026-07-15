@@ -6,6 +6,7 @@ const VendorAdmin = model.define("vendor_admin", {
   first_name: model.text().nullable(),
   last_name: model.text().nullable(),
   email: model.text().unique(),
+  last_login: model.dateTime().nullable(),
   vendor: model.belongsTo(() => Vendor, {
     mappedBy: "admins",
   }),

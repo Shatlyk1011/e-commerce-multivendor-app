@@ -6,6 +6,12 @@ const Vendor = model.define("vendor", {
   handle: model.text().unique(),
   name: model.text(),
   logo: model.text().nullable(),
+  status: model.enum(["active", "disabled"]).default("active"),
+  status_reason: model.text().nullable(),
+  store_name: model.text().nullable(),
+  store_description: model.text().nullable(),
+  address: model.text().nullable(),
+  city: model.text().nullable(),
   admins: model.hasMany(() => VendorAdmin, {
     mappedBy: "vendor",
   }),
