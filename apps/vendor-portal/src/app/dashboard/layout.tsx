@@ -128,7 +128,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="flex items-center gap-2 overflow-hidden">
                 <ShieldCheck className="text-apple-primary size-5 shrink-0" />
                 <span className="font-heading text-[16px] font-semibold tracking-tight whitespace-nowrap">
-                  Кабинет продавца
+                  Онлайн Магазин
                 </span>
               </div>
             )}
