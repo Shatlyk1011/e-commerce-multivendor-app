@@ -25,9 +25,9 @@ export const GET = async (
   // Enforce disabled status
   if (vendorAdmin.vendor?.status === "disabled") {
     const reason = vendorAdmin.vendor.status_reason ? `: ${vendorAdmin.vendor.status_reason}` : ""
-    return res.status(403).json({ 
-      message: `Account is disabled${reason}`
-    })
+    return res.status(403).json({
+      message: `Аккаунт заблокирован. Причина: ${reason}`,
+    });
   }
 
   // Update last login timestamp upon successful dashboard load

@@ -3,7 +3,7 @@ import {
   authenticate, 
   validateAndTransformBody,
 } from "@medusajs/framework/http"
-import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { MedusaRequest, MedusaResponse, AuthenticatedMedusaRequest } from "@medusajs/framework/http"
 import { PostVendorCreateSchema } from "./vendors/route"
 import { AdminCreateProduct } from "@medusajs/medusa/api/admin/products/validators"
 import { AdminCreateVendorSchema } from "./admin/vendors/route"
@@ -32,6 +32,43 @@ const vendorCorsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: any
   if (req.method === "OPTIONS") {
     res.status(200).end()
     return
+  }
+
+  next()
+}
+
+const checkVendorStatusMiddleware = async (
+  req: AuthenticatedMedusaRequest,
+  res: MedusaResponse,
+  next: any
+) => {
+  if (!req.auth_context?.actor_id) {
+    return next()
+  }
+
+  try {
+    const query = req.scope.resolve("query")
+    const { data: [vendorAdmin] } = await query.graph({
+      entity: "vendor_admin",
+      fields: ["id", "vendor.status", "vendor.status_reason"],
+      filters: {
+        id: [req.auth_context.actor_id],
+      },
+    })
+
+    if (!vendorAdmin) {
+      return res.status(404).json({ message: "Vendor admin not found" })
+    }
+
+    if (vendorAdmin.vendor?.status === "disabled") {
+      const reason = vendorAdmin.vendor.status_reason ? `: ${vendorAdmin.vendor.status_reason}` : ""
+      return res.status(403).json({
+        message: `Аккаунт заблокирован. Причина: ${reason}`
+      })
+    }
+  } catch (error) {
+    console.error("Error checking vendor status in middleware:", error)
+    return res.status(500).json({ message: "Internal server error during vendor status check" })
   }
 
   next()
@@ -79,6 +116,7 @@ export default defineMiddlewares({
       middlewares: [
         vendorCorsMiddleware,
         authenticate("vendor", ["session", "bearer"]),
+        checkVendorStatusMiddleware,
       ],
     },
     {
