@@ -29,9 +29,7 @@ export default function LoginPage() {
         password,
       })
 
-      toast.success('Вход выполнен успешно', {
-        description: 'Перенаправление в панель управления...',
-      })
+      toast.success('Вход выполнен успешно')
 
       router.push('/dashboard')
       router.refresh()

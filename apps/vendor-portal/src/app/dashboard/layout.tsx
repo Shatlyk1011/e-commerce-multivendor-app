@@ -71,12 +71,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           setVendorAdmin(res.vendor_admin)
           setIsLoading(false)
         }
-      } catch (err) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
         console.error('Auth guard error:', err)
         if (active) {
-          toast.error('Доступ ограничен', {
-            description: 'Пожалуйста, авторизуйтесь для доступа в панель управления.',
-          })
+          const status = err.status || err.response?.status
+          const message = err.message || err.response?.data?.message || ''
+
+          if (status === 403) {
+            toast.error('Доступ заблокирован', {
+              description: message || 'Ваш аккаунт продавца отключен.',
+            })
+            // Clear credentials/session by logging out
+            try {
+              await medusa.auth.logout()
+            } catch (logoutErr) {
+              console.error('Failed to logout after 403:', logoutErr)
+            }
+          } else {
+            toast.error('Доступ ограничен', {
+              description: 'Пожалуйста, авторизуйтесь для доступа в панель управления.',
+            })
+          }
           router.push('/login')
         }
       }
