@@ -1,11 +1,11 @@
 'use client'
 
 import * as React from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { ShieldCheck } from 'lucide-react'
+import { Loader2, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,30 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isChecking, setIsChecking] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    let active = true
+    async function checkExistingAuth() {
+      try {
+        const res = await medusa.client.fetch<{ vendor_admin: any }>('/vendors/me')
+        if (active && res?.vendor_admin?.id) {
+          router.push('/dashboard')
+          return
+        }
+      } catch (err) {
+        // Not authenticated
+      }
+      if (active) {
+        setIsChecking(false)
+      }
+    }
+    checkExistingAuth()
+    return () => {
+      active = false
+    }
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,8 +52,6 @@ export default function LoginPage() {
         password,
       })
 
-      toast.success('Вход выполнен успешно')
-
       router.push('/dashboard')
       router.refresh()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +63,14 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (isChecking) {
+    return (
+      <div className="bg-apple-canvas flex h-screen w-screen flex-col items-center justify-center">
+        <Loader2 className="text-apple-primary size-8 animate-spin" />
+      </div>
+    )
   }
 
   return (
