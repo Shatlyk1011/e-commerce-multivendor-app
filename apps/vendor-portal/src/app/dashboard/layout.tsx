@@ -76,7 +76,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
-        console.error('Auth guard error:', err)
         if (active) {
           const status = err.status || err.response?.status
           const message = err.message || err.response?.data?.message || ''

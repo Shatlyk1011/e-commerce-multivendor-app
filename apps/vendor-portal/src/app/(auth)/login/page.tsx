@@ -20,24 +20,12 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    let active = true
-    async function checkExistingAuth() {
-      try {
-        const res = await medusa.client.fetch<{ vendor_admin: any }>('/vendors/me')
-        if (active && res?.vendor_admin?.id) {
-          router.push('/dashboard')
-          return
-        }
-      } catch (err) {
-        // Not authenticated
-      }
-      if (active) {
-        setIsChecking(false)
-      }
-    }
-    checkExistingAuth()
-    return () => {
-      active = false
+    const hasSessionCookie = document.cookie.split(';').some((item) => item.trim().startsWith('connect.sid='))
+
+    if (hasSessionCookie) {
+      router.push('/dashboard')
+    } else {
+      setIsChecking(false)
     }
   }, [router])
 
