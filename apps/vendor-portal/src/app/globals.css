@@ -1,26 +1,342 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Fonts */
+  --font-heading: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Colors */
+  --color-apple-primary: #0066cc;
+  --color-apple-primary-focus: #0071e3;
+  --color-apple-primary-on-dark: #2997ff;
+  --color-apple-ink: #1d1d1f;
+  --color-apple-body: #1d1d1f;
+  --color-apple-body-on-dark: #ffffff;
+  --color-apple-body-muted: #cccccc;
+  --color-apple-ink-muted-80: #333333;
+  --color-apple-ink-muted-48: #7a7a7a;
+  --color-apple-divider-soft: #f0f0f0;
+  --color-apple-hairline: #e0e0e0;
+  --color-apple-canvas: #ffffff;
+  --color-apple-canvas-parchment: #f5f5f7;
+  --color-apple-surface-pearl: #fafafc;
+  --color-apple-surface-tile-1: #272729;
+  --color-apple-surface-tile-2: #2a2a2c;
+  --color-apple-surface-tile-3: #252527;
+  --color-apple-surface-black: #000000;
+  --color-apple-surface-chip-translucent: rgba(210, 210, 215, 0.64);
+  --color-apple-on-primary: #ffffff;
+  --color-apple-on-dark: #ffffff;
+
+  /* Spacings */
+  --spacing-apple-xxs: 4px;
+  --spacing-apple-xs: 8px;
+  --spacing-apple-sm: 12px;
+  --spacing-apple-md: 17px;
+  --spacing-apple-lg: 24px;
+  --spacing-apple-xl: 32px;
+  --spacing-apple-xxl: 48px;
+  --spacing-apple-section: 80px;
+
+  /* Radiuses */
+  --radius-apple-none: 0px;
+  --radius-apple-xs: 5px;
+  --radius-apple-sm: 8px;
+  --radius-apple-md: 11px;
+  --radius-apple-lg: 18px;
+  --radius-apple-pill: 9999px;
+  --radius-apple-full: 9999px;
+
+  /* Sidebar */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  /* Charts */
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  /* Core UI Mapping */
+  --color-ring: var(--color-apple-primary-focus);
+  --color-input: var(--color-apple-hairline);
+  --color-border: var(--color-apple-hairline);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--color-apple-ink);
+  --color-accent: var(--color-apple-surface-pearl);
+  --color-muted-foreground: var(--color-apple-ink-muted-48);
+  --color-muted: var(--color-apple-canvas-parchment);
+  --color-secondary-foreground: var(--color-apple-ink);
+  --color-secondary: var(--color-apple-canvas-parchment);
+  --color-primary-foreground: var(--color-apple-on-primary);
+  --color-primary: var(--color-apple-primary);
+  --color-popover-foreground: var(--color-apple-ink);
+  --color-popover: var(--color-apple-canvas);
+  --color-card-foreground: var(--color-apple-ink);
+  --color-card: var(--color-apple-canvas);
+  --color-foreground: var(--color-apple-ink);
+  --color-background: var(--color-apple-canvas);
+
+  /* Radii mapping */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--color-foreground);
+  background: var(--color-background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typographic utility classes mapping the Apple Design System hierarchy */
+
+/* Usage: Main hero title at the very top of product landing pages (e.g. "iPhone 17 Pro") */
+@utility text-apple-hero-display {
+  font-family: var(--font-heading);
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1.07;
+  letter-spacing: -0.28px;
+}
+
+/* Usage: Section title atop full-bleed product tiles and feature grids */
+@utility text-apple-display-lg {
+  font-family: var(--font-heading);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+/* Usage: Medium headers, sub-sections, or card headlines on product grids */
+@utility text-apple-display-md {
+  font-family: var(--font-sans);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.47;
+  letter-spacing: -0.374px;
+}
+
+/* Usage: Descriptive subtitle immediately below the hero title (e.g. "Hello, Apple Intelligence.") */
+@utility text-apple-lead {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: 0.196px;
+}
+
+/* Usage: Editorial lead paragraphs or light-styled introductory text blocks */
+@utility text-apple-lead-airy {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+/* Usage: Small uppercase taglines, category markers, or sub-nav product titles */
+@utility text-apple-tagline {
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.19;
+  letter-spacing: 0.231px;
+}
+
+/* Usage: Standard paragraph copy and descriptive body text (premium 17px reading size) */
+@utility text-apple-body {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.47;
+  letter-spacing: -0.374px;
+}
+
+/* Usage: Bold emphasis inside body paragraphs or primary labels that need assertion */
+@utility text-apple-body-strong {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.24;
+  letter-spacing: -0.374px;
+}
+
+/* Usage: Small captions, details inside product grid cards, and secondary details */
+@utility text-apple-caption {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: -0.224px;
+}
+
+/* Usage: Small bold cards descriptions, highlighted specs, or label accents */
+@utility text-apple-caption-strong {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.29;
+  letter-spacing: -0.224px;
+}
+
+/* Usage: Large primary CTA action buttons (e.g. store hero CTA buttons) */
+@utility text-apple-button-large {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+/* Usage: Medium utility action links, nav menu items, and pill CTAs (e.g. "Buy" in sub-nav) */
+@utility text-apple-button-utility {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.29;
+  letter-spacing: -0.224px;
+}
+
+/* Usage: Footer nav links, dense footer structures, and minor legal footnotes */
+@utility text-apple-fine-print {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.12px;
+}
+
+/* Usage: Bottom disclaimers, micro copyright notices, or detailed legal requirements */
+@utility text-apple-micro-legal {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.08px;
+}
+
+/* Usage: Footer / store utility link lists (relaxed leading) */
+@utility text-apple-dense-link {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 2.41;
+  letter-spacing: 0;
+}
+
+/* Usage: Global nav menu items */
+@utility text-apple-nav-link {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.12px;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground scrollbar-gutter-stable;
+  }
+  html {
+    @apply font-sans;
+    scrollbar-gutter: stable;
+  }
+}
+
+.custom-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* Sonner Toast Apple-Design Customization */
+[data-sonner-toast] {
+  font-family: var(--font-sans) !important;
+  background-color: var(--color-apple-canvas) !important;
+  border: 1px solid var(--color-apple-hairline) !important;
+  border-radius: var(--radius-apple-sm) !important;
+  box-shadow: none !important;
+  padding: 12px 16px !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: var(--color-apple-ink) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.12px !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: var(--color-apple-ink-muted-48) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+[data-sonner-toast] [data-icon] {
+  margin-right: 4px !important;
+}
+
+[data-sonner-toast][data-type='success'] [data-icon] {
+  color: var(--color-apple-primary) !important;
+}
+
+[data-sonner-toast][data-type='error'] [data-icon] {
+  color: #ff453a !important; /* Apple system red */
 }
