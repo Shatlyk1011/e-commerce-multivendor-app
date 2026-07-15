@@ -14,6 +14,12 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Module paths */
+    "paths": {
+      "@medusajs/js-sdk": ["../../node_modules/@medusajs/js-sdk/dist/index.d.ts"],
+      "@medusajs/icons": ["../../node_modules/@medusajs/icons/dist/index.d.ts"]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
