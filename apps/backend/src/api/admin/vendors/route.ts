@@ -1,8 +1,10 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MARKETPLACE_MODULE } from "../../../modules/marketplace"
 import MarketplaceModuleService from "../../../modules/marketplace/service"
+import { z } from "@medusajs/framework/zod"
+import adminCreateVendorWorkflow from "../../../workflows/marketplace/admin-create-vendor"
 
-export async function GET(req: MedusaRequest, res: MedusaResponse) {
+export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   const marketplaceService: MarketplaceModuleService =
     req.scope.resolve(MARKETPLACE_MODULE)
 
@@ -29,21 +31,30 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   })
 }
 
-export async function POST(req: MedusaRequest, res: MedusaResponse) {
-  const marketplaceService: MarketplaceModuleService =
-    req.scope.resolve(MARKETPLACE_MODULE)
+export const AdminCreateVendorSchema = z.strictObject({
+  name: z.string(),
+  handle: z.string(),
+  logo: z.string().optional(),
+  status: z.enum(["active", "disabled"]).optional(),
+  status_reason: z.string().nullable().optional(),
+  store_name: z.string().optional().nullable(),
+  store_description: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  admin: z.strictObject({
+    email: z.string().email(),
+    password: z.string().min(8),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+  }),
+})
 
-  const { name, handle, logo } = req.body as {
-    name: string
-    handle: string
-    logo?: string
-  }
+type RequestBody = z.infer<typeof AdminCreateVendorSchema>
 
-  const vendor = await marketplaceService.createVendors({
-    name,
-    handle,
-    logo: logo ?? null,
+export async function POST(req: AuthenticatedMedusaRequest<RequestBody>, res: MedusaResponse) {
+  const { result } = await adminCreateVendorWorkflow(req.scope).run({
+    input: req.validatedBody,
   })
 
-  res.status(201).json({ vendor })
+  res.status(201).json({ vendor: result.vendor })
 }

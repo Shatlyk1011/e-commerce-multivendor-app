@@ -6,6 +6,10 @@ import {
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { PostVendorCreateSchema } from "./vendors/route"
 import { AdminCreateProduct } from "@medusajs/medusa/api/admin/products/validators"
+import { AdminCreateVendorSchema } from "./admin/vendors/route"
+import { AdminUpdateVendorSchema } from "./admin/vendors/[id]/route"
+import { AdminResetVendorPasswordSchema } from "./admin/vendors/[id]/reset-password/route"
+
 
 const vendorCorsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: any) => {
   const origin = req.headers.origin
@@ -35,19 +39,29 @@ const vendorCorsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: any
 
 export default defineMiddlewares({
   routes: [
-    // Admin vendor management routes (protected by admin auth)
+    // Admin vendor routes
     {
       matcher: "/admin/vendors",
+      method: ["POST"],
       middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
+        validateAndTransformBody(AdminCreateVendorSchema),
       ],
     },
     {
       matcher: "/admin/vendors/*",
+      method: ["PATCH"],
       middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
+        validateAndTransformBody(AdminUpdateVendorSchema),
       ],
     },
+    {
+      matcher: "/admin/vendors/*/reset-password",
+      method: ["POST"],
+      middlewares: [
+        validateAndTransformBody(AdminResetVendorPasswordSchema),
+      ],
+    },
+
     // Vendor-portal facing routes
     {
       matcher: "/vendors",
