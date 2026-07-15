@@ -1,14 +1,30 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
+import type { HttpTypes } from '@medusajs/types'
 import { ChevronRight } from 'lucide-react'
 
 import { useProducts } from '@/features/home/API'
 import { ProductCard } from '@/features/home/components/ProductCard'
+import { medusa } from '@/lib/medusa'
 
 export default function Home() {
   const { data, isLoading, isError } = useProducts({ limit: 12 })
+
+  const [regions, setRegions] = useState<HttpTypes.StoreRegion[]>([])
+  console.log('regions', regions)
+
+  const fn = async () => {
+    await medusa.store.region.list().then(({ regions: dataRegions }) => {
+      setRegions(dataRegions)
+      // setLoading(false)
+    })
+  }
+
+  useEffect(() => {
+    fn()
+  }, [])
 
   // useEffect(() => {
   //   const cartRes = await sdk.client.fetch<HttpTypes.StoreCompleteCartResponse>(

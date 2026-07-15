@@ -62,8 +62,12 @@ export function Header() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
     const trimmed = searchQuery.trim()
     if (!trimmed) return
+    if (searchFocused) {
+      setSearchFocused(false)
+    }
     addHistory(trimmed)
     setSearchFocused(false)
     router.push(`/search?q=${encodeURIComponent(trimmed)}`)
@@ -73,6 +77,9 @@ export function Header() {
     setSearchQuery(query)
     addHistory(query)
     setSearchFocused(false)
+    if (searchFocused) {
+      setSearchFocused(false)
+    }
     router.push(`/search?q=${encodeURIComponent(query)}`)
   }
 
@@ -236,7 +243,7 @@ export function Header() {
               />
               <button
                 type="submit"
-                className="bg-apple-canvas-parchment border-apple-hairline hover:bg-apple-surface-pearl text-apple-ink-muted-80 flex h-full w-18 shrink-0 cursor-pointer items-center justify-center border-l transition-all duration-150 active:scale-95"
+                className="bg-apple-canvas-parchment bord er-apple-hairline hover:bg-apple-surface-pearl text-apple-ink-muted-80 flex h-full w-18 shrink-0 cursor-pointer items-center justify-center border-l transition-all duration-150 active:scale-95"
               >
                 <Search className="size-5" />
               </button>
