@@ -140,7 +140,7 @@ export function Header() {
           {/* Top Bar Right: Vendor Links & Lang Selector */}
           <div className="flex items-center gap-6">
             <Link
-              href="/become-vendor"
+              href="/become-seller"
               className="text-apple-primary hover:text-apple-primary-focus font-semibold transition-colors"
             >
               Стать продавцом
