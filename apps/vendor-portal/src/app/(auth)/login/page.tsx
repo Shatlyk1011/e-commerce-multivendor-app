@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { medusa } from '@/lib/medusa'
+import { VendorAdmin } from '@/types/vendor'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -20,12 +21,24 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const hasSessionCookie = document.cookie.split(';').some((item) => item.trim().startsWith('connect.sid='))
-
-    if (hasSessionCookie) {
-      router.push('/dashboard')
-    } else {
-      setIsChecking(false)
+    let active = true
+    async function checkAuth() {
+      try {
+        const res = await medusa.client.fetch<{ vendor_admin: VendorAdmin }>('/vendors/me')
+        if (active && res?.vendor_admin?.id) {
+          router.push('/dashboard')
+          return
+        }
+      } catch (err) {
+        // Not authenticated
+      }
+      if (active) {
+        setIsChecking(false)
+      }
+    }
+    checkAuth()
+    return () => {
+      active = false
     }
   }, [router])
 

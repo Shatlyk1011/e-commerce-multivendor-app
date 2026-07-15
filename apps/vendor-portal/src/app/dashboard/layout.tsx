@@ -41,6 +41,22 @@ export function useVendor() {
   return context
 }
 
+let vendorAdminPromise: Promise<{ vendor_admin: VendorAdmin }> | null = null
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fetchVendorAdmin(client: any): Promise<{ vendor_admin: VendorAdmin }> {
+  if (!vendorAdminPromise) {
+    vendorAdminPromise = client.fetch('/vendors/me').finally(() => {
+      // Clear after a microtask to allow concurrent reads to reuse the promise,
+      // but subsequent actions will fetch fresh data.
+      setTimeout(() => {
+        vendorAdminPromise = null
+      }, 0)
+    })
+  }
+  return vendorAdminPromise!
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [vendorAdmin, setVendorAdmin] = useState<VendorAdmin | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -50,6 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const logout = async () => {
     try {
+      vendorAdminPromise = null
       await medusa.auth.logout()
       toast.success('Вы вышли из системы')
       router.push('/login')
@@ -66,13 +83,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     async function checkAuth() {
       try {
-        const res = await medusa.client.fetch<{ vendor_admin: VendorAdmin }>('/vendors/me')
+        const res = await fetchVendorAdmin(medusa.client)
         if (active) {
           setVendorAdmin(res.vendor_admin)
           setIsLoading(false)
-        }
-        if (res.vendor_admin.id) {
-          toast.success(`Добро пожаловать ${res.vendor_admin.first_name}`)
+          if (res.vendor_admin.id) {
+            toast.success(`Добро пожаловать ${res.vendor_admin.first_name}`)
+          }
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
@@ -226,7 +243,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Top Bar */}
           <header className="border-apple-hairline bg-apple-canvas sticky top-0 z-10 flex h-14 items-center justify-between border-b px-8">
             <div className="flex items-center gap-2">
-              <h2 className="text-apple-ink-muted-48 text-[14px] font-medium">{vendor?.name}</h2>
+              <h2 className="text-apple-ink-muted-48 text-[14px] font-medium">{vendor?.name} shop</h2>
             </div>
             <div className="flex items-center gap-4">
               <span className="rounded-apple-pill border border-green-200 bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold text-green-700">
