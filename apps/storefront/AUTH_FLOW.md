@@ -6,17 +6,18 @@
 2. The UI currently treats the SMS as sent locally; no SMS provider is called.
 3. The customer enters an OTP. The temporary accepted code is `1234`.
 4. The browser sends `{ phone, otp }` to the same-origin `POST /api/auth/phone` route.
-5. The Next.js route normalizes the phone and verifies the OTP through `verifyOtp()`.
-6. The route derives a synthetic Medusa email (`<phone>@phone.local`) and an HMAC-SHA256 password using the server-only `PHONE_AUTH_SECRET`.
-7. It logs the customer in with Medusa `emailpass`; if the identity does not exist, it registers it first.
-8. It creates the Medusa customer profile when needed, then returns the Medusa token.
-9. The browser passes the token to `medusa.client.setToken()` for subsequent storefront requests.
+5. The route calls Medusa's standard `phonepass` auth endpoint.
+6. The native Medusa provider verifies the OTP and finds the phone-keyed auth identity.
+7. For a new phone, the route registers the identity, uses the actorless token to call Medusa's standard customer-create flow, then logs in again for an actor-bound token.
+8. The route stores the Medusa JWT in an HttpOnly `storefront_auth` cookie.
+9. Storefront SDK requests use the same-origin `/medusa/*` rewrite. Middleware reads the HttpOnly cookie and adds the bearer header before forwarding to Medusa.
+10. `AuthProvider` uses React Query to call `medusa.store.customer.retrieve()` on startup and exposes the current customer globally.
 
 ## Before Production
 
 - Replace `verifyOtp()` with the real SMS/OTP provider integration.
 - Remove the hardcoded `1234` fallback entirely.
-- Generate a strong random `PHONE_AUTH_SECRET`; store it only in the server environment, never in `NEXT_PUBLIC_*` variables.
+- Configure the real OTP provider in `PhonePassAuthService` and keep its credentials server-only.
 - Do not log phone numbers, derived passwords, OTPs, or auth tokens.
 - Add OTP expiry, one-time-use tracking, resend throttling, attempt limits, and IP/phone rate limiting.
 - Normalize and validate phone numbers consistently, including country-code handling.

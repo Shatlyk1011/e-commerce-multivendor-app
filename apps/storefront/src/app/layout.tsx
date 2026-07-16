@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 
+import { AuthProvider } from '@/components/auth/AuthProvider'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 
@@ -31,10 +32,12 @@ export default function RootLayout({
     <html lang="en" className="font-sans">
       <body className="antialiased">
         <QueryClientProvider client={queryClient}>
-          <Toaster position="top-center" />
-          <Header />
-          {children}
-          <Footer />
+          <AuthProvider>
+            <Toaster position="top-center" />
+            <Header />
+            {children}
+            <Footer />
+          </AuthProvider>
         </QueryClientProvider>
       </body>
     </html>
