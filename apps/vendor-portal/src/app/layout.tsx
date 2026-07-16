@@ -26,7 +26,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" className="font-sans">
-      <body className="text-apple-body antialiased">
+      <body className="antialiased">
         <QueryClientProvider client={queryClient}>
           <Toaster position="top-center" />
           {children}
