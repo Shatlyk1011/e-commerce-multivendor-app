@@ -16,10 +16,19 @@ export const GET = async (
     },
   })
 
-  const { result: orders } = await getOrdersListWorkflow(req.scope)
+  const { result } = await getOrdersListWorkflow(req.scope)
     .run({
       input: {
         fields: [
+          "id",
+          "display_id",
+          "status",
+          "fulfillment_status",
+          "payment_status",
+          "created_at",
+          "updated_at",
+          "email",
+          "currency_code",
           "metadata",
           "total",
           "subtotal",
@@ -33,7 +42,7 @@ export const GET = async (
           "items.detail",
           "shipping_methods",
           "payment_collections",
-          "fulfillments",
+          "fulfillments.*",
         ],
         variables: {
           filters: {
@@ -43,7 +52,14 @@ export const GET = async (
       },
     })
 
-  res.json({
-    orders,
-  })
+  const normalized = Array.isArray(result)
+    ? { orders: result, count: result.length, offset: 0, limit: result.length }
+    : {
+        orders: result.rows,
+        count: result.metadata.count,
+        offset: result.metadata.skip,
+        limit: result.metadata.take,
+      }
+
+  res.json(normalized)
 }

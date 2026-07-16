@@ -5,7 +5,6 @@ import { useState } from 'react'
 
 import Link from 'next/link'
 
-import { FetchError } from '@medusajs/js-sdk'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -49,69 +48,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     try {
       setIsVerifying(true)
 
-      const email = `${phone}@phone.local`
-      const password = `test123123`
+      const response = await fetch('/api/auth/phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp: smsCode }),
+      })
 
-      // Step 1: Attempt registration (creates auth_identity)
-      try {
-        await medusa.auth.register('customer', 'emailpass', {
-          email,
-          password,
-        })
-      } catch (error) {
-        const fetchError = error as FetchError
-
-        if (fetchError.statusText !== 'Unauthorized' && fetchError.message !== 'Identity with email already exists') {
-          toast.error('Ошибка при создании аккаунта', {
-            description: fetchError.message || String(fetchError),
-          })
-          return
-        }
-
-        // Step 2: If identity already exists, attempt login
-        const loginResponse = await medusa.auth
-          .login('customer', 'emailpass', {
-            email,
-            password,
-          })
-          .catch((err) => {
-            toast.error('Ошибка авторизации', {
-              description: err.message || String(err),
-            })
-          })
-
-        if (!loginResponse) {
-          return
-        }
-
-        if (typeof loginResponse !== 'string') {
-          toast.error('Ошибка авторизации', {
-            description: 'Требуются дополнительные действия, которые не поддерживаются в этом интерфейсе.',
-          })
-          return
-        }
+      const result = (await response.json()) as { token?: string; message?: string }
+      if (!response.ok || !result.token) {
+        throw new Error(result.message || 'Не удалось выполнить вход.')
       }
 
-      // Step 3: Register / Link Customer Profile
-      try {
-        try {
-          await medusa.store.customer.retrieve()
-        } catch (meError) {
-          // Profile doesn't exist, create it
-          await medusa.store.customer.create({
-            email,
-            phone: `+993${phone}`,
-            first_name: 'Покупатель',
-          })
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (custError: any) {
-        console.error('Profile creation error:', custError)
-        toast.error('Ошибка профиля покупателя', {
-          description: custError.message || String(custError),
-        })
-        return
-      }
+      await medusa.client.setToken(result.token)
 
       toast.success('Вход выполнен успешно!')
       handleOpenChange(false)
