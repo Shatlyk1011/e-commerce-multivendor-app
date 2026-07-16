@@ -27,7 +27,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip } from '@/components/ui/tooltip'
@@ -510,12 +510,17 @@ export default function CreateProductPage() {
                   </Label>
                   <Tooltip content="Выберите подходящую категорию для размещения товара в каталоге." />
                 </div>
-                <Select id="category" value={category} onChange={(e) => setCategory(e.target.value)}>
-                  {MOCK_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Выберите категорию" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MOCK_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
 
@@ -794,12 +799,17 @@ export default function CreateProductPage() {
                       <Label htmlFor="country">Страна происхождения</Label>
                       <Tooltip content="Страна, где был произведен товар." />
                     </div>
-                    <Select id="country" value={originCountry} onChange={(e) => setOriginCountry(e.target.value)}>
-                      {COUNTRIES.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.name}
-                        </option>
-                      ))}
+                    <Select value={originCountry} onValueChange={setOriginCountry}>
+                      <SelectTrigger id="country">
+                        <SelectValue placeholder="Выберите страну" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRIES.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
 
