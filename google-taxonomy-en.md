@@ -1,5 +1,4 @@
 Animals & Pet Supplies
-Animals & Pet Supplies > Live Animals
 Animals & Pet Supplies > Pet Supplies
 Animals & Pet Supplies > Pet Supplies > Bird Supplies
 Animals & Pet Supplies > Pet Supplies > Bird Supplies > Bird Cage Accessories
@@ -1221,7 +1220,6 @@ Cameras & Optics > Camera & Optic Accessories > Optic Accessories > Rangefinder 
 Cameras & Optics > Camera & Optic Accessories > Optic Accessories > Spotting Scope Accessories
 Cameras & Optics > Camera & Optic Accessories > Optic Accessories > Telescope Accessories
 Cameras & Optics > Camera & Optic Accessories > Optic Accessories > Thermal Optic Accessories
-Cameras & Optics > Camera & Optic Accessories > Optic Accessories > Weapon Scope & Sight Accessories
 Cameras & Optics > Camera & Optic Accessories > Tripod & Monopod Accessories
 Cameras & Optics > Camera & Optic Accessories > Tripod & Monopod Accessories > Tripod & Monopod Cases
 Cameras & Optics > Camera & Optic Accessories > Tripod & Monopod Accessories > Tripod & Monopod Heads
@@ -1245,7 +1243,6 @@ Cameras & Optics > Optics > Rangefinders
 Cameras & Optics > Optics > Scopes
 Cameras & Optics > Optics > Scopes > Spotting Scopes
 Cameras & Optics > Optics > Scopes > Telescopes
-Cameras & Optics > Optics > Scopes > Weapon Scopes & Sights
 Cameras & Optics > Photography
 Cameras & Optics > Photography > Darkroom
 Cameras & Optics > Photography > Darkroom > Developing & Processing Equipment
@@ -1698,27 +1695,6 @@ Electronics > Video Game Console Accessories > Portable Game Console Accessories
 Electronics > Video Game Consoles
 Food, Beverages & Tobacco
 Food, Beverages & Tobacco > Beverages
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Beer
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Bitters
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Cocktail Mixes
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Cocktail Mixes > Frozen Cocktail Mixes
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Cocktail Mixes > Shelf-stable Cocktail Mixes
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Flavored Alcoholic Beverages
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Hard Cider
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Absinthe
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Brandy
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Gin
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Liqueurs
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Rum
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Shochu & Soju
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Shochu & Soju > Shochu
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Shochu & Soju > Soju
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Tequila
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Vodka
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Liquor & Spirits > Whiskey
-Food, Beverages & Tobacco > Beverages > Alcoholic Beverages > Wine
 Food, Beverages & Tobacco > Beverages > Buttermilk
 Food, Beverages & Tobacco > Beverages > Coffee
 Food, Beverages & Tobacco > Beverages > Eggnog
@@ -2051,15 +2027,6 @@ Food, Beverages & Tobacco > Food Items > Tofu, Soy & Vegetarian Products > Meat 
 Food, Beverages & Tobacco > Food Items > Tofu, Soy & Vegetarian Products > Seitan
 Food, Beverages & Tobacco > Food Items > Tofu, Soy & Vegetarian Products > Tempeh
 Food, Beverages & Tobacco > Food Items > Tofu, Soy & Vegetarian Products > Tofu
-Food, Beverages & Tobacco > Tobacco Products
-Food, Beverages & Tobacco > Tobacco Products > Chewing Tobacco
-Food, Beverages & Tobacco > Tobacco Products > Cigarettes
-Food, Beverages & Tobacco > Tobacco Products > Cigars
-Food, Beverages & Tobacco > Tobacco Products > Loose Tobacco
-Food, Beverages & Tobacco > Tobacco Products > Smoking Pipes
-Food, Beverages & Tobacco > Tobacco Products > Vaporizers & Electronic Cigarettes
-Food, Beverages & Tobacco > Tobacco Products > Vaporizers & Electronic Cigarettes > Electronic Cigarettes
-Food, Beverages & Tobacco > Tobacco Products > Vaporizers & Electronic Cigarettes > Vaporizers
 Furniture
 Furniture > Baby & Toddler Furniture
 Furniture > Baby & Toddler Furniture > Baby & Toddler Furniture Sets
@@ -4106,44 +4073,6 @@ Luggage & Bags > Messenger Bags
 Luggage & Bags > Shopping Totes
 Luggage & Bags > Suitcases
 Luggage & Bags > Train Cases
-Mature
-Mature > Erotic
-Mature > Erotic > Erotic Books
-Mature > Erotic > Erotic Clothing
-Mature > Erotic > Erotic DVDs & Videos
-Mature > Erotic > Erotic Food & Edibles
-Mature > Erotic > Erotic Games
-Mature > Erotic > Erotic Magazines
-Mature > Erotic > Pole Dancing Kits
-Mature > Erotic > Sex Toys
-Mature > Weapons
-Mature > Weapons > Brass Knuckles
-Mature > Weapons > Clubs & Batons
-Mature > Weapons > Combat Knives
-Mature > Weapons > Gun Care & Accessories
-Mature > Weapons > Gun Care & Accessories > Ammunition
-Mature > Weapons > Gun Care & Accessories > Ammunition Cases & Holders
-Mature > Weapons > Gun Care & Accessories > Gun Cases & Range Bags
-Mature > Weapons > Gun Care & Accessories > Gun Cleaning
-Mature > Weapons > Gun Care & Accessories > Gun Cleaning > Gun Cleaning Cloths & Swabs
-Mature > Weapons > Gun Care & Accessories > Gun Cleaning > Gun Cleaning Patches
-Mature > Weapons > Gun Care & Accessories > Gun Cleaning > Gun Cleaning Solvents
-Mature > Weapons > Gun Care & Accessories > Gun Grips
-Mature > Weapons > Gun Care & Accessories > Gun Holsters
-Mature > Weapons > Gun Care & Accessories > Gun Lights
-Mature > Weapons > Gun Care & Accessories > Gun Rails
-Mature > Weapons > Gun Care & Accessories > Gun Slings
-Mature > Weapons > Gun Care & Accessories > Reloading Supplies & Equipment
-Mature > Weapons > Gun Care & Accessories > Reloading Supplies & Equipment > Ammunition Reloading Presses
-Mature > Weapons > Guns
-Mature > Weapons > Mace & Pepper Spray
-Mature > Weapons > Nunchucks
-Mature > Weapons > Spears
-Mature > Weapons > Staff & Stick Weapons
-Mature > Weapons > Stun Guns & Tasers
-Mature > Weapons > Swords
-Mature > Weapons > Throwing Stars
-Mature > Weapons > Whips
 Media
 Media > Books
 Media > Books > Audiobooks
@@ -5577,19 +5506,3 @@ Vehicles & Parts > Vehicle Parts & Accessories > Watercraft Parts & Accessories 
 Vehicles & Parts > Vehicle Parts & Accessories > Watercraft Parts & Accessories > Watercraft Steering Parts
 Vehicles & Parts > Vehicle Parts & Accessories > Watercraft Parts & Accessories > Watercraft Steering Parts > Watercraft Steering Cables
 Vehicles & Parts > Vehicle Parts & Accessories > Watercraft Parts & Accessories > Watercraft Steering Parts > Watercraft Steering Wheels
-Vehicles & Parts > Vehicles
-Vehicles & Parts > Vehicles > Aircraft
-Vehicles & Parts > Vehicles > Motor Vehicles
-Vehicles & Parts > Vehicles > Motor Vehicles > Cars, Trucks & Vans
-Vehicles & Parts > Vehicles > Motor Vehicles > Golf Carts
-Vehicles & Parts > Vehicles > Motor Vehicles > Motorcycles & Scooters
-Vehicles & Parts > Vehicles > Motor Vehicles > Off-Road and All-Terrain Vehicles
-Vehicles & Parts > Vehicles > Motor Vehicles > Off-Road and All-Terrain Vehicles > ATVs & UTVs
-Vehicles & Parts > Vehicles > Motor Vehicles > Off-Road and All-Terrain Vehicles > Go Karts & Dune Buggies
-Vehicles & Parts > Vehicles > Motor Vehicles > Recreational Vehicles
-Vehicles & Parts > Vehicles > Motor Vehicles > Snowmobiles
-Vehicles & Parts > Vehicles > Watercraft
-Vehicles & Parts > Vehicles > Watercraft > Motor Boats
-Vehicles & Parts > Vehicles > Watercraft > Personal Watercraft
-Vehicles & Parts > Vehicles > Watercraft > Sailboats
-Vehicles & Parts > Vehicles > Watercraft > Yachts
