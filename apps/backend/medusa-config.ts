@@ -15,6 +15,24 @@ module.exports = defineConfig({
   },
   modules: [
     {
+      resolve: "@medusajs/medusa/auth",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/auth-emailpass",
+            id: "emailpass",
+          },
+          {
+            resolve: "./src/modules/phonepass",
+            id: "phonepass",
+            options: {
+              developmentOtp: process.env.DEVELOPMENT_AUTH_OTP || "1234",
+            },
+          },
+        ],
+      },
+    },
+    {
       resolve: "./src/modules/marketplace/",
     },
   ],
