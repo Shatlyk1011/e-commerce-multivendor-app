@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { CategorySelector } from '@/components/CategorySelector'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -124,7 +125,7 @@ export default function CreateProductPage() {
   // 1. General state (Step 1)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState(MOCK_CATEGORIES[0].id)
+  const [category, setCategory] = useState('')
   const [tagsInput, setTagsInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
 
@@ -510,18 +511,7 @@ export default function CreateProductPage() {
                   </Label>
                   <Tooltip content="Выберите подходящую категорию для размещения товара в каталоге." />
                 </div>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Выберите категорию" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MOCK_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategorySelector value={category} onChange={setCategory} placeholder="Выберите категорию..." />
               </div>
 
               {/* Tags Structure */}
