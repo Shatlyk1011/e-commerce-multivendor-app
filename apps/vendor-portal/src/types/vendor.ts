@@ -3,6 +3,7 @@ export interface Vendor {
   name: string
   handle: string
   logo: string | null
+  city: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -18,4 +19,5 @@ export interface VendorAdmin {
   created_at: string
   updated_at: string
   deleted_at: string | null
+  status: 'active' | 'disabled'
 }

@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   Layers,
   Loader2,
+  MapPin,
   Plus,
   Ruler,
   Sparkles,
@@ -33,6 +34,8 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip } from '@/components/ui/tooltip'
 import { medusa } from '@/lib/medusa'
+
+import { useVendor } from '../../layout'
 
 // Categories requested
 const MOCK_CATEGORIES = [
@@ -119,6 +122,7 @@ function slugify(text: string) {
 
 export default function CreateProductPage() {
   const router = useRouter()
+  const { vendor } = useVendor()
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -309,6 +313,13 @@ export default function CreateProductPage() {
       return
     }
 
+    if (!vendor?.city?.trim()) {
+      toast.error('Укажите город магазина', {
+        description: 'Обратитесь к администратору, чтобы заполнить город происхождения товара.',
+      })
+      return
+    }
+
     // Verify variants details if variants were generated
     if (variants.length > 0) {
       for (let i = 0; i < variants.length; i++) {
@@ -428,6 +439,10 @@ export default function CreateProductPage() {
               <p className="text-apple-caption text-apple-ink-muted-48 mt-1">
                 Пошаговое заполнение карточки товара. Поля с меткой * обязательны.
               </p>
+              <div className="text-apple-caption text-apple-ink-muted-48 mt-3 flex items-center gap-1.5">
+                <MapPin className="text-apple-primary size-4" />
+                Доставка этого товара будет доступна только в городе: {vendor?.city || 'не указан'}
+              </div>
             </div>
           </div>
         </div>

@@ -8,9 +8,3 @@ in storefront, i want to create auth guarded profile page for user. according to
 
 x
 now we have categories with its subcategories. can we connect the api endpoint with categories to the vendor-store's /create page so when user creates an item, he selects from available list. what ui flow  is most accurate to use to select category with its child categories according to our category structure
-
-x
-from google-taxonamy.md categories i want to remove the illegal and non related to ozon alike ecommerce apps categories and 18+ categories as well. what they are? 
-
-x
-lets improve authdialog component. when the "получить код" button clicked, the otp state starts in this state, improve dialog modal - make otp fields full width, increase heing to 56px. make the first input autofocus once user enters this state. when 4 digits were provided, auto submit, and if its error, clean the otp field, if success, show toast and close dialog. instead of buttons, show timer 1 minute with resend button. near the user phone number, suggest to change phone number. use design.md for desing guidelines and shadcn component where required.

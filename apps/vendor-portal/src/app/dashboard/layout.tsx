@@ -142,6 +142,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const vendor = vendorAdmin?.vendor || null
 
+  console.log('vendor', vendor)
+
   return (
     <VendorContext.Provider value={{ vendorAdmin, vendor, isLoading, logout }}>
       <div className="bg-apple-canvas text-apple-ink flex min-h-screen">
