@@ -20,7 +20,7 @@ type WorkflowInput = {
 
 const createVendorProductWorkflow = createWorkflow(
   "create-vendor-product",
-  (input: WorkflowInput) => {
+  function (input: WorkflowInput) {
     // Retrieve default sales channel to make the product available in.
     // Alternatively, you can link sales channels to vendors and allow vendors
     // to manage sales channels
@@ -29,13 +29,33 @@ const createVendorProductWorkflow = createWorkflow(
       fields: ["default_sales_channel_id"],
     })
 
+    const { data: vendorAdmins } = useQueryGraphStep({
+      entity: "vendor_admin",
+      fields: ["vendor.id", "vendor.city"],
+      filters: {
+        id: input.vendor_admin_id,
+      },
+    }).config({ name: "retrieve-vendor-admin" })
+
     const productData = transform({
       input,
       stores,
+      vendorAdmins,
     }, (data) => {
+      const deliveryCity = data.vendorAdmins[0]?.vendor?.city?.trim()
+
+      if (!deliveryCity) {
+        throw new Error("A vendor origin city is required before products can be created.")
+      }
+
       return {
         products: [{
           ...data.input.product,
+          metadata: {
+            ...(data.input.product.metadata ?? {}),
+            delivery_city: deliveryCity,
+            delivery_scope: "origin_city",
+          },
           sales_channels: [
             {
               id: data.stores[0].default_sales_channel_id,
@@ -48,15 +68,6 @@ const createVendorProductWorkflow = createWorkflow(
     const createdProducts = createProductsWorkflow.runAsStep({
       input: productData as CreateProductsWorkflowInput,
     })
-    
-    const { data: vendorAdmins } = useQueryGraphStep({
-  entity: "vendor_admin",
-  fields: ["vendor.id"],
-  filters: {
-    id: input.vendor_admin_id,
-  },
-}).config({ name: "retrieve-vendor-admins" })
-
 const linksToCreate = transform({
   input,
   createdProducts,

@@ -13,6 +13,7 @@ import {
 } from "@medusajs/medusa/core-flows"
 import groupVendorItemsStep, { GroupVendorItemsStepInput } from "./steps/group-vendor-items"
 import createVendorOrdersStep from "./steps/create-vendor-orders"
+import validateCartDeliveryCityStep from "./steps/validate-cart-delivery-city"
 import vendorOrderLink from "../../../links/vendor-order"
 
 type WorkflowInput = {
@@ -21,10 +22,10 @@ type WorkflowInput = {
 
 const createVendorOrdersWorkflow = createWorkflow(
   "create-vendor-order",
-  (input: WorkflowInput) => {
+  function (input: WorkflowInput) {
     const { data: carts } = useQueryGraphStep({
       entity: "cart",
-      fields: ["id", "items.*"],
+      fields: ["id", "items.*", "shipping_address.city"],
       filters: { id: input.cart_id },
       options: {
         throwIfKeyNotFound: true,
@@ -35,6 +36,10 @@ const createVendorOrdersWorkflow = createWorkflow(
       key: input.cart_id,
       timeout: 2,
       ttl: 10,
+    })
+
+    validateCartDeliveryCityStep({
+      cart: carts[0],
     })
 
     const { id: orderId } = completeCartWorkflow.runAsStep({
