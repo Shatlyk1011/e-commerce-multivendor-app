@@ -43,7 +43,7 @@ export type CreateVendorInput = {
   store_name?: string | null
   store_description?: string | null
   address?: string | null
-  city?: string | null
+  city: string
   admin: {
     email: string
     password?: string
@@ -61,7 +61,7 @@ export type UpdateVendorInput = {
   store_name?: string | null
   store_description?: string | null
   address?: string | null
-  city?: string | null
+  city?: string
   admin?: {
     id: string
     email?: string

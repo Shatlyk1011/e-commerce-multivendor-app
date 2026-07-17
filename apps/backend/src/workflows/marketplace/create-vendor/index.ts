@@ -14,6 +14,7 @@ export type CreateVendorWorkflowInput = {
   name: string
   handle?: string
   logo?: string
+  city: string
   admin: {
     email: string
     first_name?: string
@@ -29,6 +30,7 @@ const createVendorWorkflow = createWorkflow(
       name: input.name,
       handle: input.handle,
       logo: input.logo,
+      city: input.city,
     })
 
     const vendorAdminData = transform({
@@ -53,7 +55,7 @@ const createVendorWorkflow = createWorkflow(
     // @ts-ignore
     const { data: vendorWithAdmin } = useQueryGraphStep({
       entity: "vendor",
-      fields: ["id", "name", "handle", "logo", "admins.*"],
+      fields: ["id", "name", "handle", "logo", "city", "admins.*"],
       filters: {
         id: vendor.id,
       },

@@ -12,6 +12,7 @@ export const PostVendorCreateSchema = z.strictObject({
   name: z.string(),
   handle: z.string().optional(),
   logo: z.string().optional(),
+  city: z.string().trim().min(1, "City is required"),
   admin: z.strictObject({
     email: z.string(),
     first_name: z.string().optional(),

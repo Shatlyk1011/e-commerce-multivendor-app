@@ -11,7 +11,7 @@ export type CreateVendorStepInput = {
   store_name?: string | null
   store_description?: string | null
   address?: string | null
-  city?: string | null
+  city: string
 }
 
 export const createVendorStep = createStep(

@@ -70,6 +70,7 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
     const newErrors: Record<string, string> = {}
     if (!formData.name.trim()) newErrors.name = "Name is required"
     if (!formData.handle.trim()) newErrors.handle = "Slug is required"
+    if (!formData.city.trim()) newErrors.city = "Origin city is required"
     
     if (!formData.admin.email.trim()) {
       newErrors.email = "Email is required"
@@ -111,7 +112,7 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
         store_name: formData.store_name?.trim() || null,
         store_description: formData.store_description?.trim() || null,
         address: formData.address?.trim() || null,
-        city: formData.city?.trim() || null,
+        city: formData.city.trim(),
         admin: {
           email: formData.admin.email.trim(),
           password: formData.admin.password,
@@ -428,16 +429,19 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
 
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="store-city" size="small" weight="plus">
-                      City
+                      Origin City
                     </Label>
                     <Input
                       id="store-city"
-                      placeholder="e.g. New York"
+                      placeholder="e.g. Ashgabat"
                       value={formData.city ?? ""}
+                      required
+                      aria-invalid={!!errors.city}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, city: e.target.value }))
                       }
                     />
+                    {errors.city && <Text size="small" className="text-ui-fg-error">{errors.city}</Text>}
                   </div>
                 </div>
 

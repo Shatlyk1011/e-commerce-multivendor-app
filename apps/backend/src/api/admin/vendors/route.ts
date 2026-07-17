@@ -40,7 +40,7 @@ export const AdminCreateVendorSchema = z.strictObject({
   store_name: z.string().optional().nullable(),
   store_description: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
+  city: z.string().trim().min(1, "City is required"),
   admin: z.strictObject({
     email: z.string().email(),
     password: z.string().min(8),

@@ -26,7 +26,7 @@ export const AdminUpdateVendorSchema = z.strictObject({
   store_name: z.string().nullable().optional(),
   store_description: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
-  city: z.string().nullable().optional(),
+  city: z.string().trim().min(1, "City cannot be empty").optional(),
   admin: z.strictObject({
     id: z.string(),
     email: z.string().email().optional(),

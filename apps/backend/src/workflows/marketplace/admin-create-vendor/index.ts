@@ -20,7 +20,7 @@ export type AdminCreateVendorWorkflowInput = {
   store_name?: string | null
   store_description?: string | null
   address?: string | null
-  city?: string | null
+  city: string
   admin: {
     email: string
     password?: string

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Drawer, Button, Input, Label, Heading, Textarea } from "@medusajs/ui"
+import { Drawer, Button, Input, Label, Heading, Text, Textarea } from "@medusajs/ui"
 import { useUpdateVendor } from "../../hooks/api/vendors"
 import type { Vendor, UpdateVendorInput } from "../../types/vendor"
 
@@ -22,6 +22,7 @@ export function StoreInfoEditDrawer({
   })
 
   const updateVendor = useUpdateVendor(vendor.id)
+  const [cityError, setCityError] = useState("")
 
   useEffect(() => {
     if (open) {
@@ -31,16 +32,23 @@ export function StoreInfoEditDrawer({
         address: vendor.address ?? "",
         city: vendor.city ?? "",
       })
+      setCityError("")
     }
   }, [open, vendor])
 
   const handleSubmit = () => {
+    const city = formData.city?.trim()
+    if (!city) {
+      setCityError("Origin city is required")
+      return
+    }
+
     updateVendor.mutate(
       {
         store_name: formData.store_name?.trim() || null,
         store_description: formData.store_description?.trim() || null,
         address: formData.address?.trim() || null,
-        city: formData.city?.trim() || null,
+        city,
       },
       {
         onSuccess: () => {
@@ -76,16 +84,19 @@ export function StoreInfoEditDrawer({
           {/* City */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-store-city" size="small" weight="plus">
-              City
+              Origin City
             </Label>
             <Input
               id="edit-store-city"
-              placeholder="e.g. New York"
+              placeholder="e.g. Ashgabat"
               value={formData.city ?? ""}
+              required
+              aria-invalid={!!cityError}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, city: e.target.value }))
               }
             />
+            {cityError && <Text size="small" className="text-ui-fg-error">{cityError}</Text>}
           </div>
 
           {/* Address */}
