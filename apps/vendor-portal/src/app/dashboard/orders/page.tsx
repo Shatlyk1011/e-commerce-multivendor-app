@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
+import type { VendorOrder, VendorOrdersResponse } from '@dtc/api-contracts'
 import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Loader2, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -11,33 +12,6 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { medusa } from '@/lib/medusa'
-
-interface OrderItem {
-  id: string
-  quantity: number
-  title?: string
-  variant?: { title?: string; product?: { title?: string } }
-}
-
-interface VendorOrder {
-  id: string
-  display_id?: number | string
-  status?: string
-  fulfillment_status?: string
-  payment_status?: string
-  created_at: string
-  currency_code: string
-  total?: number
-  items?: OrderItem[]
-  metadata?: { parent_order_id?: string }
-}
-
-interface OrdersResponse {
-  orders: VendorOrder[]
-  count: number
-  offset: number
-  limit: number
-}
 
 const PAGE_SIZE = 20
 
@@ -78,7 +52,7 @@ export default function OrdersPage() {
       try {
         const query = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
         if (status !== 'all') query.set('status', status)
-        const response = await medusa.client.fetch<OrdersResponse>(`/vendors/orders?${query.toString()}`)
+        const response = await medusa.client.fetch<VendorOrdersResponse>(`/vendors/orders?${query.toString()}`)
         if (active) {
           setOrders(response.orders || [])
           setCount(response.count || 0)

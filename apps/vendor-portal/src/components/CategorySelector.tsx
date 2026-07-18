@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 
 import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox'
 import { medusa } from '@/lib/medusa'
+import { cn } from '@/lib/utils'
 
 interface CategorySelectorProps {
   value: string
@@ -104,10 +105,7 @@ export function CategorySelector({ value, onChange, placeholder }: CategorySelec
       <>
         {parts.map((part, i) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <mark
-              key={i}
-              className="rounded-xs bg-yellow-100 px-0.5 text-yellow-900 dark:bg-yellow-900/40 dark:text-yellow-100"
-            >
+            <mark key={i} className="rounded-xs bg-yellow-100 px-0.5 text-yellow-900">
               {part}
             </mark>
           ) : (
@@ -142,6 +140,7 @@ export function CategorySelector({ value, onChange, placeholder }: CategorySelec
 
   const triggerText = selectedCategory ? getCategoryPath(selectedCategory) : placeholder || 'Выберите категорию...'
 
+  console.log('search', search, triggerText)
   return (
     <Combobox
       open={open}
@@ -157,7 +156,12 @@ export function CategorySelector({ value, onChange, placeholder }: CategorySelec
           placeholder={triggerText}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border-input placeholder:text-muted-foreground focus-visible:ring-ring h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:outline-hidden"
+          className={cn(
+            'border-input focus-visible:ring-ring h-9 w-full rounded-md border bg-transparent! py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:outline-hidden',
+            selectedCategory
+              ? '[&_input]:placeholder:text-apple-ink!'
+              : '[&_input]:placeholder:text-apple-ink-muted-48',
+          )}
         />
 
         <ComboboxContent className="bg-popover text-popover-foreground mt-1 w-full min-w-[300px] rounded-md border p-1 shadow-md">

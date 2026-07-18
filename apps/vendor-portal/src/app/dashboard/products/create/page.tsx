@@ -1,50 +1,37 @@
 'use client'
 
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+import type { VendorMediaResponse, VendorProductCreateResponse } from '@dtc/api-contracts'
 import {
-  AlertCircle,
   ArrowLeft,
   Check,
   ChevronLeft,
   ChevronRight,
-  DollarSign,
-  Image as ImageIcon,
-  Layers,
   Loader2,
   MapPin,
   Plus,
-  Ruler,
   Sparkles,
   Trash2,
   Upload,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 import { CategorySelector } from '@/components/CategorySelector'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip } from '@/components/ui/tooltip'
 import { medusa } from '@/lib/medusa'
 
 import { useVendor } from '../../layout'
-
-// Categories requested
-const MOCK_CATEGORIES = [
-  { id: 'cat_electronics', name: 'Электроника' },
-  { id: 'cat_clothing', name: 'Одежда и Обувь' },
-  { id: 'cat_home', name: 'Дом и Кухня' },
-  { id: 'cat_books', name: 'Книги' },
-  { id: 'cat_sports', name: 'Спорт и Отдых' },
-]
 
 // Origin Countries
 const COUNTRIES = [
@@ -67,9 +54,79 @@ interface ProductVariant {
   options: Record<string, string>
   sku: string
   barcode: string
-  manage_inventory: boolean
-  inventory_quantity: number
   price: string // in TMT (decimal)
+}
+
+const productOptionSchema = z.object({
+  title: z.string().trim().min(1, 'Укажите название характеристики.'),
+  values: z
+    .array(z.string().trim().min(1, 'Значение характеристики не может быть пустым.'))
+    .min(1, 'Добавьте значение характеристики.'),
+})
+
+const productVariantSchema = z.object({
+  title: z.string().trim().min(1, 'Укажите название варианта.'),
+  options: z.record(z.string(), z.string()),
+  sku: z.string().trim().max(255, 'SKU не может быть длиннее 255 символов.'),
+  barcode: z.string().trim().max(255, 'Штрихкод не может быть длиннее 255 символов.'),
+  price: z
+    .string()
+    .trim()
+    .regex(/^\d+(\.\d{1,2})?$/, 'Укажите цену с точностью до двух знаков.')
+    .refine((value) => Number(value) > 0, 'Цена должна быть больше нуля.'),
+})
+
+const stepOneSchema = z.object({
+  title: z.string().trim().min(1, 'Укажите название товара.'),
+  category: z.string().trim().min(1, 'Выберите категорию.'),
+  tags: z
+    .array(z.string().trim().min(1, 'Тег не может быть пустым.').max(64, 'Тег не может быть длиннее 64 символов.'))
+    .max(20, 'Можно добавить не более 20 ключевых слов.'),
+})
+
+const stepTwoSchema = z.object({
+  thumbnail: z.string().url('Загрузите корректное главное изображение.'),
+  images: z
+    .array(z.string().url('Галерея содержит некорректный URL изображения.'))
+    .max(10, 'Можно добавить не более 10 изображений.'),
+})
+
+const stepThreeSchema = z
+  .object({
+    options: z.array(productOptionSchema),
+    variants: z.array(productVariantSchema),
+    weight: z.string(),
+    length: z.string(),
+    width: z.string(),
+    height: z.string(),
+  })
+  .superRefine((value, context) => {
+    const configuredOptions = value.options.filter((option) => option.title.trim() && option.values.length)
+
+    if (configuredOptions.length && !value.variants.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['variants'],
+        message: 'Сгенерируйте варианты для добавленных характеристик.',
+      })
+    }
+
+    for (const [field, input] of Object.entries({
+      weight: value.weight,
+      length: value.length,
+      width: value.width,
+      height: value.height,
+    })) {
+      if (input && (!Number.isFinite(Number(input)) || Number(input) <= 0)) {
+        context.addIssue({ code: 'custom', path: [field], message: 'Введите положительное число.' })
+      }
+    }
+  })
+
+type FieldErrors = Record<string, string>
+
+function getFieldErrors(error: z.ZodError): FieldErrors {
+  return Object.fromEntries(error.issues.map((issue) => [issue.path.join('.'), issue.message]))
 }
 
 function slugify(text: string) {
@@ -125,6 +182,7 @@ export default function CreateProductPage() {
   const { vendor } = useVendor()
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
 
   // 1. General state (Step 1)
   const [title, setTitle] = useState('')
@@ -136,7 +194,7 @@ export default function CreateProductPage() {
   // 2. Media state (Step 2)
   const [thumbnail, setThumbnail] = useState<string>('')
   const [images, setImages] = useState<string[]>([])
-  const [newImageUrl, setNewImageUrl] = useState('')
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false)
 
   // 3. Dimensions & Logistics (Step 3)
   const [weight, setWeight] = useState('')
@@ -165,29 +223,68 @@ export default function CreateProductPage() {
     setTags(tags.filter((t) => t !== tagToRemove))
   }
 
-  // Handle thumbnail preview upload
-  const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadVendorMedia = async (files: File[]) => {
+    const body = new FormData()
+
+    files.forEach((file) => body.append('files', file))
+
+    const response = await medusa.client.fetch<VendorMediaResponse>('/vendors/media', {
+      method: 'POST',
+      body,
+      // The SDK defaults to JSON. Let the browser set the multipart boundary.
+      headers: { 'content-type': null },
+    })
+
+    return response.files
+  }
+
+  // Upload the thumbnail immediately so product data only retains a public MinIO URL.
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setThumbnail(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+    if (!file) {
+      return
+    }
+
+    setIsUploadingMedia(true)
+
+    try {
+      const [uploadedFile] = await uploadVendorMedia([file])
+      setThumbnail(uploadedFile.url)
+      toast.success('Главное изображение сохранено в медиахранилище')
+    } catch (error) {
+      toast.error('Не удалось загрузить изображение', {
+        description: error instanceof Error ? error.message : 'Попробуйте ещё раз.',
+      })
+    } finally {
+      setIsUploadingMedia(false)
+      e.target.value = ''
     }
   }
 
-  // Handle gallery image upload
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files) {
-      Array.from(files).forEach((file) => {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          setImages((prev) => [...prev, reader.result as string])
-        }
-        reader.readAsDataURL(file)
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files ?? [])
+    const availableSlots = 10 - images.length
+    const files = selectedFiles.slice(0, availableSlots)
+
+    if (!files.length) {
+      toast.warning('В галерее можно хранить не более 10 изображений')
+      e.target.value = ''
+      return
+    }
+
+    setIsUploadingMedia(true)
+
+    try {
+      const uploadedFiles = await uploadVendorMedia(files)
+      setImages((currentImages) => [...currentImages, ...uploadedFiles.map((file) => file.url)])
+      toast.success(`В медиахранилище сохранено: ${uploadedFiles.length}`)
+    } catch (error) {
+      toast.error('Не удалось загрузить изображения', {
+        description: error instanceof Error ? error.message : 'Попробуйте ещё раз.',
       })
+    } finally {
+      setIsUploadingMedia(false)
+      e.target.value = ''
     }
   }
 
@@ -256,8 +353,6 @@ export default function CreateProductPage() {
         options: optionMap,
         sku: `${slugify(title)}-${combo.map((c) => slugify(c)).join('-')}`,
         barcode: '',
-        manage_inventory: true,
-        inventory_quantity: 10,
         price: '150.00', // Default TMT price
       }
     })
@@ -274,17 +369,30 @@ export default function CreateProductPage() {
 
   // Next / Back buttons check
   const handleNextStep = () => {
+    if (isUploadingMedia) {
+      toast.warning('Дождитесь завершения загрузки изображений')
+      return
+    }
+
     if (currentStep === 1) {
-      if (!title.trim()) {
-        toast.error('Заполните название товара')
+      const result = stepOneSchema.safeParse({ title, category, tags })
+      if (!result.success) {
+        const errors = getFieldErrors(result.error)
+        setFieldErrors(errors)
+        toast.error(Object.values(errors)[0])
         return
       }
+      setFieldErrors({})
       setCurrentStep(2)
     } else if (currentStep === 2) {
-      if (!thumbnail.trim()) {
-        toast.error('Главное изображение (миниатюра) обязательно для заполнения')
+      const result = stepTwoSchema.safeParse({ thumbnail, images })
+      if (!result.success) {
+        const errors = getFieldErrors(result.error)
+        setFieldErrors(errors)
+        toast.error(Object.values(errors)[0])
         return
       }
+      setFieldErrors({})
       setCurrentStep(3)
     }
   }
@@ -300,35 +408,44 @@ export default function CreateProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Required check
-    if (!title.trim()) {
-      setCurrentStep(1)
-      toast.error('Заполните название товара')
+    if (isUploadingMedia) {
+      toast.warning('Дождитесь завершения загрузки изображений')
       return
     }
 
-    if (!thumbnail.trim()) {
-      setCurrentStep(2)
-      toast.error('Главное изображение обязательно')
+    const stepOneResult = stepOneSchema.safeParse({ title, category, tags })
+    if (!stepOneResult.success) {
+      const errors = getFieldErrors(stepOneResult.error)
+      setFieldErrors(errors)
+      setCurrentStep(1)
+      toast.error(Object.values(errors)[0])
       return
     }
+
+    const stepTwoResult = stepTwoSchema.safeParse({ thumbnail, images })
+    if (!stepTwoResult.success) {
+      const errors = getFieldErrors(stepTwoResult.error)
+      setFieldErrors(errors)
+      setCurrentStep(2)
+      toast.error(Object.values(errors)[0])
+      return
+    }
+
+    const stepThreeResult = stepThreeSchema.safeParse({ options, variants, weight, length, width, height })
+    if (!stepThreeResult.success) {
+      const errors = getFieldErrors(stepThreeResult.error)
+      setFieldErrors(errors)
+      toast.error(Object.values(errors)[0])
+      return
+    }
+
+    setFieldErrors({})
 
     if (!vendor?.city?.trim()) {
       toast.error('Укажите город магазина', {
         description: 'Обратитесь к администратору, чтобы заполнить город происхождения товара.',
       })
       return
-    }
-
-    // Verify variants details if variants were generated
-    if (variants.length > 0) {
-      for (let i = 0; i < variants.length; i++) {
-        const priceVal = parseFloat(variants[i].price)
-        if (isNaN(priceVal) || priceVal <= 0) {
-          toast.error(`Укажите корректную цену для варианта "${variants[i].title}"`)
-          return
-        }
-      }
     }
 
     setIsSubmitting(true)
@@ -341,12 +458,13 @@ export default function CreateProductPage() {
             options: v.options,
             sku: v.sku.trim() || null,
             barcode: v.barcode.trim() || null,
-            manage_inventory: v.manage_inventory,
-            inventory_quantity: v.manage_inventory ? Number(v.inventory_quantity) : undefined,
+            // Inventory quantities require a stock-location workflow and are
+            // not valid fields in Medusa's create-product request.
+            manage_inventory: false,
             prices: [
               {
                 currency_code: 'tmt',
-                amount: Math.round(parseFloat(v.price) * 100),
+                amount: Number(v.price),
               },
             ],
           }))
@@ -358,7 +476,7 @@ export default function CreateProductPage() {
               prices: [
                 {
                   currency_code: 'tmt',
-                  amount: 15000, // 150 TMT standard fallback price
+                  amount: 150,
                 },
               ],
             },
@@ -375,7 +493,9 @@ export default function CreateProductPage() {
       images: images.map((url) => ({ url })),
       status: 'draft',
       categories: [{ id: category }],
-      tags: tags.map((t) => ({ id: `tag_${slugify(t)}` })),
+      // Product tags need actual Medusa IDs. Keep seller-entered keywords
+      // without inventing invalid tag associations.
+      metadata: { keywords: tags },
       options:
         variants.length > 0
           ? options
@@ -395,7 +515,7 @@ export default function CreateProductPage() {
     }
 
     try {
-      const response = await medusa.client.fetch('/vendors/products', {
+      await medusa.client.fetch<VendorProductCreateResponse>('/vendors/products', {
         method: 'POST',
         body: payload,
       })
@@ -502,6 +622,7 @@ export default function CreateProductPage() {
                   onChange={(e) => setTitle(e.target.value)}
                   required
                 />
+                {fieldErrors.title && <p className="text-xs text-red-600">{fieldErrors.title}</p>}
               </div>
 
               {/* Description */}
@@ -512,6 +633,7 @@ export default function CreateProductPage() {
                 </div>
                 <Textarea
                   id="description"
+                  className="min-h-[140px]"
                   placeholder="Расскажите покупателям об этом товаре..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -527,6 +649,7 @@ export default function CreateProductPage() {
                   <Tooltip content="Выберите подходящую категорию для размещения товара в каталоге." />
                 </div>
                 <CategorySelector value={category} onChange={setCategory} placeholder="Выберите категорию..." />
+                {fieldErrors.category && <p className="text-xs text-red-600">{fieldErrors.category}</p>}
               </div>
 
               {/* Tags Structure */}
@@ -567,6 +690,7 @@ export default function CreateProductPage() {
                     ))}
                   </div>
                 )}
+                {fieldErrors.tags && <p className="text-xs text-red-600">{fieldErrors.tags}</p>}
               </div>
             </div>
           )}
@@ -581,7 +705,7 @@ export default function CreateProductPage() {
                 </p>
               </div>
 
-              {/* Thumbnail URL / Upload */}
+              {/* Thumbnail upload */}
               <div className="space-y-3">
                 <div className="flex items-center">
                   <Label>
@@ -589,35 +713,24 @@ export default function CreateProductPage() {
                   </Label>
                   <Tooltip content="Основное изображение, которое выводится на витрине каталога. Обязательно к заполнению." />
                 </div>
-                <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                  <div className="border-apple-hairline rounded-apple-sm bg-apple-surface-pearl flex flex-col items-center justify-center border p-4 text-center">
-                    <input
-                      type="file"
-                      id="thumb-file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleThumbnailUpload}
-                    />
-                    <label
-                      htmlFor="thumb-file"
-                      className="text-apple-ink hover:text-apple-primary text-apple-caption-strong flex cursor-pointer flex-col items-center gap-2 transition-colors"
-                    >
-                      <Upload className="text-apple-ink-muted-48 size-8" />
-                      <span>Загрузить изображение</span>
-                      <span className="text-apple-ink-muted-48 text-[11px] font-normal">PNG, JPG до 5MB</span>
-                    </label>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="thumb-url" className="text-apple-ink-muted-48 text-[13px]">
-                      Или вставьте URL-ссылку:
-                    </Label>
-                    <Input
-                      id="thumb-url"
-                      placeholder="https://example.com/image.jpg"
-                      value={thumbnail}
-                      onChange={(e) => setThumbnail(e.target.value)}
-                    />
-                  </div>
+                <div className="border-apple-hairline rounded-apple-sm bg-apple-surface-pearl flex flex-col items-center justify-center border p-4 text-center">
+                  <input
+                    type="file"
+                    id="thumb-file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={isUploadingMedia}
+                    onChange={handleThumbnailUpload}
+                  />
+                  <label
+                    htmlFor="thumb-file"
+                    aria-disabled={isUploadingMedia}
+                    className="text-apple-ink hover:text-apple-primary text-apple-caption-strong flex cursor-pointer flex-col items-center gap-2 transition-colors aria-disabled:cursor-wait aria-disabled:opacity-50"
+                  >
+                    <Upload className="text-apple-ink-muted-48 size-8" />
+                    <span>{isUploadingMedia ? 'Загрузка в MinIO…' : 'Загрузить изображение'}</span>
+                    <span className="text-apple-ink-muted-48 text-[11px] font-normal">PNG, JPG, WebP до 10MB</span>
+                  </label>
                 </div>
 
                 {thumbnail && (
@@ -637,6 +750,7 @@ export default function CreateProductPage() {
                     </button>
                   </div>
                 )}
+                {fieldErrors.thumbnail && <p className="text-xs text-red-600">{fieldErrors.thumbnail}</p>}
               </div>
 
               {/* Gallery Images (Optional) */}
@@ -645,53 +759,25 @@ export default function CreateProductPage() {
                   <Label>Галерея дополнительных изображений (Опционально)</Label>
                   <Tooltip content="Дополнительные ракурсы товара для карточки товара на детальном просмотре." />
                 </div>
-                <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                  <div className="border-apple-hairline rounded-apple-sm bg-apple-surface-pearl flex flex-col items-center justify-center border p-4 text-center">
-                    <input
-                      type="file"
-                      id="gallery-files"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleGalleryUpload}
-                    />
-                    <label
-                      htmlFor="gallery-files"
-                      className="text-apple-ink hover:text-apple-primary text-apple-caption-strong flex cursor-pointer flex-col items-center gap-2 transition-colors"
-                    >
-                      <Upload className="text-apple-ink-muted-48 size-8" />
-                      <span>Загрузить файлы</span>
-                      <span className="text-apple-ink-muted-48 text-[11px] font-normal">Можно выбрать несколько</span>
-                    </label>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="gallery-url" className="text-apple-ink-muted-48 text-[13px] font-medium">
-                      Или добавить одну ссылку:
-                    </Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="gallery-url"
-                        placeholder="https://example.com/image.jpg"
-                        value={newImageUrl}
-                        onChange={(e) => setNewImageUrl(e.target.value)}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const trimmed = newImageUrl.trim()
-                          if (trimmed && !images.includes(trimmed)) {
-                            setImages([...images, trimmed])
-                            setNewImageUrl('')
-                          }
-                        }}
-                      >
-                        Добавить
-                      </Button>
-                    </div>
-                  </div>
+                <div className="border-apple-hairline rounded-apple-sm bg-apple-surface-pearl flex flex-col items-center justify-center border p-4 text-center">
+                  <input
+                    type="file"
+                    id="gallery-files"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    disabled={isUploadingMedia}
+                    onChange={handleGalleryUpload}
+                  />
+                  <label
+                    htmlFor="gallery-files"
+                    aria-disabled={isUploadingMedia}
+                    className="text-apple-ink hover:text-apple-primary text-apple-caption-strong flex cursor-pointer flex-col items-center gap-2 transition-colors aria-disabled:cursor-wait aria-disabled:opacity-50"
+                  >
+                    <Upload className="text-apple-ink-muted-48 size-8" />
+                    <span>{isUploadingMedia ? 'Загрузка в MinIO…' : 'Загрузить файлы'}</span>
+                    <span className="text-apple-ink-muted-48 text-[11px] font-normal">До 10 изображений в галерее</span>
+                  </label>
                 </div>
 
                 {images.length > 0 && (
@@ -955,7 +1041,7 @@ export default function CreateProductPage() {
                   <div className="border-apple-divider-soft border-b pb-4">
                     <h2 className="text-apple-ink text-[17px] font-semibold">Варианты товара ({variants.length})</h2>
                     <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
-                      Задайте цену, SKU и складские запасы для сгенерированных вариантов.
+                      Задайте цену, SKU и штрихкод для сгенерированных вариантов.
                     </p>
                   </div>
 
@@ -966,8 +1052,6 @@ export default function CreateProductPage() {
                           <th className="px-2 py-3">Вариант</th>
                           <th className="px-2 py-3">Цена (TMT)</th>
                           <th className="px-2 py-3">Артикул (SKU)</th>
-                          <th className="px-2 py-3">Учет запасов</th>
-                          <th className="px-2 py-3">Кол-во</th>
                           <th className="px-2 py-3">Штрихкод</th>
                         </tr>
                       </thead>
@@ -998,22 +1082,6 @@ export default function CreateProductPage() {
                                 onChange={(e) => updateVariant(idx, 'sku', e.target.value)}
                               />
                             </td>
-                            <td className="w-20 px-2 py-4 text-center">
-                              <Switch
-                                checked={variant.manage_inventory}
-                                onCheckedChange={(checked) => updateVariant(idx, 'manage_inventory', checked)}
-                              />
-                            </td>
-                            <td className="w-20 px-2 py-4">
-                              <Input
-                                type="number"
-                                min="0"
-                                className="h-9 text-[13px]"
-                                disabled={!variant.manage_inventory}
-                                value={variant.inventory_quantity}
-                                onChange={(e) => updateVariant(idx, 'inventory_quantity', Number(e.target.value))}
-                              />
-                            </td>
                             <td className="w-32 px-2 py-4">
                               <Input
                                 placeholder="Barcode"
@@ -1029,6 +1097,7 @@ export default function CreateProductPage() {
                   </div>
                 </div>
               )}
+              {fieldErrors.variants && <p className="text-xs text-red-600">{fieldErrors.variants}</p>}
             </div>
           )}
 

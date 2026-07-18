@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
+import type { VendorMeResponse } from '@dtc/api-contracts'
 import { Loader2, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { medusa } from '@/lib/medusa'
-import { VendorAdmin } from '@/types/vendor'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -24,7 +24,7 @@ export default function LoginPage() {
     let active = true
     async function checkAuth() {
       try {
-        const res = await medusa.client.fetch<{ vendor_admin: VendorAdmin }>('/vendors/me')
+        const res = await medusa.client.fetch<VendorMeResponse>('/vendors/me')
         if (active && res?.vendor_admin?.id) {
           router.push('/dashboard')
           return

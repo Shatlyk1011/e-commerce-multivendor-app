@@ -5,37 +5,21 @@ import { useEffect, useState } from 'react'
 
 import Link from 'next/link'
 
+import type { VendorProduct, VendorProductsResponse } from '@dtc/api-contracts'
 import { ArrowRight, Loader2, Plus, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { medusa } from '@/lib/medusa'
 
-interface Product {
-  id: string
-  title: string
-  handle: string
-  description: string | null
-  thumbnail: string | null
-  status: string
-  variants?: Array<{
-    id: string
-    title: string
-    prices?: Array<{
-      amount: number
-      currency_code: string
-    }>
-  }>
-}
-
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<VendorProduct[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function loadProducts() {
       try {
-        const response = await medusa.client.fetch<{ products: Product[] }>('/vendors/products')
+        const response = await medusa.client.fetch<VendorProductsResponse>('/vendors/products')
         setProducts(response.products || [])
       } catch (err: any) {
         console.error('Failed to load products:', err)
@@ -63,7 +47,7 @@ export default function ProductsPage() {
     <div className="bg-apple-canvas-parchment min-h-[calc(100vh-3.5rem)] p-8 max-md:p-4">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <div className="border-apple-hairline mb-8 flex items-center justify-between border-b pb-6 max-sm:flex-col max-sm:items-start max-sm:gap-4">
+        <div className="border-apple-hairline mb-8 flex items-center justify-between gap-6 border-b pb-6 max-sm:gap-4">
           <div>
             <h1 className="text-apple-display-md text-apple-ink font-semibold tracking-tight">Товары</h1>
             <p className="text-apple-caption text-apple-ink-muted-48 mt-1">
@@ -103,7 +87,7 @@ export default function ProductsPage() {
               const prices = product.variants?.[0]?.prices
               const priceText =
                 prices && prices.length > 0
-                  ? `${(prices[0].amount / 100).toLocaleString()} ${prices[0].currency_code.toUpperCase()}`
+                  ? `${prices[0].amount.toLocaleString()} ${prices[0].currency_code.toUpperCase()}`
                   : 'Цена не указана'
 
               return (

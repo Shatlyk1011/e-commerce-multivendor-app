@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
+import type { Vendor, VendorAdmin, VendorMeResponse } from '@dtc/api-contracts'
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,7 +23,6 @@ import { toast } from 'sonner'
 
 import { medusa } from '@/lib/medusa'
 import { cn } from '@/lib/utils'
-import { Vendor, VendorAdmin } from '@/types/vendor'
 
 interface VendorContextType {
   vendorAdmin: VendorAdmin | null
@@ -41,12 +41,12 @@ export function useVendor() {
   return context
 }
 
-let vendorAdminPromise: Promise<{ vendor_admin: VendorAdmin }> | null = null
+let vendorAdminPromise: Promise<VendorMeResponse> | null = null
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fetchVendorAdmin(client: any): Promise<{ vendor_admin: VendorAdmin }> {
+function fetchVendorAdmin(client: { fetch: <T>(path: string) => Promise<T> }): Promise<VendorMeResponse> {
+  console.log('clientxx', client)
   if (!vendorAdminPromise) {
-    vendorAdminPromise = client.fetch('/vendors/me').finally(() => {
+    vendorAdminPromise = client.fetch<VendorMeResponse>('/vendors/me').finally(() => {
       // Clear after a microtask to allow concurrent reads to reuse the promise,
       // but subsequent actions will fetch fresh data.
       setTimeout(() => {
@@ -54,6 +54,7 @@ function fetchVendorAdmin(client: any): Promise<{ vendor_admin: VendorAdmin }> {
       }, 0)
     })
   }
+  console.log('vendorAdminPromise', vendorAdminPromise)
   return vendorAdminPromise!
 }
 
@@ -84,6 +85,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     async function checkAuth() {
       try {
         const res = await fetchVendorAdmin(medusa.client)
+        console.log('res', res)
         if (active) {
           setVendorAdmin(res.vendor_admin)
           setIsLoading(false)
@@ -151,7 +153,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <aside
           className={cn(
             'border-apple-hairline bg-apple-canvas-parchment fixed top-0 bottom-0 left-0 z-20 flex flex-col border-r transition-all duration-300 ease-in-out',
-            isCollapsed ? 'w-[68px]' : 'w-[260px]',
+            isCollapsed ? 'w-[68px]' : 'w-[240px]',
           )}
         >
           {/* Sidebar Header */}
@@ -188,8 +190,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'rounded-apple-sm flex items-center gap-3 py-2.5 text-[14px] font-medium transition-all active:scale-[0.98]',
-                    isCollapsed ? 'mx-auto h-10 w-10 justify-center px-0' : 'px-4',
+                    'rounded-apple-sm flex items-center gap-3 py-1.5 text-[14px] font-medium transition-all active:scale-[0.98]',
+                    isCollapsed ? 'mx-auto h-10 w-10 justify-center px-0' : 'px-3',
                     isActive
                       ? 'bg-apple-canvas text-apple-primary shadow-[0_1px_2px_rgba(0,0,0,0.02)]'
                       : 'text-apple-ink-muted-80 hover:bg-apple-canvas/50 hover:text-apple-ink',
@@ -239,19 +241,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div
           className={cn(
             'flex flex-1 flex-col transition-all duration-300 ease-in-out',
-            isCollapsed ? 'pl-[68px]' : 'pl-[260px]',
+            isCollapsed ? 'pl-[68px]' : 'pl-[240px]',
           )}
         >
           {/* Top Bar */}
           <header className="border-apple-hairline bg-apple-canvas sticky top-0 z-10 flex h-14 items-center justify-between border-b px-8">
             <div className="flex items-center gap-2">
-              <h2 className="text-apple-ink-muted-48 text-[14px] font-medium">{vendor?.name} shop</h2>
+              <h2 className="text-apple-ink-muted-48 text-[14px] font-medium">{vendor?.store_name}</h2>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="rounded-apple-pill border border-green-200 bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold text-green-700">
-                Активен
-              </span>
-            </div>
+            {vendor?.status === 'disabled' && (
+              <div className="flex items-center gap-4">
+                <span className="rounded-apple-pill border border-red-200 bg-red-50 px-2.5 py-0.5 text-[11px] font-semibold text-red-700">
+                  неактивный
+                </span>
+                {vendor.status_reason && (
+                  <p className="text-[12px] text-red-800">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. A, quo.
+                  </p>
+                )}
+              </div>
+            )}
           </header>
 
           {/* Page Main Content */}
