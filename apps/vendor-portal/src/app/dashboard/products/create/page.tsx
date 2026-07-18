@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -10,6 +10,7 @@ import { ArrowLeft, Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-rea
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { StepFourVariantsMatrix } from '@/features/products/create/components/StepFourVariantsMatrix'
 import { StepOneGeneral } from '@/features/products/create/components/StepOneGeneral'
 import { StepThreeVariants } from '@/features/products/create/components/StepThreeVariants'
 import { StepTwoMedia } from '@/features/products/create/components/StepTwoMedia'
@@ -17,6 +18,7 @@ import {
   STEPS_INFO,
   getFieldErrors,
   slugify,
+  stepFourSchema,
   stepOneSchema,
   stepThreeSchema,
   stepTwoSchema,
@@ -29,7 +31,7 @@ import { useVendor } from '../../layout'
 export default function CreateProductPage() {
   const router = useRouter()
   const { vendor } = useVendor()
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
 
@@ -64,24 +66,27 @@ export default function CreateProductPage() {
   // ─── Leave-page guard ────────────────────────────────────────────────────────
   const [showLeaveAlert, setShowLeaveAlert] = useState(false)
   const [pendingHref, setPendingHref] = useState<string | null>(null)
+  const [hasCreatedProduct, setHasCreatedProduct] = useState(false)
+  const hasCreatedProductRef = useRef(false)
 
   const isDirty =
-    title.trim() !== '' ||
-    description.trim() !== '' ||
-    category !== '' ||
-    tags.length > 0 ||
-    thumbnail !== '' ||
-    images.length > 0 ||
-    weight !== '' ||
-    length !== '' ||
-    width !== '' ||
-    height !== '' ||
-    material.trim() !== '' ||
-    variants.length > 0
+    !hasCreatedProduct &&
+    (title.trim() !== '' ||
+      description.trim() !== '' ||
+      category !== '' ||
+      tags.length > 0 ||
+      thumbnail !== '' ||
+      images.length > 0 ||
+      weight !== '' ||
+      length !== '' ||
+      width !== '' ||
+      height !== '' ||
+      material.trim() !== '' ||
+      variants.length > 0)
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      if (!isDirty) return
+      if (hasCreatedProductRef.current || !isDirty) return
       e.preventDefault()
     }
     window.addEventListener('beforeunload', handler)
@@ -171,10 +176,18 @@ export default function CreateProductPage() {
     setOptions(updated)
   }
 
-  const generateVariants = () => {
+  const autoGenerateVariants = () => {
     const validOptions = options.filter((o) => o.title.trim() !== '' && o.values.length > 0)
     if (validOptions.length === 0) {
-      toast.warning('Добавьте хотя бы одну характеристику с ее значениями.')
+      setVariants([
+        {
+          title: 'Стандартный',
+          options: {},
+          sku: `${slugify(title)}-default`,
+          barcode: '',
+          price: '150.00',
+        },
+      ])
       return
     }
 
@@ -187,17 +200,18 @@ export default function CreateProductPage() {
       validOptions.forEach((opt, idx) => {
         optionMap[opt.title] = combo[idx]
       })
+      const variantTitle = combo.join(' / ')
+      const existing = variants.find((v) => v.title === variantTitle)
       return {
-        title: combo.join(' / '),
+        title: variantTitle,
         options: optionMap,
-        sku: `${slugify(title)}-${combo.map((c) => slugify(c)).join('-')}`,
-        barcode: '',
-        price: '150.00',
+        sku: existing?.sku || `${slugify(title)}-${combo.map((c) => slugify(c)).join('-')}`,
+        barcode: existing?.barcode || '',
+        price: existing?.price || '150.00',
       }
     })
 
     setVariants(generated)
-    toast.success(`Сгенерировано ${generated.length} вариантов товара.`)
   }
 
   const updateVariant = <K extends keyof ProductVariant>(index: number, key: K, value: ProductVariant[K]) => {
@@ -232,12 +246,24 @@ export default function CreateProductPage() {
       }
       setFieldErrors({})
       setCurrentStep(3)
+    } else if (currentStep === 3) {
+      const result = stepThreeSchema.safeParse({ options, weight, length, width, height })
+      if (!result.success) {
+        const errors = getFieldErrors(result.error)
+        setFieldErrors(errors)
+        toast.error(Object.values(errors)[0])
+        return
+      }
+      setFieldErrors({})
+      autoGenerateVariants()
+      setCurrentStep(4)
     }
   }
 
   const handlePrevStep = () => {
     if (currentStep === 2) setCurrentStep(1)
     else if (currentStep === 3) setCurrentStep(2)
+    else if (currentStep === 4) setCurrentStep(3)
   }
 
   // ─── Submit ───────────────────────────────────────────────────────────────────
@@ -267,10 +293,20 @@ export default function CreateProductPage() {
       return
     }
 
-    const stepThreeResult = stepThreeSchema.safeParse({ options, variants, weight, length, width, height })
+    const stepThreeResult = stepThreeSchema.safeParse({ options, weight, length, width, height })
     if (!stepThreeResult.success) {
       const errors = getFieldErrors(stepThreeResult.error)
       setFieldErrors(errors)
+      setCurrentStep(3)
+      toast.error(Object.values(errors)[0])
+      return
+    }
+
+    const stepFourResult = stepFourSchema.safeParse({ variants })
+    if (!stepFourResult.success) {
+      const errors = getFieldErrors(stepFourResult.error)
+      setFieldErrors(errors)
+      setCurrentStep(4)
       toast.error(Object.values(errors)[0])
       return
     }
@@ -357,6 +393,8 @@ export default function CreateProductPage() {
         method: 'POST',
         body: payload,
       })
+      hasCreatedProductRef.current = true
+      setHasCreatedProduct(true)
       toast.success('Товар успешно создан!', {
         description: 'Ваш товар отправлен на модерацию в качестве черновика.',
       })
@@ -509,9 +547,15 @@ export default function CreateProductPage() {
               onUpdateOptionInputValue={updateOptionInputValue}
               onAddOptionValue={addOptionValue}
               onRemoveOptionValue={removeOptionValue}
-              onGenerateVariants={generateVariants}
+              fieldErrors={fieldErrors}
+            />
+          )}
+
+          {currentStep === 4 && (
+            <StepFourVariantsMatrix
               variants={variants}
               onUpdateVariant={updateVariant}
+              hasOptionsConfigured={options.some((o) => o.title.trim() !== '' && o.values.length > 0)}
               fieldErrors={fieldErrors}
             />
           )}
@@ -540,7 +584,7 @@ export default function CreateProductPage() {
                 </Button>
               )}
 
-              {currentStep < 3 ? (
+              {currentStep < 4 ? (
                 <Button type="button" onClick={handleNextStep}>
                   Далее
                   <ChevronRight className="size-4" />

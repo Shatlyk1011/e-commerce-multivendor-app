@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus, Sparkles, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tooltip } from '@/components/ui/tooltip'
 
-import type { FieldErrors, ProductOption, ProductVariant } from '../utils'
+import type { FieldErrors, ProductOption } from '../utils'
 import { COUNTRIES } from '../utils'
 
 interface StepThreeVariantsProps {
@@ -33,10 +33,6 @@ interface StepThreeVariantsProps {
   onUpdateOptionInputValue: (index: number, value: string) => void
   onAddOptionValue: (index: number) => void
   onRemoveOptionValue: (optIndex: number, valIndex: number) => void
-  onGenerateVariants: () => void
-  // Variants
-  variants: ProductVariant[]
-  onUpdateVariant: <K extends keyof ProductVariant>(index: number, key: K, value: ProductVariant[K]) => void
   fieldErrors: FieldErrors
 }
 
@@ -60,9 +56,6 @@ export function StepThreeVariants({
   onUpdateOptionInputValue,
   onAddOptionValue,
   onRemoveOptionValue,
-  onGenerateVariants,
-  variants,
-  onUpdateVariant,
   fieldErrors,
 }: StepThreeVariantsProps) {
   return (
@@ -181,7 +174,7 @@ export function StepThreeVariants({
           <div>
             <h2 className="text-apple-ink text-[17px] font-semibold">Варианты товара (Характеристики)</h2>
             <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
-              Добавьте свойства (размеры, цвета), чтобы автоматически сгенерировать варианты.
+              Добавьте свойства (размеры, цвета), чтобы настроить разные варианты.
             </p>
           </div>
           <Button
@@ -265,85 +258,9 @@ export function StepThreeVariants({
                 </div>
               </div>
             ))}
-
-            <div className="flex justify-end pt-2">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={onGenerateVariants}
-                className="bg-apple-primary/10 text-apple-primary border-apple-primary/20 hover:bg-apple-primary/15 border shadow-xs transition-all active:scale-[0.98]"
-              >
-                <Sparkles className="mr-1.5 size-4" />
-                Сгенерировать матрицу вариантов
-              </Button>
-            </div>
           </div>
         )}
       </div>
-
-      {/* Variants table */}
-      {variants.length > 0 && (
-        <div className="bg-apple-canvas border-apple-hairline rounded-apple-lg space-y-6 border p-8 shadow-xs max-md:p-5">
-          <div className="border-apple-divider-soft border-b pb-4">
-            <h2 className="text-apple-ink text-[17px] font-semibold">Варианты товара ({variants.length})</h2>
-            <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
-              Задайте цену, SKU и штрихкод для сгенерированных вариантов.
-            </p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-apple-hairline text-apple-ink-muted-48 border-b text-[12px] font-semibold uppercase">
-                  <th className="px-2 py-3">Вариант</th>
-                  <th className="px-2 py-3">Цена (TMT)</th>
-                  <th className="px-2 py-3">Артикул (SKU)</th>
-                  <th className="px-2 py-3">Штрихкод</th>
-                </tr>
-              </thead>
-              <tbody className="divide-apple-divider-soft divide-y text-[14px]">
-                {variants.map((variant, idx) => (
-                  <tr key={idx} className="hover:bg-apple-canvas-parchment/30">
-                    <td className="text-apple-ink px-2 py-4 font-semibold">{variant.title}</td>
-                    <td className="w-28 px-2 py-4">
-                      <div className="relative">
-                        <span className="text-apple-ink-muted-48 absolute top-1/2 left-2.5 -translate-y-1/2 text-[13px]">
-                          m.
-                        </span>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          className="h-9 pl-7 text-[13px]"
-                          value={variant.price}
-                          onChange={(e) => onUpdateVariant(idx, 'price', e.target.value)}
-                        />
-                      </div>
-                    </td>
-                    <td className="w-36 px-2 py-4">
-                      <Input
-                        placeholder="SKU"
-                        className="h-9 text-[13px]"
-                        value={variant.sku}
-                        onChange={(e) => onUpdateVariant(idx, 'sku', e.target.value)}
-                      />
-                    </td>
-                    <td className="w-32 px-2 py-4">
-                      <Input
-                        placeholder="Barcode"
-                        className="h-9 text-[13px]"
-                        value={variant.barcode}
-                        onChange={(e) => onUpdateVariant(idx, 'barcode', e.target.value)}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-      {fieldErrors.variants && <p className="text-xs text-red-600">{fieldErrors.variants}</p>}
     </div>
   )
 }

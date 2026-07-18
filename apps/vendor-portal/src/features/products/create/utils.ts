@@ -14,7 +14,8 @@ export const COUNTRIES = [
 export const STEPS_INFO = [
   { step: 1, label: 'Описание', desc: 'Основные параметры' },
   { step: 2, label: 'Медиа', desc: 'Загрузка изображений' },
-  { step: 3, label: 'Характеристики', desc: 'Дополнительные свойства' },
+  { step: 3, label: 'Характеристики', desc: 'Свойства и Габариты' },
+  { step: 4, label: 'Варианты', desc: 'Цены и артикулы' },
 ] as const
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -80,23 +81,12 @@ export const stepTwoSchema = z.object({
 export const stepThreeSchema = z
   .object({
     options: z.array(productOptionSchema),
-    variants: z.array(productVariantSchema),
     weight: z.string(),
     length: z.string(),
     width: z.string(),
     height: z.string(),
   })
   .superRefine((value, context) => {
-    const configuredOptions = value.options.filter((option) => option.title.trim() && option.values.length)
-
-    if (configuredOptions.length && !value.variants.length) {
-      context.addIssue({
-        code: 'custom',
-        path: ['variants'],
-        message: 'Сгенерируйте варианты для добавленных характеристик.',
-      })
-    }
-
     for (const [field, input] of Object.entries({
       weight: value.weight,
       length: value.length,
@@ -108,6 +98,10 @@ export const stepThreeSchema = z
       }
     }
   })
+
+export const stepFourSchema = z.object({
+  variants: z.array(productVariantSchema),
+})
 
 // ─── Utility Functions ────────────────────────────────────────────────────────
 
