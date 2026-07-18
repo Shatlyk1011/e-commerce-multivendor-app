@@ -270,6 +270,11 @@ export default function CreateProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (currentStep < 4) {
+      handleNextStep()
+      return
+    }
+
     if (isUploadingMedia) {
       toast.warning('Дождитесь завершения загрузки изображений')
       return
