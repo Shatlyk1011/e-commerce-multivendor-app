@@ -1,0 +1,10 @@
+{
+  "name": "@dtc/api-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts"
+    }
+  }
+}
