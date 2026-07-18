@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import type {
+  StorefrontAuthErrorResponse,
+  StorefrontPhoneAuthRequest,
+  StorefrontPhoneAuthResponse,
+} from '@dtc/api-contracts'
 import Medusa from '@medusajs/js-sdk'
 
 const PHONE_PATTERN = /^\d{8}$/
@@ -15,11 +20,12 @@ function isAlreadyRegistered(error: unknown) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { phone?: string; otp?: string }
+    const body = (await request.json()) as Partial<StorefrontPhoneAuthRequest>
     const phone = normalizePhone(body.phone || '')
 
     if (!PHONE_PATTERN.test(phone)) {
-      return NextResponse.json({ message: 'Введите корректный номер телефона.' }, { status: 400 })
+      const error: StorefrontAuthErrorResponse = { message: 'Введите корректный номер телефона.' }
+      return NextResponse.json(error, { status: 400 })
     }
 
     const normalizedPhone = phone
@@ -64,26 +70,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Не удалось завершить авторизацию.' }, { status: 502 })
     }
 
-    const response = NextResponse.json({ phone: `+993${normalizedPhone}` })
-    response.cookies.set('storefront_auth', token, {
+    const response: StorefrontPhoneAuthResponse = { phone: `+993${normalizedPhone}` }
+    const nextResponse = NextResponse.json(response)
+    nextResponse.cookies.set('storefront_auth', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     })
-    return response
+    return nextResponse
   } catch (error) {
     console.error('Phone authentication failed:', error)
     const candidate = error as { status?: number; statusText?: string; message?: string }
-    return NextResponse.json(
-      {
-        message: candidate.message || 'Ошибка авторизации.',
-        ...(process.env.NODE_ENV !== 'production'
-          ? { upstream_status: candidate.status, upstream_status_text: candidate.statusText }
-          : {}),
-      },
-      { status: candidate.status && candidate.status >= 400 && candidate.status < 600 ? candidate.status : 500 },
-    )
+    const response: StorefrontAuthErrorResponse = {
+      message: candidate.message || 'Ошибка авторизации.',
+      ...(process.env.NODE_ENV !== 'production'
+        ? { upstream_status: candidate.status, upstream_status_text: candidate.statusText }
+        : {}),
+    }
+    return NextResponse.json(response, {
+      status: candidate.status && candidate.status >= 400 && candidate.status < 600 ? candidate.status : 500,
+    })
   }
 }

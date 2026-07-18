@@ -5,6 +5,11 @@ import { useEffect, useState } from 'react'
 
 import Link from 'next/link'
 
+import type {
+  StorefrontAuthErrorResponse,
+  StorefrontPhoneAuthRequest,
+  StorefrontPhoneAuthResponse,
+} from '@dtc/api-contracts'
 import { PencilIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -73,12 +78,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       const response = await fetch('/api/auth/phone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp: codeToVerify }),
+        body: JSON.stringify({ phone, otp: codeToVerify } satisfies StorefrontPhoneAuthRequest),
       })
 
-      const result = (await response.json()) as { message?: string }
+      const result = (await response.json()) as StorefrontPhoneAuthResponse | StorefrontAuthErrorResponse
       if (!response.ok) {
-        throw new Error(result.message || 'Не удалось выполнить вход.')
+        throw new Error('message' in result ? result.message : 'Не удалось выполнить вход.')
       }
 
       toast.success('Вход выполнен успешно!')
