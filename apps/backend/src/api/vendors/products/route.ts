@@ -9,6 +9,23 @@ import createVendorProductWorkflow from "../../../workflows/marketplace/create-v
 import { 
   ContainerRegistrationKeys,
 } from "@medusajs/framework/utils"
+import type { VendorProduct, VendorProductsResponse } from "@dtc/api-contracts"
+
+const toVendorProduct = (product: {
+  id: string
+  title: string
+  handle: string
+  description: string | null
+  thumbnail: string | null
+  status: string
+}): VendorProduct => ({
+  id: product.id,
+  title: product.title,
+  handle: product.handle,
+  description: product.description,
+  thumbnail: product.thumbnail,
+  status: product.status,
+})
 
 export const POST = async (
   req: AuthenticatedMedusaRequest<HttpTypes.AdminCreateProduct>,
@@ -44,7 +61,11 @@ export const GET = async (
     },
   })
 
-  res.json({
-    products: vendorAdmin.vendor.products,
-  })
+  const response: VendorProductsResponse = {
+    products: (vendorAdmin?.vendor?.products ?? [])
+      .filter((product): product is NonNullable<typeof product> => product !== null)
+      .map(toVendorProduct),
+  }
+
+  res.json(response)
 }

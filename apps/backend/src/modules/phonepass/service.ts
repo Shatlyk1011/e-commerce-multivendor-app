@@ -5,6 +5,7 @@ import {
   Logger,
 } from "@medusajs/framework/types"
 import { AbstractAuthModuleProvider, MedusaError } from "@medusajs/framework/utils"
+import type { PhonePassAuthInput } from "@dtc/api-contracts"
 
 type PhonePassOptions = {
   developmentOtp?: string
@@ -43,7 +44,7 @@ export class PhonePassAuthService extends AbstractAuthModuleProvider {
     input: AuthenticationInput,
     authIdentityService: AuthIdentityProviderService
   ): Promise<AuthenticationResponse> {
-    const body = input.body as { phone?: string; otp?: string }
+    const body = input.body as PhonePassAuthInput
     const phone = normalizePhone(body?.phone)
     this.logger_.info?.(`phonepass authenticate called for ${phone}`)
 
@@ -66,7 +67,7 @@ export class PhonePassAuthService extends AbstractAuthModuleProvider {
     input: AuthenticationInput,
     authIdentityService: AuthIdentityProviderService
   ): Promise<AuthenticationResponse> {
-    const body = input.body as { phone?: string; otp?: string }
+    const body = input.body as PhonePassAuthInput
     const phone = normalizePhone(body?.phone)
     this.logger_.info?.(`phonepass register called for ${phone}`)
 
