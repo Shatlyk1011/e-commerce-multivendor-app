@@ -1,6 +1,5 @@
 'use client'
 
-import * as React from 'react'
 import { useEffect, useState } from 'react'
 
 import Link from 'next/link'
@@ -9,6 +8,7 @@ import type { VendorProduct, VendorProductsResponse } from '@dtc/api-contracts'
 import { ArrowRight, Loader2, Plus, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { ProductItem } from '@/components/products/ProductItem'
 import { Button } from '@/components/ui/button'
 import { medusa } from '@/lib/medusa'
 
@@ -21,10 +21,10 @@ export default function ProductsPage() {
       try {
         const response = await medusa.client.fetch<VendorProductsResponse>('/vendors/products')
         setProducts(response.products || [])
-      } catch (err: any) {
-        console.error('Failed to load products:', err)
+      } catch (error) {
+        console.error('Failed to load products:', error)
         toast.error('Ошибка загрузки товаров', {
-          description: err.message || 'Не удалось загрузить ваши товары.',
+          description: error instanceof Error ? error.message : 'Не удалось загрузить ваши товары.',
         })
       } finally {
         setIsLoading(false)
@@ -82,71 +82,9 @@ export default function ProductsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1">
-            {products.map((product) => {
-              // Extract a default price if available
-              const prices = product.variants?.[0]?.prices
-              const priceText =
-                prices && prices.length > 0
-                  ? `${prices[0].amount.toLocaleString()} ${prices[0].currency_code.toUpperCase()}`
-                  : 'Цена не указана'
-
-              return (
-                <div
-                  key={product.id}
-                  className="bg-apple-canvas border-apple-hairline rounded-apple-lg group hover:border-apple-primary/30 flex flex-col overflow-hidden border transition-all duration-300"
-                >
-                  {/* Thumbnail */}
-                  <div className="bg-apple-canvas-parchment border-apple-hairline relative flex aspect-square items-center justify-center overflow-hidden border-b p-6">
-                    {product.thumbnail ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={product.thumbnail}
-                        alt={product.title}
-                        className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-102"
-                      />
-                    ) : (
-                      <ShoppingBag className="text-apple-ink-muted-48 size-12 opacity-30" />
-                    )}
-
-                    {/* Status Badge */}
-                    <div className="absolute top-3 right-3">
-                      <span
-                        className={`rounded-apple-pill border px-2.5 py-0.5 text-[11px] font-semibold ${
-                          product.status === 'published'
-                            ? 'border-green-200 bg-green-50 text-green-700'
-                            : product.status === 'draft'
-                              ? 'bg-apple-canvas-parchment text-apple-ink-muted-48 border-apple-hairline'
-                              : 'border-yellow-200 bg-yellow-50 text-yellow-700'
-                        }`}
-                      >
-                        {product.status === 'published'
-                          ? 'Опубликован'
-                          : product.status === 'draft'
-                            ? 'Черновик'
-                            : product.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Body */}
-                  <div className="flex flex-1 flex-col justify-between p-5">
-                    <div>
-                      <h3 className="text-apple-ink group-hover:text-apple-primary line-clamp-1 text-[17px] font-semibold transition-colors">
-                        {product.title}
-                      </h3>
-                      <p className="text-apple-ink-muted-48 mt-1 line-clamp-2 min-h-[2.25rem] text-[13px]">
-                        {product.description || 'Нет описания.'}
-                      </p>
-                    </div>
-
-                    <div className="border-apple-divider-soft mt-4 flex items-center justify-between border-t pt-4">
-                      <span className="text-apple-ink text-[15px] font-semibold">{priceText}</span>
-                      <span className="text-apple-ink-muted-48 text-[12px]">{product.variants?.length || 0} вар.</span>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+            {products.map((product) => (
+              <ProductItem key={product.id} product={product} />
+            ))}
           </div>
         )}
       </div>
