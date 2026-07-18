@@ -204,7 +204,7 @@ export function StepTwoMedia({
         )}
 
         {images.length > 0 && (
-          <div className="mt-4 grid grid-cols-6 gap-4 max-md:grid-cols-4 max-sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-5 gap-4 max-md:grid-cols-4 max-sm:grid-cols-2">
             {images.map((img, idx) => (
               <div
                 key={idx}
@@ -215,7 +215,7 @@ export function StepTwoMedia({
                   <img
                     src={img}
                     alt={`Gallery preview ${idx}`}
-                    className="rounded-apple-sm h-16 w-full cursor-zoom-in object-contain"
+                    className="rounded-apple-sm h-24 w-full cursor-zoom-in object-contain"
                   />
                 </Zoom>
                 <button

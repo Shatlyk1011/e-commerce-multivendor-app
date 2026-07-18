@@ -3,8 +3,6 @@
 import { HelpCircle, Sparkles } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Tooltip } from '@/components/ui/tooltip'
 
 import type { FieldErrors, ProductVariant } from '../utils'
 
@@ -67,14 +65,13 @@ export function StepFourVariantsMatrix({
                   <th className="px-2 py-3">Вариант</th>
                   <th className="px-2 py-3">Цена (TMT)</th>
                   <th className="px-2 py-3">Артикул (SKU)</th>
-                  <th className="px-2 py-3">Штрихкод</th>
                 </tr>
               </thead>
               <tbody className="divide-apple-divider-soft divide-y text-[14px]">
                 {variants.map((variant, idx) => (
                   <tr key={idx} className="hover:bg-apple-canvas-parchment/30">
                     <td className="text-apple-ink px-2 py-4 font-semibold">{variant.title}</td>
-                    <td className="w-28 px-2 py-4">
+                    <td className="w-40 px-2 py-4">
                       <div className="relative">
                         <span className="text-apple-ink-muted-48 absolute top-1/2 left-2.5 -translate-y-1/2 text-[13px]">
                           m.
@@ -82,27 +79,20 @@ export function StepFourVariantsMatrix({
                         <Input
                           type="number"
                           min="0"
-                          step="0.01"
+                          step="1"
                           className="h-9 pl-7 text-[13px]"
                           value={variant.price}
                           onChange={(e) => onUpdateVariant(idx, 'price', e.target.value)}
                         />
                       </div>
                     </td>
-                    <td className="w-36 px-2 py-4">
+                    <td className="w-40 px-2 py-4">
                       <Input
                         placeholder="SKU"
                         className="h-9 text-[13px]"
                         value={variant.sku}
+                        disabled
                         onChange={(e) => onUpdateVariant(idx, 'sku', e.target.value)}
-                      />
-                    </td>
-                    <td className="w-32 px-2 py-4">
-                      <Input
-                        placeholder="Barcode"
-                        className="h-9 text-[13px]"
-                        value={variant.barcode}
-                        onChange={(e) => onUpdateVariant(idx, 'barcode', e.target.value)}
                       />
                     </td>
                   </tr>

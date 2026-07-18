@@ -49,7 +49,6 @@ const productVariantSchema = z.object({
   title: z.string().trim().min(1, 'Укажите название варианта.'),
   options: z.record(z.string(), z.string()),
   sku: z.string().trim().max(255, 'SKU не может быть длиннее 255 символов.'),
-  barcode: z.string().trim().max(255, 'Штрихкод не может быть длиннее 255 символов.'),
   price: z
     .string()
     .trim()

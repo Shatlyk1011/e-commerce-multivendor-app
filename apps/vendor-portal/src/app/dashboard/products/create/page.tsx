@@ -222,10 +222,6 @@ export default function CreateProductPage() {
 
   // ─── Step navigation ──────────────────────────────────────────────────────────
   const handleNextStep = () => {
-    if (isUploadingMedia) {
-      toast.warning('Дождитесь завершения загрузки изображений')
-      return
-    }
     if (currentStep === 1) {
       const result = stepOneSchema.safeParse({ title, category, tags })
       if (!result.success) {
@@ -269,16 +265,6 @@ export default function CreateProductPage() {
   // ─── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (currentStep < 4) {
-      handleNextStep()
-      return
-    }
-
-    if (isUploadingMedia) {
-      toast.warning('Дождитесь завершения загрузки изображений')
-      return
-    }
 
     const stepOneResult = stepOneSchema.safeParse({ title, category, tags })
     if (!stepOneResult.success) {
@@ -495,7 +481,7 @@ export default function CreateProductPage() {
         </div>
 
         {/* Form Container */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form className="space-y-6">
           {currentStep === 1 && (
             <StepOneGeneral
               title={title}
@@ -595,7 +581,7 @@ export default function CreateProductPage() {
                   <ChevronRight className="size-4" />
                 </Button>
               ) : (
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />

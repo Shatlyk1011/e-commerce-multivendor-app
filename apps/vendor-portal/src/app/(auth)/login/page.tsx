@@ -131,11 +131,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-apple-primary text-apple-on-primary hover:bg-apple-primary-focus w-full cursor-pointer font-semibold transition-all duration-150 active:scale-[0.98] disabled:opacity-50"
-            >
+            <Button type="submit" disabled={isLoading} className="w-full" size={'md'}>
               {isLoading ? 'Загрузка...' : 'Войти'}
             </Button>
           </form>

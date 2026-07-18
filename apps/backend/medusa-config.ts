@@ -13,7 +13,13 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET,
     },
   },
+  featureFlags: {
+    translation: true,
+  },
   modules: [
+    {
+      resolve: "@medusajs/translation",
+    },
     {
       resolve: "@medusajs/file",
       options: {
