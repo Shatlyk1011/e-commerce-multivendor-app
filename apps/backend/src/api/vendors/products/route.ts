@@ -12,12 +12,32 @@ import {
 import type { VendorProduct, VendorProductsResponse } from "@dtc/api-contracts"
 
 const toVendorProduct = (product: {
-  id: string
-  title: string
-  handle: string
-  description: string | null
-  thumbnail: string | null
-  status: string
+  id: string;
+  title: string;
+  handle: string;
+  description: string | null;
+  thumbnail: string | null;
+  status: string;
+  categories?: Array<{ id: string; name: string }> | null;
+  metadata?: Record<string, unknown> | null;
+  images?: Array<{ url: string }> | null;
+  weight?: number | null;
+  length?: number | null;
+  width?: number | null;
+  height?: number | null;
+  origin_country?: string | null;
+  material?: string | null;
+  variants?: Array<{
+    id: string;
+    title: string;
+    sku?: string | null;
+    barcode?: string | null;
+    options?: Array<{ value: string; option?: { title: string } }> | null;
+    prices?: Array<{
+      amount: number;
+      currency_code: string;
+    }>;
+  }>;
 }): VendorProduct => ({
   id: product.id,
   title: product.title,
@@ -25,7 +45,36 @@ const toVendorProduct = (product: {
   description: product.description,
   thumbnail: product.thumbnail,
   status: product.status,
-})
+  categories: product.categories?.map((c) => ({ id: c.id, name: c.name })),
+  metadata: product.metadata
+    ? {
+        keywords: Array.isArray(product.metadata.keywords)
+          ? (product.metadata.keywords as string[])
+          : undefined,
+      }
+    : null,
+  images: product.images?.map((img) => ({ url: img.url })),
+  weight: product.weight,
+  length: product.length,
+  width: product.width,
+  height: product.height,
+  origin_country: product.origin_country,
+  material: product.material,
+  variants: product.variants?.map((variant) => ({
+    id: variant.id,
+    title: variant.title,
+    sku: variant.sku,
+    barcode: variant.barcode,
+    options: variant.options?.map((opt) => ({
+      value: opt.value,
+      option: opt.option ? { title: opt.option.title } : undefined,
+    })),
+    prices: variant.prices?.map((price) => ({
+      amount: price.amount,
+      currency_code: price.currency_code,
+    })),
+  })),
+});
 
 export const POST = async (
   req: AuthenticatedMedusaRequest<HttpTypes.AdminCreateProduct>,
@@ -50,22 +99,50 @@ export const GET = async (
 ) => {
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
-  const { data: [vendorAdmin] } = await query.graph({
+  const {
+    data: [vendorAdmin],
+  } = await query.graph({
     entity: "vendor_admin",
-    fields: ["vendor.products.*"],
+    fields: [
+      "vendor.products.id",
+      "vendor.products.title",
+      "vendor.products.handle",
+      "vendor.products.description",
+      "vendor.products.thumbnail",
+      "vendor.products.status",
+      "vendor.products.metadata",
+      "vendor.products.weight",
+      "vendor.products.length",
+      "vendor.products.width",
+      "vendor.products.height",
+      "vendor.products.origin_country",
+      "vendor.products.material",
+      "vendor.products.categories.id",
+      "vendor.products.categories.name",
+      "vendor.products.images.url",
+      "vendor.products.variants.id",
+      "vendor.products.variants.title",
+      "vendor.products.variants.sku",
+      "vendor.products.variants.barcode",
+      "vendor.products.variants.options.value",
+      "vendor.products.variants.options.option.title",
+      "vendor.products.variants.prices.amount",
+      "vendor.products.variants.prices.currency_code",
+    ],
     filters: {
       id: [
         // ID of the authenticated vendor admin
         req.auth_context.actor_id,
       ],
     },
-  })
+  });
 
   const response: VendorProductsResponse = {
     products: (vendorAdmin?.vendor?.products ?? [])
       .filter((product): product is NonNullable<typeof product> => product !== null)
-      .map(toVendorProduct),
-  }
+      .map((p) => toVendorProduct(p as Parameters<typeof toVendorProduct>[0])),
+  };
 
   res.json(response)
 }
+

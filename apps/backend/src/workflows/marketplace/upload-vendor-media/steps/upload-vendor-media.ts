@@ -13,7 +13,7 @@ import path from "node:path"
 export type VendorMediaFileInput = {
   filename: string
   mimeType: string
-  content: string
+  buffer: Buffer | { type: "Buffer"; data: number[] }
 }
 
 export type UploadedVendorMedia = {
@@ -52,6 +52,15 @@ const createObjectKey = (folder: string, filename: string) => {
   return `${folder}/${basename}-${randomUUID()}${extension}`
 }
 
+/**
+ * Workflow engines may JSON-serialize a Buffer between the route and the
+ * step. Node serializes it as `{ type: "Buffer", data: number[] }`; accept
+ * that representation as a transport detail, while always giving S3 a real
+ * binary Buffer.
+ */
+const toBuffer = (buffer: Buffer | { type: "Buffer"; data: number[] }) =>
+  Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer.data)
+
 export const uploadVendorMediaStep = createStep(
   "upload-vendor-media",
   async (input: UploadVendorMediaInput) => {
@@ -65,7 +74,7 @@ export const uploadVendorMediaStep = createStep(
         await client.send(
           new PutObjectCommand({
             Bucket: bucket,
-            Body: Buffer.from(file.content, "base64"),
+            Body: toBuffer(file.buffer),
             CacheControl: "public, max-age=31536000, immutable",
             ContentType: file.mimeType,
             Key: key,

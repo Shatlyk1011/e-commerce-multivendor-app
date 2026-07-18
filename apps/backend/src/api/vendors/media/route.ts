@@ -40,6 +40,13 @@ export const POST = async (
     throw new MedusaError(MedusaError.Types.INVALID_DATA, "Only image files can be uploaded")
   }
 
+  // memoryStorage is intentional here: the workflow writes these buffers to
+  // MinIO. Keep the uploaded bytes binary instead of persisting a base64/data
+  // URL representation as the object body.
+  if (files.some((file) => !Buffer.isBuffer(file.buffer) || file.buffer.length === 0)) {
+    throw new MedusaError(MedusaError.Types.INVALID_DATA, "Uploaded image data is empty")
+  }
+
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
   const { data: [vendorAdmin] } = await query.graph({
     entity: "vendor_admin",
@@ -61,7 +68,7 @@ export const POST = async (
     input: {
       folder,
       files: files.map((file) => ({
-        content: file.buffer.toString("base64"),
+        buffer: file.buffer,
         filename: file.originalname,
         mimeType: file.mimetype,
       })),

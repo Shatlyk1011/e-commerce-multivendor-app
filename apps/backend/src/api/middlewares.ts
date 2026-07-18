@@ -137,6 +137,10 @@ export default defineMiddlewares({
     {
       matcher: "/vendors/media",
       method: ["POST"],
+      // Let multer consume the multipart stream. The default JSON/urlencoded
+      // parser must not run before it, otherwise req.files is empty and the
+      // upload route can fail with a generic 500.
+      bodyParser: false,
       middlewares: [
         vendorMediaUpload.array("files", 10),
       ],

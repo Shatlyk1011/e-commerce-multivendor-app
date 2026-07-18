@@ -73,9 +73,26 @@ export type VendorProduct = {
   description: string | null
   thumbnail: string | null
   status: string
+  // Category
+  categories?: Array<{ id: string; name: string }>
+  // Tags / search keywords stored in metadata
+  metadata?: { keywords?: string[] } | null
+  // Gallery images
+  images?: Array<{ url: string }>
+  // Logistics & dimensions
+  weight?: number | null
+  length?: number | null
+  width?: number | null
+  height?: number | null
+  origin_country?: string | null
+  material?: string | null
+  // Variants with full details
   variants?: Array<{
     id: string
     title: string
+    sku?: string | null
+    barcode?: string | null
+    options?: Array<{ value: string; option?: { title: string } }>
     prices?: Array<{
       amount: number
       currency_code: string

@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           setVendorAdmin(res.vendor_admin)
           setIsLoading(false)
           if (res.vendor_admin.id) {
-            toast.success(`Добро пожаловать ${res.vendor_admin.first_name}`)
+            toast.success(`Добро пожаловать ${res.vendor_admin.first_name}`, { duration: 1500 })
           }
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
