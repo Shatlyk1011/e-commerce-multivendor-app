@@ -9,7 +9,15 @@ import { AdminCreateProduct } from "@medusajs/medusa/api/admin/products/validato
 import { AdminCreateVendorSchema } from "./admin/vendors/route"
 import { AdminUpdateVendorSchema } from "./admin/vendors/[id]/route"
 import { AdminResetVendorPasswordSchema } from "./admin/vendors/[id]/reset-password/route"
+import multer from "multer"
 
+const vendorMediaUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    files: 10,
+    fileSize: 10 * 1024 * 1024,
+  },
+})
 
 const vendorCorsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: any) => {
   const origin = req.headers.origin
@@ -124,6 +132,13 @@ export default defineMiddlewares({
       method: ["POST"],
       middlewares: [
         validateAndTransformBody(AdminCreateProduct),
+      ],
+    },
+    {
+      matcher: "/vendors/media",
+      method: ["POST"],
+      middlewares: [
+        vendorMediaUpload.array("files", 10),
       ],
     },
   ],
