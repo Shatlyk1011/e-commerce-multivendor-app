@@ -51,18 +51,15 @@ docker compose exec medusa npx medusa user -e admin@test.com -p supersecret
 ```
 *You can now log in at [http://localhost:9000/app](http://localhost:9000/app) with `admin@test.com` and `supersecret`.*
 
-### Step 4: Setup the MinIO Bucket (First-time run only)
-MinIO requires the media bucket `medusa-media` to be created and set to public read access for product images:
-```bash
-# Configure the local alias
-docker compose exec minio mc alias set local http://localhost:9000 medusa_admin minio_secret_pass_7291
+### Step 4: MinIO media bucket
+The `minio-init` container automatically creates `medusa-media` and grants anonymous download access. Vendor image uploads are stored under a URL-safe shop-name folder, for example:
 
-# Create the bucket
-docker compose exec minio mc mb local/medusa-media
-
-# Set bucket policy to public read
-docker compose exec minio mc anonymous set public local/medusa-media
+```text
+medusa-media/ak-yayla/product-front-<uuid>.webp
+medusa-media/ak-yayla/product-side-<uuid>.webp
 ```
+
+For a production deployment, set `MINIO_PUBLIC_URL` in `.env` to the public bucket URL (for example, `https://files.example.com/medusa-media`).
 
 ---
 
