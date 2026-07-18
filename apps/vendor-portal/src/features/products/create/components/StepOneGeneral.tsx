@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip } from '@/components/ui/tooltip'
 
-import type { FieldErrors } from './utils'
+import type { FieldErrors } from '../utils'
 
 interface StepOneGeneralProps {
   title: string

@@ -64,11 +64,17 @@ export const stepOneSchema = z.object({
     .max(20, 'Можно добавить не более 20 ключевых слов.'),
 })
 
+const imageUriSchema = z
+  .string()
+  .refine(
+    (val) =>
+      val.startsWith('blob:') || val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:'),
+    { message: 'Некорректный формат изображения.' },
+  )
+
 export const stepTwoSchema = z.object({
-  thumbnail: z.string().url('Загрузите корректное главное изображение.'),
-  images: z
-    .array(z.string().url('Галерея содержит некорректный URL изображения.'))
-    .max(10, 'Можно добавить не более 10 изображений.'),
+  thumbnail: imageUriSchema.refine((val) => val.trim().length > 0, 'Загрузите главное изображение.'),
+  images: z.array(imageUriSchema).max(10, 'Можно добавить не более 10 изображений.'),
 })
 
 export const stepThreeSchema = z

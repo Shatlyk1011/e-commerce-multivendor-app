@@ -10,9 +10,9 @@ import { ArrowLeft, Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-rea
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { StepOneGeneral } from '@/features/products/create/StepOneGeneral'
-import { StepThreeVariants } from '@/features/products/create/StepThreeVariants'
-import { StepTwoMedia } from '@/features/products/create/StepTwoMedia'
+import { StepOneGeneral } from '@/features/products/create/components/StepOneGeneral'
+import { StepThreeVariants } from '@/features/products/create/components/StepThreeVariants'
+import { StepTwoMedia } from '@/features/products/create/components/StepTwoMedia'
 import {
   STEPS_INFO,
   getFieldErrors,
@@ -42,7 +42,9 @@ export default function CreateProductPage() {
 
   // 2. Media state (Step 2)
   const [thumbnail, setThumbnail] = useState<string>('')
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [images, setImages] = useState<string[]>([])
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([])
   const [isUploadingMedia, setIsUploadingMedia] = useState(false)
 
   // 3. Dimensions & Logistics (Step 3)
@@ -129,48 +131,6 @@ export default function CreateProductPage() {
       headers: { 'content-type': null },
     })
     return response.files
-  }
-
-  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setIsUploadingMedia(true)
-    try {
-      const [uploadedFile] = await uploadVendorMedia([file])
-      setThumbnail(uploadedFile.url)
-      toast.success('Главное изображение сохранено в медиахранилище')
-    } catch (error) {
-      toast.error('Не удалось загрузить изображение', {
-        description: error instanceof Error ? error.message : 'Попробуйте ещё раз.',
-      })
-    } finally {
-      setIsUploadingMedia(false)
-      e.target.value = ''
-    }
-  }
-
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files ?? [])
-    const availableSlots = 10 - images.length
-    const files = selectedFiles.slice(0, availableSlots)
-    if (!files.length) {
-      toast.warning('В галерее можно хранить не более 10 изображений')
-      e.target.value = ''
-      return
-    }
-    setIsUploadingMedia(true)
-    try {
-      const uploadedFiles = await uploadVendorMedia(files)
-      setImages((currentImages) => [...currentImages, ...uploadedFiles.map((file) => file.url)])
-      toast.success(`В медиахранилище сохранено: ${uploadedFiles.length}`)
-    } catch (error) {
-      toast.error('Не удалось загрузить изображения', {
-        description: error instanceof Error ? error.message : 'Попробуйте ещё раз.',
-      })
-    } finally {
-      setIsUploadingMedia(false)
-      e.target.value = ''
-    }
   }
 
   // ─── Options handlers ─────────────────────────────────────────────────────────
@@ -326,6 +286,26 @@ export default function CreateProductPage() {
 
     setIsSubmitting(true)
 
+    let uploadedThumbnailUrl = thumbnail
+    let uploadedImageUrls = [...images]
+
+    try {
+      if (thumbnailFile) {
+        const [uploadedFile] = await uploadVendorMedia([thumbnailFile])
+        uploadedThumbnailUrl = uploadedFile.url
+      }
+      if (galleryFiles.length > 0) {
+        const uploadedFiles = await uploadVendorMedia(galleryFiles)
+        uploadedImageUrls = uploadedFiles.map((file) => file.url)
+      }
+    } catch (error) {
+      toast.error('Не удалось загрузить изображения', {
+        description: error instanceof Error ? error.message : 'Попробуйте ещё раз.',
+      })
+      setIsSubmitting(false)
+      return
+    }
+
     const processedVariants =
       variants.length > 0
         ? variants.map((v) => ({
@@ -352,8 +332,8 @@ export default function CreateProductPage() {
       title: title.trim(),
       handle: generatedHandle,
       description: description.trim() || null,
-      thumbnail: thumbnail.trim() || null,
-      images: images.map((url) => ({ url })),
+      thumbnail: uploadedThumbnailUrl.trim() || null,
+      images: uploadedImageUrls.map((url) => ({ url })),
       status: 'draft',
       categories: [{ id: category }],
       metadata: { keywords: tags },
@@ -493,12 +473,17 @@ export default function CreateProductPage() {
           {currentStep === 2 && (
             <StepTwoMedia
               thumbnail={thumbnail}
-              onThumbnailChange={setThumbnail}
               images={images}
-              onImagesChange={setImages}
-              isUploadingMedia={isUploadingMedia}
-              onThumbnailUpload={handleThumbnailUpload}
-              onGalleryUpload={handleGalleryUpload}
+              onThumbnailChange={(url, file) => {
+                setThumbnail(url)
+                setThumbnailFile(file)
+              }}
+              onImagesChange={(urls, files) => {
+                setImages(urls)
+                setGalleryFiles(files)
+              }}
+              thumbnailFile={thumbnailFile}
+              galleryFiles={galleryFiles}
               fieldErrors={fieldErrors}
             />
           )}

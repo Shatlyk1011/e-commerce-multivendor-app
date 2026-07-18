@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tooltip } from '@/components/ui/tooltip'
 
-import type { FieldErrors, ProductOption, ProductVariant } from './utils'
-import { COUNTRIES } from './utils'
+import type { FieldErrors, ProductOption, ProductVariant } from '../utils'
+import { COUNTRIES } from '../utils'
 
 interface StepThreeVariantsProps {
   // Dimensions
