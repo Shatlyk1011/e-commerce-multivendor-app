@@ -35,6 +35,7 @@ import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useAddLineItem } from '@/features/cart/api/queries'
+import { useProduct } from '@/features/product/api/queries'
 import { getCartId } from '@/lib/cart-cookies'
 import { cn } from '@/lib/utils'
 
@@ -49,11 +50,28 @@ export default function ProductDetailPage() {
   const params = useParams()
   const idStr = Array.isArray(params?.id) ? params.id[0] : params?.id || ''
 
+  // Fetch and cache the created product by its Medusa ID. The mock UI stays in
+  // place for now, except the stock badge uses live variant inventory.
+  const { data: storeProduct } = useProduct(idStr)
+
+  console.log('storeProduct', storeProduct)
+
   // Lookup product in database or fallback
   const product = PRODUCT_DATABASE[idStr] || {
     ...DEFAULT_PRODUCT,
     id: idStr || DEFAULT_PRODUCT.id,
   }
+
+  const inventoryQuantities =
+    storeProduct?.variants
+      ?.map((variant) => variant.inventory_quantity)
+      .filter((quantity): quantity is number => typeof quantity === 'number') ?? []
+  const stockQuantity =
+    inventoryQuantities.length > 0
+      ? inventoryQuantities.reduce((total, quantity) => total + quantity, 0)
+      : product.id === '1'
+        ? 12
+        : 2
 
   // State Management
   const [activeImageIdx, setActiveImageIdx] = React.useState(0)
@@ -490,7 +508,7 @@ export default function ProductDetailPage() {
               {/* Stock count */}
               <div className="rounded-apple-sm flex items-center gap-1.5 border border-rose-100 bg-rose-50/50 p-2 text-[13px] leading-snug font-semibold text-rose-500">
                 <span className="size-1.5 animate-pulse rounded-full bg-rose-500"></span>
-                <span>В наличии — осталось {product.id === '1' ? '12 штук!' : '2 штуки!'}</span>
+                <span>В наличии — осталось {stockQuantity} шт.</span>
               </div>
 
               {/* Delivery Speed info */}

@@ -1,7 +1,7 @@
-import type { HttpTypes } from '@medusajs/types'
 import { useQuery } from '@tanstack/react-query'
 
 import { fetchProduct } from './client'
+import type { StoreProductWithInventory } from './client'
 
 export const productKeys = {
   all: ['products'] as const,
@@ -9,7 +9,7 @@ export const productKeys = {
 }
 
 export function useProduct(id: string) {
-  return useQuery<HttpTypes.StoreProduct>({
+  return useQuery<StoreProductWithInventory>({
     queryKey: productKeys.detail(id),
     queryFn: () => fetchProduct(id),
     enabled: Boolean(id),
