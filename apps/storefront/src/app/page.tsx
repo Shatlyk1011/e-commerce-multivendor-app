@@ -10,7 +10,7 @@ import { ProductCard } from '@/features/home/components/ProductCard'
 import { medusa } from '@/lib/medusa'
 
 export default function Home() {
-  const { data, isLoading, isError } = useProducts({ limit: 12 })
+  const { data, isLoading, isError } = useProducts({ limit: 12, order: '-created_at' })
 
   const [regions, setRegions] = useState<HttpTypes.StoreRegion[]>([])
   console.log('regions', regions)

@@ -13,9 +13,6 @@ in vendor store update ui so it looks nice for store item variant section (see i
 in current setup, how can we optimize images in vendor-store before uploading to storage. is using sharp package available in this setup?  
 
 x
-fix steps bug (when going from 3 to 4 the form submits)
-
-x
 when creating the products, add input field for handling inventory items (to see how many items available). so when creating the product, seller will specify this field
 
 how to handle the multilanguage support in medusa storefront so the user's selected language will affect to storefront items as well.
@@ -23,3 +20,8 @@ how to handle the multilanguage support in medusa storefront so the user's selec
 in store-vendor, integrate i18n in 2 language - turkmen and russian. send corrsponding header to admin panel with user's language 
 
 store item same fields create,details,storefront-details
+
+
+
+update cart ui (show sizes variants and fix quantity issue)
+product review.

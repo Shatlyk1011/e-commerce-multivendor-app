@@ -213,7 +213,7 @@ export default function CreateProductPage() {
         options: optionMap,
         sku: existing?.sku || generateVariantSku(title, combo, `${productSkuSuffix.current}-${index + 1}`),
         barcode: existing?.barcode || '',
-        price: existing?.price || '150.00',
+        price: existing?.price || '150',
         inventory: existing?.inventory || '10',
       }
     })
