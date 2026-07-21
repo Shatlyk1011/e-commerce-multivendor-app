@@ -16,6 +16,7 @@ import { StepThreeVariants } from '@/features/products/create/components/StepThr
 import { StepTwoMedia } from '@/features/products/create/components/StepTwoMedia'
 import {
   STEPS_INFO,
+  generateVariantSku,
   getFieldErrors,
   slugify,
   stepFourSchema,
@@ -68,6 +69,10 @@ export default function CreateProductPage() {
   const [pendingHref, setPendingHref] = useState<string | null>(null)
   const [hasCreatedProduct, setHasCreatedProduct] = useState(false)
   const hasCreatedProductRef = useRef(false)
+  // Medusa requires SKUs to be unique across every product, not just within a
+  // vendor's catalogue. Keep one suffix for this draft so its variants remain
+  // recognisable as a group without colliding with a similarly named product.
+  const productSkuSuffix = useRef(crypto.randomUUID().replace(/-/g, '').slice(0, 12))
 
   const isDirty =
     !hasCreatedProduct &&
@@ -183,9 +188,10 @@ export default function CreateProductPage() {
         {
           title: 'Стандартный',
           options: {},
-          sku: `${slugify(title)}-default`,
+          sku: generateVariantSku(title, ['default'], `${productSkuSuffix.current}-1`),
           barcode: '',
-          price: '150.00',
+          price: '150',
+          inventory: '10',
         },
       ])
       return
@@ -195,7 +201,7 @@ export default function CreateProductPage() {
       arrays.reduce((acc, curr) => acc.flatMap((d) => curr.map((e) => [...d, e])), [[]] as string[][])
 
     const combinations = cartesian(validOptions.map((o) => o.values))
-    const generated: ProductVariant[] = combinations.map((combo) => {
+    const generated: ProductVariant[] = combinations.map((combo, index) => {
       const optionMap: Record<string, string> = {}
       validOptions.forEach((opt, idx) => {
         optionMap[opt.title] = combo[idx]
@@ -205,9 +211,10 @@ export default function CreateProductPage() {
       return {
         title: variantTitle,
         options: optionMap,
-        sku: existing?.sku || `${slugify(title)}-${combo.map((c) => slugify(c)).join('-')}`,
+        sku: existing?.sku || generateVariantSku(title, combo, `${productSkuSuffix.current}-${index + 1}`),
         barcode: existing?.barcode || '',
         price: existing?.price || '150.00',
+        inventory: existing?.inventory || '10',
       }
     })
 
@@ -340,14 +347,21 @@ export default function CreateProductPage() {
             options: v.options,
             sku: v.sku.trim() || null,
             barcode: v.barcode.trim() || null,
-            manage_inventory: false,
+            manage_inventory: true,
+            metadata: {
+              inventory_quantity: Number(v.inventory) || 0,
+            },
             prices: [{ currency_code: 'tmt', amount: Number(v.price) }],
           }))
         : [
             {
               title: 'Standard',
               options: {},
-              sku: `${slugify(title)}-default`,
+              sku: generateVariantSku(title, ['default'], `${productSkuSuffix.current}-1`),
+              manage_inventory: true,
+              metadata: {
+                inventory_quantity: 10,
+              },
               prices: [{ currency_code: 'tmt', amount: 150 }],
             },
           ]
@@ -575,12 +589,13 @@ export default function CreateProductPage() {
                 </Button>
               )}
 
-              {currentStep < 4 ? (
+              {currentStep < 4 && (
                 <Button type="button" onClick={handleNextStep}>
                   Далее
                   <ChevronRight className="size-4" />
                 </Button>
-              ) : (
+              )}
+              {currentStep === 4 && (
                 <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>

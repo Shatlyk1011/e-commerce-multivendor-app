@@ -25,7 +25,7 @@ export function StepFourVariantsMatrix({
         <div className="border-apple-divider-soft border-b pb-4">
           <h2 className="text-apple-ink text-[17px] font-semibold">Шаг 4: Цены и артикулы вариантов</h2>
           <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
-            Настройте стоимость, SKU и штрихкоды для сгенерированных вариантов товара.
+            Укажите цену для каждого варианта. SKU генерируются автоматически и уникальны для нового товара.
           </p>
         </div>
 
@@ -64,7 +64,7 @@ export function StepFourVariantsMatrix({
                 <tr className="border-apple-hairline text-apple-ink-muted-48 border-b text-[12px] font-semibold uppercase">
                   <th className="px-2 py-3">Вариант</th>
                   <th className="px-2 py-3">Цена (TMT)</th>
-                  <th className="px-2 py-3">Артикул (SKU)</th>
+                  <th className="px-2 py-3">Доступно (шт.)</th>
                 </tr>
               </thead>
               <tbody className="divide-apple-divider-soft divide-y text-[14px]">
@@ -88,11 +88,12 @@ export function StepFourVariantsMatrix({
                     </td>
                     <td className="w-40 px-2 py-4">
                       <Input
-                        placeholder="SKU"
+                        type="number"
+                        min="0"
+                        placeholder="0"
                         className="h-9 text-[13px]"
-                        value={variant.sku}
-                        disabled
-                        onChange={(e) => onUpdateVariant(idx, 'sku', e.target.value)}
+                        value={variant.inventory}
+                        onChange={(e) => onUpdateVariant(idx, 'inventory', e.target.value)}
                       />
                     </td>
                   </tr>

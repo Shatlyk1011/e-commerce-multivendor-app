@@ -32,6 +32,7 @@ export interface ProductVariant {
   sku: string
   barcode: string
   price: string // in TMT (decimal)
+  inventory: string // in units (integer)
 }
 
 export type FieldErrors = Record<string, string>
@@ -54,6 +55,11 @@ const productVariantSchema = z.object({
     .trim()
     .regex(/^\d+(\.\d{1,2})?$/, 'Укажите цену с точностью до двух знаков.')
     .refine((value) => Number(value) > 0, 'Цена должна быть больше нуля.'),
+  inventory: z
+    .string()
+    .trim()
+    .regex(/^\d+$/, 'Укажите целое число для количества.')
+    .refine((value) => Number(value) >= 0, 'Количество не может быть меньше нуля.'),
 })
 
 export const stepOneSchema = z.object({
@@ -154,4 +160,17 @@ export function slugify(text: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase()
+}
+
+/**
+ * Creates a SKU for a newly-created product variant. The suffix is shared by
+ * every variant in the draft, which keeps the SKU readable while preventing
+ * separate products with the same title and options from colliding.
+ */
+export function generateVariantSku(title: string, optionValues: string[], productSuffix: string) {
+  const base = [slugify(title) || 'product', ...optionValues.map(slugify).filter(Boolean)].join('-')
+  const suffix = slugify(productSuffix) || 'new'
+  const maxBaseLength = 255 - suffix.length - 1
+
+  return `${base.slice(0, maxBaseLength).replace(/-+$/, '')}-${suffix}`
 }
