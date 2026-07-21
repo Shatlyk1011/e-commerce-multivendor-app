@@ -12,6 +12,7 @@ const Vendor = model.define("vendor", {
   store_description: model.text().nullable(),
   address: model.text().nullable(),
   city: model.text().nullable(),
+  stock_location_id: model.text().nullable(),
   admins: model.hasMany(() => VendorAdmin, {
     mappedBy: "vendor",
   }),

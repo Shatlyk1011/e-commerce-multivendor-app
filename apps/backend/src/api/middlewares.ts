@@ -1,15 +1,21 @@
-import { 
-  defineMiddlewares, 
-  authenticate, 
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import {
+  defineMiddlewares,
+  authenticate,
   validateAndTransformBody,
-} from "@medusajs/framework/http"
-import { MedusaRequest, MedusaResponse, AuthenticatedMedusaRequest } from "@medusajs/framework/http"
-import { PostVendorCreateSchema } from "./vendors/route"
-import { AdminCreateProduct } from "@medusajs/medusa/api/admin/products/validators"
-import { AdminCreateVendorSchema } from "./admin/vendors/route"
-import { AdminUpdateVendorSchema } from "./admin/vendors/[id]/route"
-import { AdminResetVendorPasswordSchema } from "./admin/vendors/[id]/reset-password/route"
-import multer from "multer"
+} from "@medusajs/framework/http";
+import {
+  MedusaRequest,
+  MedusaResponse,
+  AuthenticatedMedusaRequest,
+} from "@medusajs/framework/http";
+import { PostVendorCreateSchema } from "./vendors/route";
+import { AdminCreateProduct } from "@medusajs/medusa/api/admin/products/validators";
+import { AdminCreateVendorSchema } from "./admin/vendors/route";
+import { AdminUpdateVendorSchema } from "./admin/vendors/[id]/route";
+import { AdminResetVendorPasswordSchema } from "./admin/vendors/[id]/reset-password/route";
+// import { CategoryTranslationsSchema } from "./admin/product-categories/translations/route";
+import multer from "multer";
 
 const vendorMediaUpload = multer({
   storage: multer.memoryStorage(),
@@ -17,70 +23,79 @@ const vendorMediaUpload = multer({
     files: 10,
     fileSize: 10 * 1024 * 1024,
   },
-})
+});
 
 const vendorCorsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: any) => {
-  const origin = req.headers.origin
-  const allowedOrigins = process.env.AUTH_CORS ? process.env.AUTH_CORS.split(",") : ["http://localhost:3001"]
+  const origin = req.headers.origin;
+  const allowedOrigins = process.env.AUTH_CORS
+    ? process.env.AUTH_CORS.split(",")
+    : ["http://localhost:3001"];
 
   if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin)
-    res.setHeader("Access-Control-Allow-Credentials", "true")
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-    
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+
     // Dynamically echo requested headers back, or fallback to standard ones
-    const requestHeaders = req.headers["access-control-request-headers"]
+    const requestHeaders = req.headers["access-control-request-headers"];
     if (requestHeaders) {
-      res.setHeader("Access-Control-Allow-Headers", requestHeaders)
+      res.setHeader("Access-Control-Allow-Headers", requestHeaders);
     } else {
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Cookie, x-publishable-key, x-medusa-locale")
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-Requested-With, Cookie, x-publishable-key, x-medusa-locale",
+      );
     }
   }
 
   if (req.method === "OPTIONS") {
-    res.status(200).end()
-    return
+    res.status(200).end();
+    return;
   }
 
-  next()
-}
+  next();
+};
 
 const checkVendorStatusMiddleware = async (
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse,
-  next: any
+  next: any,
 ) => {
   if (!req.auth_context?.actor_id) {
-    return next()
+    return next();
   }
 
   try {
-    const query = req.scope.resolve("query")
-    const { data: [vendorAdmin] } = await query.graph({
+    const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
+    const {
+      data: [vendorAdmin],
+    } = await query.graph({
       entity: "vendor_admin",
       fields: ["id", "vendor.status", "vendor.status_reason"],
       filters: {
         id: [req.auth_context.actor_id],
       },
-    })
+    });
 
     if (!vendorAdmin) {
-      return res.status(404).json({ message: "Vendor admin not found" })
+      return res.status(404).json({ message: "Vendor admin not found" });
     }
 
     if (vendorAdmin.vendor?.status === "disabled") {
-      const reason = vendorAdmin.vendor.status_reason ? `: ${vendorAdmin.vendor.status_reason}` : ""
+      const reason = vendorAdmin.vendor.status_reason
+        ? `: ${vendorAdmin.vendor.status_reason}`
+        : "";
       return res.status(403).json({
-        message: `Аккаунт заблокирован. Причина: ${reason}`
-      })
+        message: `Аккаунт заблокирован. Причина: ${reason}`,
+      });
     }
   } catch (error) {
-    console.error("Error checking vendor status in middleware:", error)
-    return res.status(500).json({ message: "Internal server error during vendor status check" })
+    console.error("Error checking vendor status in middleware:", error);
+    return res.status(500).json({ message: "Internal server error during vendor status check" });
   }
 
-  next()
-}
+  next();
+};
 
 export default defineMiddlewares({
   routes: [
@@ -88,23 +103,17 @@ export default defineMiddlewares({
     {
       matcher: "/admin/vendors",
       method: ["POST"],
-      middlewares: [
-        validateAndTransformBody(AdminCreateVendorSchema),
-      ],
+      middlewares: [validateAndTransformBody(AdminCreateVendorSchema)],
     },
     {
       matcher: "/admin/vendors/*",
       method: ["PATCH"],
-      middlewares: [
-        validateAndTransformBody(AdminUpdateVendorSchema),
-      ],
+      middlewares: [validateAndTransformBody(AdminUpdateVendorSchema)],
     },
     {
       matcher: "/admin/vendors/*/reset-password",
       method: ["POST"],
-      middlewares: [
-        validateAndTransformBody(AdminResetVendorPasswordSchema),
-      ],
+      middlewares: [validateAndTransformBody(AdminResetVendorPasswordSchema)],
     },
 
     // Vendor-portal facing routes
@@ -130,9 +139,7 @@ export default defineMiddlewares({
     {
       matcher: "/vendors/products",
       method: ["POST"],
-      middlewares: [
-        validateAndTransformBody(AdminCreateProduct),
-      ],
+      middlewares: [validateAndTransformBody(AdminCreateProduct)],
     },
     {
       matcher: "/vendors/media",
@@ -141,9 +148,7 @@ export default defineMiddlewares({
       // parser must not run before it, otherwise req.files is empty and the
       // upload route can fail with a generic 500.
       bodyParser: false,
-      middlewares: [
-        vendorMediaUpload.array("files", 10),
-      ],
+      middlewares: [vendorMediaUpload.array("files", 10)],
     },
   ],
-})
+});
