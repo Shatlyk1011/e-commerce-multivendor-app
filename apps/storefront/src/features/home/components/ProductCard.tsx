@@ -50,7 +50,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="group border-apple-hairline bg-apple-canvas rounded-apple-lg relative flex h-full flex-col justify-between border p-1 transition-all duration-200">
       {/* Card Content Top wrapped in Link to Product page */}
-      <Link href={`/product/${product.id}`} className="flex flex-1 flex-col">
+      <Link href={`/product/${product.handle || product.id}`} className="flex flex-1 flex-col">
         {/* Product Image Container */}
         <div className="bg-apple-canvas-parchment relative flex aspect-3/4 w-full items-center justify-center overflow-hidden rounded-[16px] p-2 transition-all duration-200 ease-in-out group-hover:opacity-95 hover:scale-104 hover:rounded-none">
           <img src={image} alt={title} className="h-full w-full object-cover" />

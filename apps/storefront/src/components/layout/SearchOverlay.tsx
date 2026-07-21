@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
-
 import Link from 'next/link'
 
 import { Clock, TrendingUp, X } from 'lucide-react'
@@ -26,13 +24,6 @@ export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayP
 
   const { data, isLoading } = useProducts({ limit: 6 })
   const products = data?.products ?? []
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
 
   const handleQueryClick = (q: string) => {
     onSelectQuery(q)
@@ -130,7 +121,7 @@ export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayP
                 return (
                   <Link
                     key={product.id}
-                    href={`/products/${product.handle || product.id}`}
+                    href={`/product/${product.handle || product.id}`}
                     onClick={onClose}
                     className="group border-apple-divider-soft/50 rounded-apple-md bg-apple-canvas flex h-full flex-col overflow-hidden border transition-all duration-200 hover:shadow-md active:scale-[0.99]"
                   >
