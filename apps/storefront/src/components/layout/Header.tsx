@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -59,6 +59,22 @@ export function Header() {
   const [searchFocused, setSearchFocused] = useState(false)
   const router = useRouter()
   const addHistory = useSearchStore((state) => state.addHistory)
+
+  // Lock scrollbar when catalog menu or search overlay is open
+  useEffect(() => {
+    if (catalogOpen || searchFocused) {
+      document.documentElement.style.overflow = 'hidden'
+      document.documentElement.style.scrollbarGutter = 'stable'
+    } else {
+      document.documentElement.style.overflow = ''
+      document.documentElement.style.scrollbarGutter = 'initial'
+    }
+
+    return () => {
+      document.documentElement.style.overflow = ''
+      document.documentElement.style.scrollbarGutter = 'initial'
+    }
+  }, [catalogOpen, searchFocused])
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()

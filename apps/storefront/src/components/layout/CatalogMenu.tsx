@@ -63,16 +63,6 @@ export default function CatalogMenu({ onClose }: CatalogMenuProps) {
   const { data: categories = [], isLoading } = useCategories({ parent_category_id: null })
   const [activeRootId, setActiveRootId] = useState<string | null>(null)
 
-  // Prevent background scrolling when catalog is open
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
-
-  console.log('activeRootId', activeRootId)
-
   // Auto-select the first category as active when categories load
   useEffect(() => {
     if (categories.length > 0 && !activeRootId) {
@@ -109,7 +99,7 @@ export default function CatalogMenu({ onClose }: CatalogMenuProps) {
         className="bg-apple-canvas border-apple-hairline rounded-b-apple-lg flex h-[580px] w-full max-w-[1240px] overflow-hidden border-b shadow-xl"
       >
         {/* Left Sidebar: Root Categories (Level 0) */}
-        <div className="bg-apple-canvas-parchment border-apple-divider-soft w-[260px] shrink-0 overflow-y-auto border-r p-3">
+        <div className="bg-apple-canvas-parchment border-apple-divider-soft w-[260px] shrink-0 scrollbar-thin overflow-y-auto border-r p-3">
           <ul className="flex flex-col gap-1">
             {categories.map((category) => {
               const isActive = category.id === activeRootId
