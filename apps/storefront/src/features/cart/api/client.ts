@@ -12,7 +12,10 @@ export async function getCart(cartId?: string): Promise<StoreCartResponse['cart'
   const id = cartId ?? getCartId()
   if (!id) return null
   try {
-    const { cart } = await medusa.store.cart.retrieve(id)
+    const { cart } = await medusa.store.cart.retrieve(id, {
+      fields:
+        'id,items.id,items.title,items.subtitle,items.thumbnail,items.quantity,items.unit_price,items.product_id,items.variant_id,items.variant.title,items.variant.product.handle,items.variant.product.id,items.variant.options.value,items.variant.options.option.title',
+    })
     return cart
   } catch {
     removeCartId()

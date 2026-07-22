@@ -1,7 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import Link from 'next/link'
+
+import type { StoreCartLineItem } from '@medusajs/types'
 import { Loader2, Minus, Plus, Trash2 } from 'lucide-react'
 
 import {
@@ -16,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { SheetClose } from '@/components/ui/sheet'
 import { getCartId } from '@/lib/cart-cookies'
 import { cn } from '@/lib/utils'
 
@@ -23,14 +27,35 @@ import { useDeleteLineItem, useUpdateLineItem } from '../api/queries'
 import { formatPrice } from '../utils'
 
 interface CartItemProps {
-  item: {
-    id: string
-    title?: string
-    subtitle?: string
-    thumbnail?: string
-    quantity?: number
-    unit_price?: number
+  item: StoreCartLineItem
+}
+
+function getVariantDetails(item: CartItemProps['item']) {
+  const details: string[] = []
+
+  if (item.variant?.options && item.variant.options.length > 0) {
+    item.variant.options.forEach((opt) => {
+      if (opt.value) {
+        const optionName = opt.option?.title
+        details.push(optionName ? `${optionName}: ${opt.value}` : opt.value)
+      }
+    })
   }
+
+  if (details.length === 0 && item.variant_option_values && typeof item.variant_option_values === 'object') {
+    Object.entries(item.variant_option_values).forEach(([key, val]) => {
+      if (val) details.push(`${key}: ${String(val)}`)
+    })
+  }
+
+  if (details.length === 0) {
+    const vTitle = item.variant?.title || item.variant_title || item.subtitle
+    if (vTitle && !['default variant', 'default'].includes(vTitle.toLowerCase().trim())) {
+      details.push(vTitle)
+    }
+  }
+
+  return details
 }
 
 export function CartItem({ item }: CartItemProps) {
@@ -39,70 +64,91 @@ export function CartItem({ item }: CartItemProps) {
   const deleteMutation = useDeleteLineItem()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  const [prevQuantity, setPrevQuantity] = useState(item.quantity)
   const [localQuantity, setLocalQuantity] = useState(item.quantity ?? 1)
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  if (item.quantity !== prevQuantity) {
-    setPrevQuantity(item.quantity)
-    setLocalQuantity(item.quantity ?? 1)
-  }
-
-  // Cleanup timer on unmount
+  // Keep local quantity synced with item.quantity from server
   useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-    }
-  }, [])
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLocalQuantity(item.quantity ?? 1)
+  }, [item.quantity])
 
   const title = item.title ?? 'Товар'
   const thumbnail = item.thumbnail ?? ''
-  const priceTotal = (item.unit_price ?? 0) * (item.quantity ?? 0)
+  const priceTotal = (item.unit_price ?? 0) * localQuantity
   const isPending = updateMutation.isPending || deleteMutation.isPending
 
-  const triggerDebouncedUpdate = (qty: number) => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
-    }
-    debounceTimerRef.current = setTimeout(() => {
-      updateMutation.mutate({
-        cartId: cartId ?? undefined,
-        lineId: item.id,
-        payload: { quantity: qty },
-      })
-    }, 500)
-  }
+  const productHandleOrId =
+    item.variant?.product?.handle ||
+    item.product_handle ||
+    item.variant?.product?.id ||
+    item.variant?.product_id ||
+    item.product_id
 
-  const handleIncrement = () => {
-    if (!cartId || !item.id) return
+  const variantDetails = getVariantDetails(item)
+
+  const handleIncrement = async () => {
+    if (!cartId || !item.id || isPending) return
     const nextQty = localQuantity + 1
     setLocalQuantity(nextQty)
-    triggerDebouncedUpdate(nextQty)
+
+    try {
+      await updateMutation.mutateAsync({
+        cartId: cartId ?? undefined,
+        lineId: item.id,
+        payload: { quantity: nextQty },
+      })
+    } catch {
+      // Revert back to original item quantity on failure
+      setLocalQuantity(item.quantity ?? 1)
+    }
   }
 
-  const handleDecrement = () => {
-    if (!cartId || !item.id) return
+  const handleDecrement = async () => {
+    if (!cartId || !item.id || isPending) return
     const nextQty = localQuantity - 1
     if (nextQty <= 0) {
       setIsDeleteDialogOpen(true)
     } else {
       setLocalQuantity(nextQty)
-      triggerDebouncedUpdate(nextQty)
+      try {
+        await updateMutation.mutateAsync({
+          cartId: cartId ?? undefined,
+          lineId: item.id,
+          payload: { quantity: nextQty },
+        })
+      } catch {
+        // Revert back to original item quantity on failure
+        setLocalQuantity(item.quantity ?? 1)
+      }
     }
   }
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
     if (!cartId || !item.id) return
     setIsDeleteDialogOpen(false)
-    deleteMutation.mutate({ cartId: cartId ?? undefined, lineId: item.id })
+    try {
+      await deleteMutation.mutateAsync({ cartId: cartId ?? undefined, lineId: item.id })
+    } catch {
+      // Ignore error if already handled by query onError
+    }
   }
 
   const handleCancelDelete = () => {
     setIsDeleteDialogOpen(false)
     setLocalQuantity(item.quantity ?? 1)
   }
+
+  const imageElement = thumbnail ? (
+    <img src={thumbnail} alt={title} className="bg-apple-surface-pearl h-16 w-16 shrink-0 rounded-md object-cover" />
+  ) : (
+    <div className="h-16 w-16 shrink-0 rounded-md bg-neutral-200" />
+  )
+
+  const titleElement = (
+    <h4 className="text-apple-ink hover:text-apple-primary line-clamp-2 text-[13px] leading-snug font-semibold transition-colors">
+      {title}
+    </h4>
+  )
 
   return (
     <li className="border-apple-divider-soft border-b pb-4">
@@ -114,22 +160,38 @@ export function CartItem({ item }: CartItemProps) {
         )}
         <CardContent className="p-3">
           <div className="flex gap-3">
-            {thumbnail ? (
-              <img
-                src={thumbnail}
-                alt={title}
-                className="bg-apple-surface-pearl h-16 w-16 shrink-0 rounded-md object-cover"
-              />
+            {productHandleOrId ? (
+              <SheetClose asChild>
+                <Link href={`/product/${productHandleOrId}`} className="shrink-0">
+                  {imageElement}
+                </Link>
+              </SheetClose>
             ) : (
-              <div className="h-16 w-16 shrink-0 rounded-md bg-neutral-200" />
+              imageElement
             )}
 
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h4 className="text-apple-ink line-clamp-2 text-[13px] leading-snug font-semibold">{title}</h4>
-                  {item.subtitle && (
-                    <p className="text-apple-ink-muted-80 mt-0.5 line-clamp-1 text-[12px]">{item.subtitle}</p>
+                  {productHandleOrId ? (
+                    <SheetClose asChild>
+                      <Link href={`/product/${productHandleOrId}`}>{titleElement}</Link>
+                    </SheetClose>
+                  ) : (
+                    titleElement
+                  )}
+
+                  {variantDetails.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {variantDetails.map((detail, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-apple-canvas border-apple-hairline text-apple-ink-muted-80 rounded px-1.5 py-0.5 text-[11px] font-medium"
+                        >
+                          {detail}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
 

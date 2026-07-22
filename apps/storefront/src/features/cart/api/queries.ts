@@ -11,6 +11,27 @@ export const cartKeys = {
   detail: (id: string) => [...cartKeys.all, id] as const,
 }
 
+function getCartErrorMessage(error: any, defaultMsg: string): string {
+  const rawMessage = error?.response?.data?.message || error?.message || (typeof error === 'string' ? error : '')
+
+  if (!rawMessage) return defaultMsg
+
+  const lower = rawMessage.toLowerCase()
+
+  if (
+    lower.includes('inventory') ||
+    lower.includes('stock') ||
+    lower.includes('exceed') ||
+    lower.includes('insufficient') ||
+    lower.includes('available') ||
+    lower.includes('max')
+  ) {
+    return 'Достигнуто максимальное количество товара в наличии'
+  }
+
+  return rawMessage
+}
+
 export function useCart() {
   return useQuery<StoreCart | null>({
     queryKey: cartKeys.all,
@@ -65,8 +86,9 @@ export function useAddLineItem() {
       const title = variables.payload.title || 'Товар'
       toast.success(`«${title}» добавлен в корзину`)
     },
-    onError: () => {
-      toast.error('Не удалось добавить товар в корзину')
+    onError: (error: any) => {
+      const message = getCartErrorMessage(error, 'Не удалось добавить товар в корзину')
+      toast.error(message)
     },
   })
 }
@@ -90,8 +112,9 @@ export function useUpdateLineItem() {
     onSuccess: (updatedCart) => {
       qc.setQueryData(cartKeys.all, updatedCart)
     },
-    onError: () => {
-      toast.error('Не удалось обновить количество')
+    onError: (error: any) => {
+      const message = getCartErrorMessage(error, 'Не удалось обновить количество')
+      toast.error(message)
     },
   })
 }
@@ -111,8 +134,9 @@ export function useDeleteLineItem() {
       qc.setQueryData(cartKeys.all, updatedCart)
       toast.success(`«${title}» удален из корзины`)
     },
-    onError: () => {
-      toast.error('Не удалось удалить товар из корзины')
+    onError: (error: any) => {
+      const message = getCartErrorMessage(error, 'Не удалось удалить товар из корзины')
+      toast.error(message)
     },
   })
 }
