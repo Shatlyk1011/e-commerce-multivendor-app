@@ -72,7 +72,7 @@ export default function CreateProductPage() {
   // Medusa requires SKUs to be unique across every product, not just within a
   // vendor's catalogue. Keep one suffix for this draft so its variants remain
   // recognisable as a group without colliding with a similarly named product.
-  const productSkuSuffix = useRef(crypto.randomUUID().replace(/-/g, '').slice(0, 12))
+  const productSkuSuffix = useRef(crypto.randomUUID().replace(/-/g, '').slice(0, 3))
 
   const isDirty =
     !hasCreatedProduct &&
