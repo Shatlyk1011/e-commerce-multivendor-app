@@ -7,11 +7,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, User, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Spinner } from '@/components/ui/spinner'
+import { useAuth } from '@/features/auth/components/AuthProvider'
 import { CartSheet } from '@/features/cart/components/CartSheet'
 import { cn } from '@/lib/utils'
 import { useSearchStore } from '@/store/use-search-store'
@@ -42,6 +44,7 @@ const SearchOverlay = dynamic(() => import('./SearchOverlay'), {
 const CITIES = ['Туркменабад', 'Ашхабад']
 
 export function Header() {
+  const { customer, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth()
   const storeCity = useUIStore((state) => state.selectedCity)
   const setSelectedCity = useUIStore((state) => state.setSelectedCity)
 
@@ -59,6 +62,15 @@ export function Header() {
   const [searchFocused, setSearchFocused] = useState(false)
   const router = useRouter()
   const addHistory = useSearchStore((state) => state.addHistory)
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast.success('Вы вышли из аккаунта')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Не удалось выйти из аккаунта')
+    }
+  }
 
   // Lock scrollbar when catalog menu or search overlay is open
   useEffect(() => {
@@ -272,16 +284,37 @@ export function Header() {
           {/* Right Controls: Actions */}
           <div className="flex shrink-0 items-center gap-2">
             {/* Login Dialog */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="cursor-pointer gap-2.5 px-4 font-semibold"
-              onClick={() => setLoginOpen(true)}
-            >
-              <User />
-              <span>Войти</span>
-            </Button>
-            {loginOpen && <AuthDialog open={loginOpen} onOpenChange={setLoginOpen} />}
+            {isAuthenticated && customer ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="cursor-pointer gap-2.5 px-4 font-semibold">
+                    <User />
+                    <span>{customer.first_name || customer.phone_number}</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2" align="end">
+                  <div className="px-2 py-1.5">
+                    <p className="text-apple-caption-strong text-apple-ink">Личный кабинет</p>
+                    <p className="text-apple-fine-print text-apple-ink-muted-48 mt-0.5">{customer.phone_number}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" className="mt-1 w-full justify-start" onClick={handleLogout}>
+                    Выйти
+                  </Button>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="cursor-pointer gap-2.5 px-4 font-semibold"
+                disabled={isAuthLoading}
+                onClick={() => setLoginOpen(true)}
+              >
+                {isAuthLoading ? <Spinner size="sm" /> : <User />}
+                <span>{isAuthLoading ? 'Проверяем…' : 'Войти'}</span>
+              </Button>
+            )}
+            {!isAuthenticated && loginOpen && <AuthDialog open={loginOpen} onOpenChange={setLoginOpen} />}
 
             {/* Favorites Button */}
             <Button variant="ghost" size="sm" className="cursor-pointer px-3 font-medium" asChild>

@@ -5,11 +5,6 @@ import { useEffect, useState } from 'react'
 
 import Link from 'next/link'
 
-import type {
-  StorefrontAuthErrorResponse,
-  StorefrontPhoneAuthRequest,
-  StorefrontPhoneAuthResponse,
-} from '@dtc/api-contracts'
 import { PencilIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -17,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import { useAuth } from '@/features/auth/components/AuthProvider'
 
 interface AuthDialogProps {
   open: boolean
@@ -27,11 +23,16 @@ const PHONE_LENGTH = 8
 const OTP_LENGTH = 4
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+  const { login, requestOtp } = useAuth()
   const [phone, setPhone] = useState('')
   const [smsSent, setSmsSent] = useState(false)
   const [smsCode, setSmsCode] = useState('')
-  const [isVerifying, setIsVerifying] = useState(false)
   const [timer, setTimer] = useState(0)
+  const [isSending, setIsSending] = useState(false)
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fullPhone = `+993${phone}`
 
   const handleOpenChange = (newOpen: boolean) => {
     onOpenChange(newOpen)
@@ -41,6 +42,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       setSmsCode('')
       setSmsSent(false)
       setTimer(0)
+      setError(null)
     }
   }
 
@@ -54,66 +56,83 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   }, [timer, smsSent])
 
-  const handleSendCode = (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (phone.length === PHONE_LENGTH) {
+
+    if (phone.length !== PHONE_LENGTH || isSending) {
+      return
+    }
+
+    try {
+      setIsSending(true)
+      setError(null)
+      await requestOtp(fullPhone)
       setSmsSent(true)
       setTimer(60)
       toast.success('СМС-код отправлен')
+    } catch (sendError) {
+      const message = sendError instanceof Error ? sendError.message : 'Не удалось отправить код.'
+      setError(message)
+      toast.error('Не удалось отправить код')
+    } finally {
+      setIsSending(false)
     }
   }
 
-  const handleResend = () => {
-    setSmsCode('')
-    setTimer(60)
-    toast.success('СМС-код отправлен повторно')
-  }
-
-  const triggerVerify = async (codeToVerify: string) => {
-    if (isVerifying) return
+  const handleResend = async () => {
+    if (isSending) {
+      return
+    }
 
     try {
-      setIsVerifying(true)
-
-      const response = await fetch('/api/auth/phone', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp: codeToVerify } satisfies StorefrontPhoneAuthRequest),
-      })
-
-      const result = (await response.json()) as StorefrontPhoneAuthResponse | StorefrontAuthErrorResponse
-      if (!response.ok) {
-        throw new Error('message' in result ? result.message : 'Не удалось выполнить вход.')
-      }
-
-      toast.success('Вход выполнен успешно!')
-      handleOpenChange(false)
-      // window.location.reload()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error('Auth verify error:', error)
-      toast.error('Ошибка входа', {
-        description: error.message || 'Пожалуйста, попробуйте еще раз.',
-      })
-      // Clean OTP input on error
+      setIsSending(true)
+      setError(null)
+      await requestOtp(fullPhone)
       setSmsCode('')
+      setTimer(60)
+      toast.success('СМС-код отправлен повторно')
+    } catch (sendError) {
+      const message = sendError instanceof Error ? sendError.message : 'Не удалось отправить код.'
+      setError(message)
+      toast.error('Не удалось отправить код')
     } finally {
-      setIsVerifying(false)
+      setIsSending(false)
     }
   }
 
   const handleOtpChange = (value: string) => {
     const cleanValue = value.replace(/\D/g, '')
     setSmsCode(cleanValue)
-    if (cleanValue.length === OTP_LENGTH) {
-      triggerVerify(cleanValue)
-    }
   }
 
   const handleChangePhone = () => {
     setSmsSent(false)
     setSmsCode('')
     setTimer(0)
+    setError(null)
+  }
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (smsCode.length !== OTP_LENGTH || isVerifying) {
+      return
+    }
+
+    try {
+      setIsVerifying(true)
+      setError(null)
+      await login(fullPhone, smsCode)
+      toast.success('Вход выполнен успешно')
+      handleOpenChange(false)
+    } catch (verifyError) {
+      const message = verifyError instanceof Error ? verifyError.message : 'Не удалось выполнить вход.'
+      const displayMessage = message === 'Invalid OTP' ? 'Неверный код подтверждения' : message
+      setError(displayMessage)
+      setSmsCode('')
+    } finally {
+      setIsVerifying(false)
+    }
   }
 
   return (
@@ -164,12 +183,17 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 required
               />
             </label>
-            <Button type="submit" disabled={phone.length !== PHONE_LENGTH} className="w-full">
-              Получить код
+            {error && (
+              <p role="alert" className="text-apple-caption text-destructive text-center">
+                {error}
+              </p>
+            )}
+            <Button type="submit" disabled={phone.length !== PHONE_LENGTH || isSending} className="w-full">
+              {isSending ? 'Отправляем…' : 'Получить код'}
             </Button>
           </form>
         ) : (
-          <div className="space-y-6">
+          <form onSubmit={handleVerify} className="space-y-6">
             <div className="flex w-full justify-center">
               <InputOTP
                 maxLength={OTP_LENGTH}
@@ -186,7 +210,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     <InputOTPSlot
                       key={index}
                       index={index}
-                      className="rounded-apple-sm border-apple-hairline bg-apple-canvas text-apple-body-strong first:rounded-l-apple-sm last:rounded-r-apple-sm data-[active=true]:border-apple-primary-focus data-[active=true]:ring-apple-primary-focus/20 size-14 first:border-l"
+                      className="rounded-apple-sm border-apple-hairline bg-apple-canvas text-apple-body-strong first:rounded-l-apple-sm last:rounded-r-apple-sm data-[active=true]:border-apple-primary-focus data-[active=true]:ring-apple-primary-focus/60 size-14 first:border-l"
                     />
                   ))}
                 </InputOTPGroup>
@@ -203,14 +227,24 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   type="button"
                   variant="link"
                   onClick={handleResend}
-                  disabled={isVerifying}
+                  disabled={isSending || isVerifying}
                   className="text-apple-caption-strong h-auto p-0"
                 >
-                  Отправить код повторно
+                  {isSending ? 'Отправляем…' : 'Отправить код повторно'}
                 </Button>
               )}
             </div>
-          </div>
+
+            {error && (
+              <p role="alert" className="text-apple-caption text-destructive text-center">
+                {error}
+              </p>
+            )}
+
+            <Button type="submit" disabled={smsCode.length !== OTP_LENGTH || isVerifying} className="w-full">
+              {isVerifying ? 'Входим…' : 'Подтвердить и войти'}
+            </Button>
+          </form>
         )}
 
         <p className="text-apple-fine-print text-apple-ink-muted-48 mt-2 text-center leading-[1.4]">

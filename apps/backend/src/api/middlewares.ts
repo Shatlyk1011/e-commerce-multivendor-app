@@ -14,6 +14,7 @@ import { AdminCreateProduct } from "@medusajs/medusa/api/admin/products/validato
 import { AdminCreateVendorSchema } from "./admin/vendors/route";
 import { AdminUpdateVendorSchema } from "./admin/vendors/[id]/route";
 import { AdminResetVendorPasswordSchema } from "./admin/vendors/[id]/reset-password/route";
+import { otpMiddlewares } from "./store/auth/otp/middlewares";
 // import { CategoryTranslationsSchema } from "./admin/product-categories/translations/route";
 import multer from "multer";
 
@@ -99,6 +100,16 @@ const checkVendorStatusMiddleware = async (
 
 export default defineMiddlewares({
   routes: [
+    ...otpMiddlewares,
+    {
+      matcher: "/store/auth/me",
+      method: ["GET"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"], {
+          allowUnauthenticated: true,
+        }),
+      ],
+    },
     // Admin vendor routes
     {
       matcher: "/admin/vendors",

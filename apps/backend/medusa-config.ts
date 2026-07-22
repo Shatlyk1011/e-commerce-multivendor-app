@@ -51,11 +51,8 @@ module.exports = defineConfig({
             id: "emailpass",
           },
           {
-            resolve: "./src/modules/phonepass",
-            id: "phonepass",
-            options: {
-              developmentOtp: process.env.DEVELOPMENT_AUTH_OTP || "1234",
-            },
+            resolve: "./src/providers/phone-otp",
+            id: "phoneotp",
           },
         ],
       },

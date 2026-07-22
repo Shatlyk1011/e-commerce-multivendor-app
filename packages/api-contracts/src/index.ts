@@ -14,8 +14,12 @@ export type {
 } from "./vendor.js"
 
 export type {
-  PhonePassAuthInput,
-  StorefrontAuthErrorResponse,
-  StorefrontPhoneAuthRequest,
-  StorefrontPhoneAuthResponse,
-} from "./storefront.js"
+  AuthCustomer,
+  AuthErrorResponse,
+  AuthMeResponse,
+  LogoutResponse,
+  SendOtpRequest,
+  SendOtpResponse,
+  VerifyOtpRequest,
+  VerifyOtpResponse,
+} from "./storefront-auth.js"
