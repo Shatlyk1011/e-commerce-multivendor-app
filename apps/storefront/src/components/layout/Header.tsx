@@ -183,7 +183,7 @@ export function Header() {
               Вопрос-ответ
             </Link>
             <Link
-              href="/orders"
+              href="/account/orders"
               className="text-apple-ink-muted-80 hover:text-apple-primary font-medium transition-colors"
             >
               Мои заказы
@@ -287,17 +287,24 @@ export function Header() {
             {isAuthenticated && customer ? (
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm" className="cursor-pointer gap-2.5 px-4 font-semibold">
+                  <Button variant="default" size="sm" className="cursor-pointer gap-2.5 font-semibold">
                     <User />
-                    <span>{customer.first_name || customer.phone_number}</span>
+                    {/* <span>{customer.first_name || customer.phone_number}</span> */}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-56 p-2" align="end">
-                  <div className="px-2 py-1.5">
-                    <p className="text-apple-caption-strong text-apple-ink">Личный кабинет</p>
-                    <p className="text-apple-fine-print text-apple-ink-muted-48 mt-0.5">{customer.phone_number}</p>
+                  <div className="border-apple-divider-soft border-b px-2 py-1.5">
+                    <p className="text-apple-fine-print mt-0.5">{customer.phone_number}</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="mt-1 w-full justify-start" onClick={handleLogout}>
+                  <Button variant="ghost" size="xs" className="mt-1 w-full justify-start text-xs font-semibold" asChild>
+                    <Link href="/account">Перейти в кабинет</Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="w-full justify-start text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-600"
+                    onClick={handleLogout}
+                  >
                     Выйти
                   </Button>
                 </PopoverContent>
@@ -318,7 +325,7 @@ export function Header() {
 
             {/* Favorites Button */}
             <Button variant="ghost" size="sm" className="cursor-pointer px-3 font-medium" asChild>
-              <Link href="/favorites">
+              <Link href="/account/favorites">
                 <Heart className="text-apple-ink-muted-80" />
                 <span>Избранное</span>
               </Link>
