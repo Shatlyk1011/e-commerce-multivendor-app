@@ -41,6 +41,7 @@
     "multer": "^2.0.2",
     "react-i18next": "13.5.0",
     "react-router-dom": "6.30.4",
+    "sharp": "0.34.5",
     "zod": "4.2.0"
   },
   "devDependencies": {

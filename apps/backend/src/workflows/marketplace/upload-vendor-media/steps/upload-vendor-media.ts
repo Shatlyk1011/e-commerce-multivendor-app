@@ -9,6 +9,7 @@ import {
 } from "@medusajs/framework/workflows-sdk"
 import { randomUUID } from "node:crypto"
 import path from "node:path"
+import sharp from "sharp"
 
 export type VendorMediaFileInput = {
   filename: string
@@ -47,9 +48,8 @@ const encodeObjectKey = (key: string) => key.split("/").map(encodeURIComponent).
 const createObjectKey = (folder: string, filename: string) => {
   const parsedFilename = path.parse(path.basename(filename))
   const basename = parsedFilename.name.replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "image"
-  const extension = parsedFilename.ext.toLowerCase()
 
-  return `${folder}/${basename}-${randomUUID()}${extension}`
+  return `${folder}/${basename}-${randomUUID()}.webp`
 }
 
 /**
@@ -70,13 +70,19 @@ export const uploadVendorMediaStep = createStep(
     const uploadedFiles = await Promise.all(
       input.files.map(async (file) => {
         const key = createObjectKey(input.folder, file.filename)
+        // Sharp strips metadata unless `.withMetadata()` is called. The image
+        // dimensions are deliberately left unchanged; only WebP compression is
+        // applied before the object reaches MinIO.
+        const optimizedBuffer = await sharp(toBuffer(file.buffer))
+          .webp({ quality: 80, effort: 4 })
+          .toBuffer()
 
         await client.send(
           new PutObjectCommand({
             Bucket: bucket,
-            Body: toBuffer(file.buffer),
+            Body: optimizedBuffer,
             CacheControl: "public, max-age=31536000, immutable",
-            ContentType: file.mimeType,
+            ContentType: "image/webp",
             Key: key,
             Metadata: {
               "original-filename": encodeURIComponent(path.basename(file.filename)),
