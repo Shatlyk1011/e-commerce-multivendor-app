@@ -29,13 +29,8 @@ update cart ui (show sizes variants and fix quantity issue)
 
 product review.
 
-
-say there is item with 10 quantity, if user A adds 5 of them to the card, can user B add 7 of them to his cart? 
-
-
-
 <!-- magic pattern -->
-for an e-commerce application, i want create custom profile page with orders history grid with status, profile fields updatable, adresses which is, favorities grid
+for an e-commerce application, i want create custom profile page with orders history grid with status, profile fields updatable, addresse, favorities grid
 
 For each order, Medusa provides useful account data including display_id, status, payment_status, fulfillment_status,
 created_at, currency_code, totals, items,
@@ -49,8 +44,7 @@ I'd structure the profile as:
 5. Security - verified phone and logout. Add "change phone" later as a dedicated
 OTP flow.
 Avoid showing or building these until you add backend support:
-- Saved cards: Medusa does not provide a generic customer saved-payment-method profile API.
-- Wishlist, loyalty points, preferred city, avatar, marketing preferences, reviews: these need custom modules/endpoints carefully scoped metadata.
+- Wishlist, loyalty points, preferred city, avatar, marketing preferences, reviews for products that were bought: these need custom modules/endpoints carefully scoped metadata.
 - Phone-number change: must update the phone Auth Identity, not only customer.phone.
 Official references: Customer Store API (https://docs.medusais.com/api/store#customers), Orders Store API (https://docs.medusajs.com/api/store#orders), profile guide (https://docs.medusajs.com/resources/storefront-development/customers/profile), and address guide (https://docs.medusajs.com/resources/storefront-development/customers/addresses).
 
