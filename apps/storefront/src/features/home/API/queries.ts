@@ -13,6 +13,9 @@ export const productKeys = {
     q?: string
     category_id?: string | string[]
     order?: string
+    fields?: string
+    region_id?: string
+    enabled?: boolean
   }) => [...productKeys.lists(), filters] as const,
 }
 
@@ -23,9 +26,13 @@ export function useProducts(filters?: {
   q?: string
   category_id?: string | string[]
   order?: string
+  fields?: string
+  region_id?: string
+  enabled?: boolean
 }) {
   return useQuery<HttpTypes.StoreProductListResponse>({
     queryKey: productKeys.list(filters ?? {}),
     queryFn: () => fetchProducts(filters),
+    enabled: filters?.enabled ?? true,
   })
 }

@@ -1,9 +1,21 @@
 'use client'
 
+import { useState } from 'react'
+
+import Link from 'next/link'
+
 import { ShoppingBag } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 
 import { useCart } from '../api/queries'
 import { formatPrice, getCartItemCount, getCartSubtotal } from '../utils'
@@ -13,26 +25,28 @@ export function CartSheet() {
   const { data: cart } = useCart()
   const count = getCartItemCount(cart)
 
+  const [sheet, setSheet] = useState(false)
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="cursor-pointer px-3 font-medium">
-          <div className="relative">
-            <ShoppingBag className="text-apple-ink-muted-80" />
-            <span className="bg-apple-primary rounded-apple-full absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center px-1 text-[9px] font-bold text-white">
-              {count}
-            </span>
-          </div>
-          <span>Корзина</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent className="bg-apple-canvas border-apple-hairline flex w-full flex-col gap-0 overflow-hidden border-l p-0 sm:max-w-md">
+    <Sheet open={sheet}>
+      <Button onClick={() => setSheet(true)} variant="ghost" size="sm" className="cursor-pointer px-3 font-medium">
+        <div className="relative">
+          <ShoppingBag className="text-apple-ink-muted-80" />
+          <span className="bg-apple-primary rounded-apple-full absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center px-1 text-[9px] font-bold text-white">
+            {count}
+          </span>
+        </div>
+        <span>Корзина</span>
+      </Button>
+      <SheetContent
+        close={() => setSheet(false)}
+        className="bg-apple-canvas border-apple-hairline flex w-full flex-col gap-0 overflow-hidden border-l p-0 sm:max-w-md"
+      >
         <SheetHeader className="border-apple-divider-soft mb-4 shrink-0 border-b p-6">
           <SheetTitle className="font-heading text-apple-ink text-xl font-bold">Корзина</SheetTitle>
           <CartDescription />
         </SheetHeader>
         <CartBody />
-        <CartFooter />
+        <CartFooter close={() => setSheet(false)} />
       </SheetContent>
     </Sheet>
   )
@@ -87,7 +101,7 @@ function CartBody() {
   )
 }
 
-function CartFooter() {
+function CartFooter({ close }: { close: () => void }) {
   const { data: cart } = useCart()
   const subtotal = getCartSubtotal(cart)
   const count = getCartItemCount(cart)
@@ -97,9 +111,15 @@ function CartFooter() {
         <span className="text-apple-ink text-[14px] font-medium">Итого:</span>
         <span className="text-apple-ink font-sans text-[16px] font-bold">{formatPrice(subtotal)}</span>
       </div>
-      <Button variant="default" className="w-full cursor-pointer font-semibold" disabled={!count}>
-        Перейти к оформлению
-      </Button>
+      {count ? (
+        <Button variant="default" onClick={close} className="w-full cursor-pointer font-semibold">
+          <Link href="/checkout">Перейти к оформлению</Link>
+        </Button>
+      ) : (
+        <Button variant="default" className="w-full font-semibold" disabled>
+          Перейти к оформлению
+        </Button>
+      )}
     </div>
   )
 }

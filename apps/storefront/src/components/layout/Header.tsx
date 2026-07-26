@@ -115,7 +115,7 @@ export function Header() {
     <header className="bg-apple-canvas border-apple-divider-soft sticky top-0 z-40 w-full border-b select-none">
       {/* ROW 1: TOP BAR */}
       <div className="bg-apple-canvas-parchment text-apple-ink-muted-80 w-full px-4 py-1.5 text-[13px]">
-        <div className="mx-auto flex max-w-[1240px] items-center justify-between">
+        <div className="custom-container mx-auto flex items-center justify-between">
           {/* Top Bar Left: Location & Pick-up points */}
           <div className="flex items-center gap-6">
             {/* City Selector */}
@@ -251,7 +251,7 @@ export function Header() {
           </Button>
 
           {/* Wide Search Bar */}
-          <OnClickOutside onClickOutside={() => setSearchFocused(false)} classes="relative max-w-2xl flex-1">
+          <OnClickOutside onClickOutside={() => setSearchFocused(false)} classes="relative max-w-full flex-20">
             <form
               onSubmit={handleSearchSubmit}
               className="border-apple-hairline rounded-apple-pill focus-within:border-apple-primary-focus focus-within:ring-apple-primary-focus bg-apple-canvas flex h-11 items-center overflow-hidden border transition-all focus-within:ring-1"
@@ -282,7 +282,7 @@ export function Header() {
           </OnClickOutside>
 
           {/* Right Controls: Actions */}
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-5 items-center justify-end gap-2">
             {/* Login Dialog */}
             {isAuthenticated && customer ? (
               <Popover>

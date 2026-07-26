@@ -139,7 +139,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas min-w-xl p-8">
+      <DialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas min-w-xl p-8 pb-5">
         <DialogHeader className="border-apple-divider-soft border-b pb-4">
           <DialogTitle className="text-apple-ink text-xl font-semibold tracking-[-0.28px]">
             {isEditing ? 'Редактировать адрес' : 'Добавить новый адрес'}
@@ -149,15 +149,15 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
           </p>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5 pt-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           {/* District */}
           <div>
-            <Label htmlFor="province" className="text-apple-ink text-[13px] font-semibold tracking-[-0.224px]">
+            <Label htmlFor="province" className="text-apple-ink mb-1.5 text-[13px] font-semibold tracking-[-0.224px]">
               Район <span className="text-apple-primary">*</span>
             </Label>
             <Input
               id="province"
-              placeholder="Например: Чандыбиль, Берзенги"
+              placeholder="Например: Bahar, Za most"
               value={formData.province}
               aria-invalid={!!errors.province}
               onChange={(e) => {
@@ -173,7 +173,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
 
           {/* Address info */}
           <div>
-            <Label htmlFor="address_1" className="text-apple-ink text-[13px] font-semibold tracking-[-0.224px]">
+            <Label htmlFor="address_1" className="text-apple-ink mb-1.5 text-[13px] font-semibold tracking-[-0.224px]">
               Адрес <span className="text-apple-primary">*</span>
             </Label>
             <Input
@@ -195,12 +195,15 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
           {/* Home number + Floor */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="address_2" className="text-apple-ink text-[13px] font-semibold tracking-[-0.224px]">
+              <Label
+                htmlFor="address_2"
+                className="text-apple-ink mb-1.5 text-[13px] font-semibold tracking-[-0.224px]"
+              >
                 Номер дома <span className="text-apple-primary">*</span>
               </Label>
               <Input
                 id="address_2"
-                placeholder="Дом / квартира / офис"
+                placeholder="Дом / квартира"
                 value={formData.address_2 ?? ''}
                 aria-invalid={!!errors.address_2}
                 onChange={(e) => {
@@ -214,7 +217,10 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
               )}
             </div>
             <div>
-              <Label htmlFor="postal_code" className="text-apple-ink text-[13px] font-semibold tracking-[-0.224px]">
+              <Label
+                htmlFor="postal_code"
+                className="text-apple-ink mb-1.5 text-[13px] font-semibold tracking-[-0.224px]"
+              >
                 Этаж
               </Label>
               <Input
@@ -228,7 +234,10 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
 
           {/* Comment for courier */}
           <div>
-            <Label htmlFor="address_name" className="text-apple-ink text-[13px] font-semibold tracking-[-0.224px]">
+            <Label
+              htmlFor="address_name"
+              className="text-apple-ink mb-1.5 text-[13px] font-semibold tracking-[-0.224px]"
+            >
               Комментарий для курьера
             </Label>
             <Textarea
@@ -237,24 +246,26 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
               value={formData.address_name ?? ''}
               onChange={(e) => setFormData((prev) => ({ ...prev, address_name: e.target.value }))}
               rows={3}
-              className="rounded-apple-sm border-apple-hairline bg-apple-canvas-parchment text-apple-ink placeholder:text-apple-ink/30 focus-visible:ring-apple-primary focus-visible:border-apple-primary mt-1.5 resize-none text-[14px]"
+              className="resize-none"
             />
           </div>
 
           {/* Actions */}
-          <div className="border-apple-divider-soft flex justify-end gap-3 border-t pt-2">
+          <div className="border-apple-divider-soft flex justify-end gap-3 border-t pt-5">
             <Button
               type="button"
               variant="outline"
+              size="md"
               onClick={() => onOpenChange(false)}
-              className="border-apple-hairline text-apple-ink hover:bg-apple-canvas-parchment rounded-full text-[13px] font-semibold"
+              className="border-apple-hairline text-apple-ink hover:bg-apple-canvas-parchment rounded-full font-semibold"
             >
               Отмена
             </Button>
             <Button
               type="submit"
+              size="md"
               disabled={isPending}
-              className="bg-apple-primary hover:bg-apple-primary-focus rounded-full px-7 text-[13px] font-semibold text-white disabled:opacity-40"
+              className="bg-apple-primary hover:bg-apple-primary-focus rounded-full px-7 font-semibold text-white disabled:opacity-40"
             >
               {isPending ? 'Сохранение…' : isEditing ? 'Сохранить' : 'Добавить адрес'}
             </Button>

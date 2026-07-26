@@ -87,7 +87,7 @@ export async function getCustomerOrders(): Promise<StoreOrder[]> {
     const { orders } = await medusa.client.fetch<{ orders: StoreOrder[] }>('/store/orders', {
       query: {
         fields:
-          'id,display_id,status,fulfillment_status,payment_status,created_at,currency_code,total,subtotal,shipping_total,tax_total,discount_total,items.*,items.variant.product.title,items.variant.product.handle,items.variant.product.thumbnail,shipping_address.*,billing_address.*,shipping_methods.*',
+          'id,display_id,status,fulfillment_status,payment_status,created_at,currency_code,total,subtotal,shipping_total,tax_total,discount_total,items.*,items.variant.product.id,items.variant.product.title,items.variant.product.handle,items.variant.product.thumbnail,shipping_address.*,billing_address.*,shipping_methods.*',
       },
     })
     return orders ?? []
@@ -101,7 +101,7 @@ export async function getCustomerOrder(orderId: string): Promise<StoreOrder | nu
     const { order } = await medusa.client.fetch<{ order: StoreOrder }>(`/store/orders/${orderId}`, {
       query: {
         fields:
-          'id,display_id,status,fulfillment_status,payment_status,created_at,currency_code,total,subtotal,shipping_total,tax_total,discount_total,items.*,items.variant.product.title,items.variant.product.handle,items.variant.product.thumbnail,shipping_address.*,billing_address.*,shipping_methods.*',
+          'id,display_id,status,fulfillment_status,payment_status,created_at,currency_code,total,subtotal,shipping_total,tax_total,discount_total,items.*,items.variant.product.id,items.variant.product.title,items.variant.product.handle,items.variant.product.thumbnail,shipping_address.*,billing_address.*,shipping_methods.*',
       },
     })
     return order

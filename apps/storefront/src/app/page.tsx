@@ -1,45 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
-import type { HttpTypes } from '@medusajs/types'
+import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
 
-import { useProducts } from '@/features/home/API'
+import { HOME_PRODUCT_CARD_FIELDS, useProducts } from '@/features/home/API'
 import { ProductCard } from '@/features/home/components/ProductCard'
-import { medusa } from '@/lib/medusa'
+import { useProductReviewSummaries } from '@/features/reviews/api/queries'
+
+const REGION_ID = 'reg_01KXGMKV3HG9ZR3WTV828AYM9A'
 
 export default function Home() {
-  const { data, isLoading, isError } = useProducts({ limit: 12, order: '-created_at' })
+  const { data, isLoading, isError } = useProducts({
+    limit: 12,
+    order: '-created_at',
+    fields: HOME_PRODUCT_CARD_FIELDS,
+    region_id: REGION_ID,
+  })
+  const productIds = data?.products.map((product) => product.id) ?? []
+  const { data: reviewSummaries } = useProductReviewSummaries(productIds)
 
-  const [regions, setRegions] = useState<HttpTypes.StoreRegion[]>([])
-  console.log('regions', regions)
-
-  const fn = async () => {
-    await medusa.store.region.list().then(({ regions: dataRegions }) => {
-      setRegions(dataRegions)
-      // setLoading(false)
-    })
-  }
-
-  useEffect(() => {
-    fn()
-  }, [])
-
-  // useEffect(() => {
-  //   const cartRes = await sdk.client.fetch<HttpTypes.StoreCompleteCartResponse>(
-  //     `/store/carts/${id}/complete-vendor`, {
-  //       method: "POST",
-  //       headers,
-  //     })
-  //     .then(async (cartRes) => {
-  //       const cartCacheTag = await getCacheTag("carts")
-  //       revalidateTag(cartCacheTag)
-  //       return cartRes
-  //     })
-  //     .catch(medusaError)
-  // }, [])
-
+  console.log('reviewSummaries', reviewSummaries)
   return (
     <main className="bg-apple-canvas text-apple-ink custom-container min-h-screen w-full px-4 py-8 antialiased">
       {/* Title Header Section */}
@@ -54,24 +34,11 @@ export default function Home() {
       </div>
 
       {/* Loading state placeholders */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-apple-lg bg-apple-canvas-parchment border-apple-hairline h-80 animate-pulse border"
-            />
-          ))}
-        </div>
-      ) : isError ? (
-        <p className="text-apple-ink-muted-48 text-sm">Не удалось загрузить товары.</p>
-      ) : (
-        <div className="grid w-full grid-cols-5 gap-4">
-          {data?.products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
+      <div className="grid w-full grid-cols-5 gap-x-3 gap-y-5">
+        {data?.products.map((product) => (
+          <ProductCard key={product.id} product={product} reviewSummary={reviewSummaries?.summaries[product.id]} />
+        ))}
+      </div>
     </main>
   )
 }

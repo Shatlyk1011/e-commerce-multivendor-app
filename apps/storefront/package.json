@@ -6,7 +6,8 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "knip": "knip"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -38,6 +39,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "husky": "^9.1.7",
+    "knip": "^6.29.0",
     "lint-staged": "^17.0.8",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.8.0",

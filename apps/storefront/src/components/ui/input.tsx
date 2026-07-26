@@ -11,15 +11,15 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
       data-slot="input"
       className={cn(
         // Layout & shape — matches {rounded.sm} = 8px, height 44px touch target
-        'flex h-11 w-full min-w-0',
+        'rounded-apple-sm flex h-11 w-full min-w-0',
         // Border — {colors.hairline} #e0e0e0
         'border-apple-hairline border',
         // Background — {colors.canvas-parchment} #f5f5f7
-        'bg-apple-canvas-parchment',
+        // 'bg-apple-canvas-parchment',
         // Padding & typography — {typography.caption} 14px / -0.224px tracking
         'text-apple-ink px-3.5 py-2.5 font-sans text-[14px] tracking-[-0.224px]',
         // Placeholder — {colors.ink-muted-48} at reduced opacity
-        'placeholder:text-apple-ink/30',
+        'placeholder:text-apple-ink/50',
         // Transitions
         'transition-all outline-none',
         // Focus — {colors.primary} #0066cc ring (2px solid, 20% alpha glow)

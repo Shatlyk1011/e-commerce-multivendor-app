@@ -11,8 +11,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatPrice } from '@/features/cart/utils'
+import { useMyProductReviews } from '@/features/reviews/api/queries'
 
 import { OrderDetailModal } from './OrderDetailModal'
+import { OrderReviewDialog } from './OrderReviewDialog'
 
 interface OrdersTabProps {
   orders: StoreOrder[]
@@ -36,6 +38,20 @@ function getFulfillmentStatusBadge(status?: string) {
 export function OrdersTab({ orders }: OrdersTabProps) {
   const [filter, setFilter] = useState<OrderFilter>('all')
   const [selectedOrder, setSelectedOrder] = useState<StoreOrder | null>(null)
+  const [reviewProduct, setReviewProduct] = useState<{ id: string; title: string; thumbnail?: string | null } | null>(
+    null,
+  )
+
+  const completedProductIds = orders
+    .filter(
+      (order) =>
+        order.status === 'completed' && order.payment_status === 'captured' && order.fulfillment_status === 'fulfilled',
+    )
+    .flatMap((order) => order.items ?? [])
+    .map((item) => item.variant?.product?.id)
+    .filter((productId): productId is string => Boolean(productId))
+  const { data: myReviews } = useMyProductReviews(completedProductIds)
+  const reviewsByProduct = new Map(myReviews?.reviews.map((review) => [review.product_id, review]))
 
   const filteredOrders = orders.filter((order) => {
     if (filter === 'processing')
@@ -92,7 +108,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
           <p className="text-apple-ink-muted-48 text-apple-caption mt-1 mb-4">
             {filter === 'all' ? 'Вы ещё не оформили ни одного заказа.' : 'В выбранной категории нет заказов.'}
           </p>
-          <Button asChild className="bg-apple-primary rounded-full px-6 text-xs font-semibold text-white">
+          <Button asChild className="bg-apple-primary rounded-full px-6 text-sm font-semibold text-white">
             <Link href="/">Перейти к покупкам</Link>
           </Button>
         </Card>
@@ -136,26 +152,52 @@ export function OrdersTab({ orders }: OrdersTabProps) {
 
                 {/* Line Items Preview Grid */}
                 <div className="flex flex-wrap items-center gap-3 pt-4">
-                  {order.items?.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-apple-surface-pearl border-apple-hairline rounded-apple-sm flex items-center gap-2.5 border p-2 pr-3"
-                    >
-                      <div className="border-apple-hairline h-10 w-10 shrink-0 overflow-hidden rounded border bg-white">
-                        {item.thumbnail ? (
-                          <img src={item.thumbnail} alt={item.title} className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="h-full w-full bg-neutral-200" />
+                  {order.items?.map((item) => {
+                    const productId = item.variant?.product?.id
+                    const canReview =
+                      order.status === 'completed' &&
+                      order.payment_status === 'captured' &&
+                      order.fulfillment_status === 'fulfilled' &&
+                      Boolean(productId)
+                    const existingReview = productId ? reviewsByProduct.get(productId) : undefined
+                    return (
+                      <div
+                        key={item.id}
+                        className="bg-apple-surface-pearl border-apple-hairline rounded-apple-sm flex items-center gap-2.5 border p-2 pr-3"
+                      >
+                        <div className="border-apple-hairline h-10 w-10 shrink-0 overflow-hidden rounded border bg-white">
+                          {item.thumbnail ? (
+                            <img src={item.thumbnail} alt={item.title} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full bg-neutral-200" />
+                          )}
+                        </div>
+                        <div className="max-w-[140px] min-w-0">
+                          <p className="text-apple-ink truncate text-[12px] font-semibold">{item.title}</p>
+                          <p className="text-apple-ink-muted-48 font-mono text-[11px]">
+                            {item.quantity} шт. × {formatPrice(item.unit_price, order.currency_code)}
+                          </p>
+                        </div>
+                        {canReview && productId && (
+                          <Button
+                            type="button"
+                            variant={existingReview ? 'outline' : 'default'}
+                            size="sm"
+                            onClick={() =>
+                              setReviewProduct({
+                                id: productId,
+                                title: item.title ?? 'Товар',
+                                thumbnail: item.thumbnail,
+                              })
+                            }
+                            className="ml-auto shrink-0 rounded-full px-3 text-[11px] font-semibold"
+                          >
+                            {existingReview ? 'Изменить отзыв' : 'Оставить отзыв'}
+                          </Button>
                         )}
                       </div>
-                      <div className="max-w-[140px] min-w-0">
-                        <p className="text-apple-ink truncate text-[12px] font-semibold">{item.title}</p>
-                        <p className="text-apple-ink-muted-48 font-mono text-[11px]">
-                          {item.quantity} шт. × {formatPrice(item.unit_price, order.currency_code)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </Card>
             )
@@ -171,6 +213,14 @@ export function OrdersTab({ orders }: OrdersTabProps) {
           if (!open) setSelectedOrder(null)
         }}
       />
+      {reviewProduct && (
+        <OrderReviewDialog
+          product={reviewProduct}
+          review={reviewsByProduct.get(reviewProduct.id)}
+          open={Boolean(reviewProduct)}
+          onOpenChange={(open) => !open && setReviewProduct(null)}
+        />
+      )}
     </div>
   )
 }
