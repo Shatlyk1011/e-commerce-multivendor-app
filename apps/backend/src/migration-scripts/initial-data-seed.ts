@@ -32,12 +32,14 @@ export default async function initial_data_seed({
   const link = container.resolve(ContainerRegistrationKeys.LINK);
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
   const fulfillmentModuleService = container.resolve(
-    ModuleRegistrationName.FULFILLMENT
+    ModuleRegistrationName.FULFILLMENT,
   );
 
   const countries = ["tm", "us"];
 
-  const pgConnection = container.resolve(ContainerRegistrationKeys.PG_CONNECTION);
+  const pgConnection = container.resolve(
+    ContainerRegistrationKeys.PG_CONNECTION,
+  );
   logger.info("Ensuring TMT currency exists...");
   await pgConnection.raw(`
     INSERT INTO currency (code, symbol, symbol_native, decimal_digits, rounding, raw_rounding, name)
@@ -136,7 +138,7 @@ export default async function initial_data_seed({
 
   logger.info("Seeding stock location data...");
   const { result: stockLocationResult } = await createStockLocationsWorkflow(
-    container
+    container,
   ).run({
     input: {
       locations: [
@@ -292,7 +294,7 @@ export default async function initial_data_seed({
   logger.info("Seeding product data...");
 
   const { result: categoryResult } = await createProductCategoriesWorkflow(
-    container
+    container,
   ).run({
     input: {
       product_categories: [
@@ -317,7 +319,7 @@ export default async function initial_data_seed({
   });
 
   const { result: productOptionsResult } = await createProductOptionsWorkflow(
-    container
+    container,
   ).run({
     input: {
       product_options: [
@@ -363,10 +365,7 @@ export default async function initial_data_seed({
               url: "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-back.png",
             },
           ],
-          options: [
-            { id: sizeOption.id },
-            { id: colorOption.id },
-          ],
+          options: [{ id: sizeOption.id }, { id: colorOption.id }],
           variants: [
             {
               title: "S / Black",

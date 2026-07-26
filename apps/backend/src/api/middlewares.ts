@@ -10,13 +10,19 @@ import {
   AuthenticatedMedusaRequest,
 } from "@medusajs/framework/http";
 import { PostVendorCreateSchema } from "./vendors/route";
-import { AdminCreateProduct } from "@medusajs/medusa/api/admin/products/validators";
+import { CreateProduct } from "@medusajs/medusa/api/admin/products/validators";
 import { AdminCreateVendorSchema } from "./admin/vendors/route";
 import { AdminUpdateVendorSchema } from "./admin/vendors/[id]/route";
 import { AdminResetVendorPasswordSchema } from "./admin/vendors/[id]/reset-password/route";
 import { otpMiddlewares } from "./store/auth/otp/middlewares";
+import { CreateReviewSchema } from "./store/products/[id]/reviews/middlewares";
+import { AdminCreateProductOptionTemplateSchema } from "./admin/product-option-templates/route";
 // import { CategoryTranslationsSchema } from "./admin/product-categories/translations/route";
 import multer from "multer";
+
+export const VendorCreateProductSchema = CreateProduct.omit({
+  description: true,
+});
 
 const vendorMediaUpload = multer({
   storage: multer.memoryStorage(),
@@ -110,6 +116,32 @@ export default defineMiddlewares({
         }),
       ],
     },
+    {
+      matcher: "/store/products/*/reviews",
+      method: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(CreateReviewSchema),
+      ],
+    },
+    {
+      matcher: "/store/products/*/reviews/eligibility",
+      method: ["GET"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/reviews/me",
+      method: ["GET"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/reviews/*",
+      method: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(CreateReviewSchema),
+      ],
+    },
     // Admin vendor routes
     {
       matcher: "/admin/vendors",
@@ -125,6 +157,11 @@ export default defineMiddlewares({
       matcher: "/admin/vendors/*/reset-password",
       method: ["POST"],
       middlewares: [validateAndTransformBody(AdminResetVendorPasswordSchema)],
+    },
+    {
+      matcher: "/admin/product-option-templates",
+      method: ["POST"],
+      middlewares: [validateAndTransformBody(AdminCreateProductOptionTemplateSchema)],
     },
 
     // Vendor-portal facing routes
@@ -150,7 +187,7 @@ export default defineMiddlewares({
     {
       matcher: "/vendors/products",
       method: ["POST"],
-      middlewares: [validateAndTransformBody(AdminCreateProduct)],
+      middlewares: [validateAndTransformBody(VendorCreateProductSchema)],
     },
     {
       matcher: "/vendors/media",

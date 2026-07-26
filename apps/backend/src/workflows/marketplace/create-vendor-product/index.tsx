@@ -13,6 +13,7 @@ import {
 } from "@medusajs/medusa/core-flows"
 import { MARKETPLACE_MODULE } from "../../../modules/marketplace"
 import { Modules } from "@medusajs/framework/utils"
+import { validateProductOptionsStep } from "../../product-option-templates/steps/validate-product-options"
 
 type WorkflowInput = {
   vendor_admin_id: string
@@ -22,6 +23,8 @@ type WorkflowInput = {
 const createVendorProductWorkflow = createWorkflow(
   "create-vendor-product",
   function (input: WorkflowInput) {
+    validateProductOptionsStep(input.product.options ?? [])
+
     // Retrieve default sales channel to make the product available in.
     const { data: stores } = useQueryGraphStep({
       entity: "store",

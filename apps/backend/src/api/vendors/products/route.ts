@@ -2,20 +2,19 @@ import {
   AuthenticatedMedusaRequest, 
   MedusaResponse,
 } from "@medusajs/framework/http"
-import { 
-  HttpTypes,
-} from "@medusajs/framework/types"
+import type { HttpTypes } from "@medusajs/framework/types"
 import createVendorProductWorkflow from "../../../workflows/marketplace/create-vendor-product"
 import { 
   ContainerRegistrationKeys,
 } from "@medusajs/framework/utils"
 import type { VendorProduct, VendorProductsResponse } from "@dtc/api-contracts"
 
+type VendorCreateProduct = Omit<HttpTypes.AdminCreateProduct, "description">
+
 const toVendorProduct = (product: {
   id: string;
   title: string;
   handle: string;
-  description: string | null;
   thumbnail: string | null;
   status: string;
   categories?: Array<{ id: string; name: string }> | null;
@@ -42,7 +41,6 @@ const toVendorProduct = (product: {
   id: product.id,
   title: product.title,
   handle: product.handle,
-  description: product.description,
   thumbnail: product.thumbnail,
   status: product.status,
   categories: product.categories?.map((c) => ({ id: c.id, name: c.name })),
@@ -77,7 +75,7 @@ const toVendorProduct = (product: {
 });
 
 export const POST = async (
-  req: AuthenticatedMedusaRequest<HttpTypes.AdminCreateProduct>,
+  req: AuthenticatedMedusaRequest<VendorCreateProduct>,
   res: MedusaResponse
 ) => {
   const { result } = await createVendorProductWorkflow(req.scope)
@@ -107,7 +105,6 @@ export const GET = async (
       "vendor.products.id",
       "vendor.products.title",
       "vendor.products.handle",
-      "vendor.products.description",
       "vendor.products.thumbnail",
       "vendor.products.status",
       "vendor.products.metadata",
@@ -145,4 +142,3 @@ export const GET = async (
 
   res.json(response)
 }
-
