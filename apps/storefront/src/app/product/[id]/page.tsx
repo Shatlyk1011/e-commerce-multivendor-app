@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useAddLineItem } from '@/features/cart/api/queries'
 import { useProduct, useProductVendor } from '@/features/product/api/queries'
 import { ProductShareButton } from '@/features/product/components/ProductShareButton'
+import { ProductReviews } from '@/features/reviews/components/ProductReviews'
 import { getCartId } from '@/lib/cart-cookies'
 import { cn } from '@/lib/utils'
 
@@ -422,6 +423,8 @@ export default function ProductDetailPage() {
           )}
         </div>
       </div>
+
+      <ProductReviews productId={product.id} />
     </main>
   )
 }

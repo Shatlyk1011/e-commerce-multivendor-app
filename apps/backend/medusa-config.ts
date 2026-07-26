@@ -60,5 +60,11 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/marketplace/",
     },
+    {
+      resolve: "./src/modules/product-review/",
+    },
+    {
+      resolve: "./src/modules/product-option-template/",
+    },
   ],
 });
