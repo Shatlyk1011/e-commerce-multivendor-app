@@ -9,6 +9,8 @@ export type {
   VendorOrdersResponse,
   VendorProduct,
   VendorProductCreateResponse,
+  ProductOptionTemplate,
+  VendorProductOptionTemplatesResponse,
   VendorProductsResponse,
   VendorStatus,
 } from "./vendor.js"

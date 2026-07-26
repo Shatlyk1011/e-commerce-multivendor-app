@@ -70,7 +70,6 @@ export type VendorProduct = {
   id: string
   title: string
   handle: string
-  description: string | null
   thumbnail: string | null
   status: string
   // Category
@@ -106,6 +105,20 @@ export type VendorProductsResponse = {
 
 export type VendorProductCreateResponse = {
   product: VendorProduct
+}
+
+export type ProductOptionTemplate = {
+  id: string
+  title: string
+  is_active: boolean
+  values: Array<{
+    id: string
+    value: string
+  }>
+}
+
+export type VendorProductOptionTemplatesResponse = {
+  product_option_templates: ProductOptionTemplate[]
 }
 
 export type UploadedVendorMedia = {
