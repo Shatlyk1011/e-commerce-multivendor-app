@@ -22,7 +22,6 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { getProductPriceLabel } from '@/components/products/ProductItem'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { copyToClipboard } from '@/lib/clipboard'
@@ -224,14 +223,10 @@ export default function ProductDetailsPage() {
                 {product.title}
               </h1>
 
-              <p className="text-apple-caption text-apple-ink-muted-80 mt-4 flex-1">
-                {product.description || <EmptyValue />}
-              </p>
-
               {/* Price */}
               <div className="border-apple-divider-soft mt-6 border-t pt-5">
                 <p className="text-apple-fine-print text-apple-ink-muted-48 tracking-wide uppercase">Стоимость</p>
-                <p className="text-apple-lead text-apple-ink mt-1 font-semibold">{getProductPriceLabel(product)}</p>
+                <p className="text-apple-lead text-apple-ink mt-1 font-semibold">{'????'}</p>
               </div>
 
               {/* ID + copy button */}

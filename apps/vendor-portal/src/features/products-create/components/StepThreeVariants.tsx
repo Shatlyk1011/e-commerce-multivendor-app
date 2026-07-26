@@ -1,6 +1,7 @@
 'use client'
 
-import { Plus, Trash2 } from 'lucide-react'
+import type { ProductOptionTemplate } from '@dtc/api-contracts'
+import { Check, Plus, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,12 +28,12 @@ interface StepThreeVariantsProps {
   onMaterialChange: (value: string) => void
   // Options
   options: ProductOption[]
+  optionTemplates: ProductOptionTemplate[]
+  isLoadingOptionTemplates: boolean
   onAddOption: () => void
   onRemoveOption: (index: number) => void
   onUpdateOptionTitle: (index: number, title: string) => void
-  onUpdateOptionInputValue: (index: number, value: string) => void
-  onAddOptionValue: (index: number) => void
-  onRemoveOptionValue: (optIndex: number, valIndex: number) => void
+  onToggleOptionValue: (index: number, value: string) => void
   fieldErrors: FieldErrors
 }
 
@@ -50,12 +51,12 @@ export function StepThreeVariants({
   material,
   onMaterialChange,
   options,
+  optionTemplates,
+  isLoadingOptionTemplates,
   onAddOption,
   onRemoveOption,
   onUpdateOptionTitle,
-  onUpdateOptionInputValue,
-  onAddOptionValue,
-  onRemoveOptionValue,
+  onToggleOptionValue,
   fieldErrors,
 }: StepThreeVariantsProps) {
   return (
@@ -174,7 +175,7 @@ export function StepThreeVariants({
           <div>
             <h2 className="text-apple-ink text-[17px] font-semibold">Варианты товара (Характеристики)</h2>
             <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
-              Добавьте свойства (размеры, цвета), чтобы настроить разные варианты.
+              Выберите свойства и их значения, утверждённые администратором.
             </p>
           </div>
           <Button
@@ -182,13 +183,20 @@ export function StepThreeVariants({
             variant="outline"
             size="sm"
             onClick={onAddOption}
+            disabled={isLoadingOptionTemplates || optionTemplates.length === 0}
             className="shadow-xs active:scale-[0.98]"
           >
             <Plus className="mr-1 size-4" /> Добавить свойство
           </Button>
         </div>
 
-        {options.length === 0 ? (
+        {isLoadingOptionTemplates ? (
+          <div className="text-apple-ink-muted-48 py-6 text-center text-[14px]">Загрузка доступных свойств…</div>
+        ) : optionTemplates.length === 0 ? (
+          <div className="text-apple-ink-muted-48 py-6 text-center text-[14px]">
+            Администратор ещё не настроил свойства товара. Товар будет создан в единственном стандартном варианте.
+          </div>
+        ) : options.length === 0 ? (
           <div className="text-apple-ink-muted-48 py-6 text-center text-[14px]">
             Свойства не заданы. Товар будет создан в единственном стандартном варианте.
           </div>
@@ -209,49 +217,54 @@ export function StepThreeVariants({
                 </button>
 
                 <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
-                  {/* Title */}
                   <div className="grid gap-1.5">
                     <Label>Название свойства</Label>
-                    <Input
-                      placeholder="Цвет, Размер..."
-                      value={opt.title}
-                      onChange={(e) => onUpdateOptionTitle(optIdx, e.target.value)}
-                    />
+                    <Select value={opt.title} onValueChange={(value) => onUpdateOptionTitle(optIdx, value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите свойство" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {optionTemplates
+                          .filter(
+                            (template) =>
+                              template.title === opt.title || !options.some((item) => item.title === template.title),
+                          )
+                          .map((template) => (
+                            <SelectItem key={template.id} value={template.title}>
+                              {template.title}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
-                  {/* Value inputs */}
                   <div className="col-span-2 grid gap-1.5">
                     <Label>Значения свойства</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Введите значение и нажмите Добавить"
-                        value={opt.inputValue}
-                        onChange={(e) => onUpdateOptionInputValue(optIdx, e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault()
-                            onAddOptionValue(optIdx)
-                          }
-                        }}
-                      />
-                      <Button type="button" variant="outline" className="h-10" onClick={() => onAddOptionValue(optIdx)}>
-                        Добавить
-                      </Button>
-                    </div>
-
-                    {opt.values.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {opt.values.map((val, valIdx) => (
-                          <span
-                            key={valIdx}
-                            className="bg-apple-canvas text-apple-ink border-apple-hairline rounded-apple-pill inline-flex cursor-pointer items-center gap-1.5 border px-2.5 py-0.5 text-[13px] transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-                            onClick={() => onRemoveOptionValue(optIdx, valIdx)}
-                            title="Нажмите для удаления"
-                          >
-                            {val}
-                            <Trash2 className="size-3 opacity-60" />
-                          </span>
-                        ))}
+                    {!opt.title ? (
+                      <p className="text-apple-ink-muted-48 text-[13px]">Сначала выберите свойство.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {optionTemplates
+                          .find((template) => template.title === opt.title)
+                          ?.values.map((templateValue) => {
+                            const selected = opt.values.includes(templateValue.value)
+                            return (
+                              <button
+                                key={templateValue.id}
+                                type="button"
+                                aria-pressed={selected}
+                                onClick={() => onToggleOptionValue(optIdx, templateValue.value)}
+                                className={`rounded-apple-pill inline-flex min-h-9 items-center gap-1.5 border px-3 text-[13px] transition-colors ${
+                                  selected
+                                    ? 'border-apple-primary bg-apple-primary text-apple-on-primary'
+                                    : 'bg-apple-canvas text-apple-ink border-apple-hairline hover:border-apple-primary'
+                                }`}
+                              >
+                                {selected && <Check className="size-3.5" />}
+                                {templateValue.value}
+                              </button>
+                            )
+                          })}
                       </div>
                     )}
                   </div>

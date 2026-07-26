@@ -5,15 +5,20 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import type { VendorMediaResponse, VendorProductCreateResponse } from '@dtc/api-contracts'
+import type {
+  ProductOptionTemplate,
+  VendorMediaResponse,
+  VendorProductCreateResponse,
+  VendorProductOptionTemplatesResponse,
+} from '@dtc/api-contracts'
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { StepFourVariantsMatrix } from '@/features/products/create/components/StepFourVariantsMatrix'
-import { StepOneGeneral } from '@/features/products/create/components/StepOneGeneral'
-import { StepThreeVariants } from '@/features/products/create/components/StepThreeVariants'
-import { StepTwoMedia } from '@/features/products/create/components/StepTwoMedia'
+import { StepFourVariantsMatrix } from '@/features/products-create/components/StepFourVariantsMatrix'
+import { StepOneGeneral } from '@/features/products-create/components/StepOneGeneral'
+import { StepThreeVariants } from '@/features/products-create/components/StepThreeVariants'
+import { StepTwoMedia } from '@/features/products-create/components/StepTwoMedia'
 import {
   STEPS_INFO,
   generateVariantSku,
@@ -23,8 +28,8 @@ import {
   stepOneSchema,
   stepThreeSchema,
   stepTwoSchema,
-} from '@/features/products/create/utils'
-import type { FieldErrors, ProductOption, ProductVariant } from '@/features/products/create/utils'
+} from '@/features/products-create/utils'
+import type { FieldErrors, ProductOption, ProductVariant } from '@/features/products-create/utils'
 import { medusa } from '@/lib/medusa'
 
 import { useVendor } from '../../layout'
@@ -38,7 +43,6 @@ export default function CreateProductPage() {
 
   // 1. General state (Step 1)
   const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
   const [tagsInput, setTagsInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
@@ -59,9 +63,9 @@ export default function CreateProductPage() {
   const [material, setMaterial] = useState('')
 
   // 4. Options & Variants state (Step 3)
-  const [options, setOptions] = useState<ProductOption[]>([
-    { title: 'Размер', values: ['S', 'M', 'L'], inputValue: '' },
-  ])
+  const [options, setOptions] = useState<ProductOption[]>([])
+  const [optionTemplates, setOptionTemplates] = useState<ProductOptionTemplate[]>([])
+  const [isLoadingOptionTemplates, setIsLoadingOptionTemplates] = useState(true)
   const [variants, setVariants] = useState<ProductVariant[]>([])
 
   // ─── Leave-page guard ────────────────────────────────────────────────────────
@@ -77,7 +81,6 @@ export default function CreateProductPage() {
   const isDirty =
     !hasCreatedProduct &&
     (title.trim() !== '' ||
-      description.trim() !== '' ||
       category !== '' ||
       tags.length > 0 ||
       thumbnail !== '' ||
@@ -97,6 +100,29 @@ export default function CreateProductPage() {
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
   }, [isDirty])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadOptionTemplates = async () => {
+      try {
+        const response = await medusa.client.fetch<VendorProductOptionTemplatesResponse>(
+          '/vendors/product-option-templates',
+        )
+        if (isMounted) setOptionTemplates(response.product_option_templates)
+      } catch (error) {
+        console.error('Error loading product option templates:', error)
+        if (isMounted) toast.error('Не удалось загрузить доступные свойства товара.')
+      } finally {
+        if (isMounted) setIsLoadingOptionTemplates(false)
+      }
+    }
+
+    void loadOptionTemplates()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const handleLeave = (href: string) => {
     if (!isDirty) {
@@ -145,7 +171,7 @@ export default function CreateProductPage() {
 
   // ─── Options handlers ─────────────────────────────────────────────────────────
   const addOption = () => {
-    setOptions([...options, { title: '', values: [], inputValue: '' }])
+    setOptions([...options, { title: '', values: [] }])
   }
 
   const removeOption = (index: number) => {
@@ -155,29 +181,15 @@ export default function CreateProductPage() {
   const updateOptionTitle = (index: number, title: string) => {
     const updated = [...options]
     updated[index].title = title
+    updated[index].values = []
     setOptions(updated)
   }
 
-  const updateOptionInputValue = (index: number, value: string) => {
+  const toggleOptionValue = (index: number, value: string) => {
     const updated = [...options]
-    updated[index].inputValue = value
-    setOptions(updated)
-  }
-
-  const addOptionValue = (index: number) => {
-    const option = options[index]
-    const val = option.inputValue.trim()
-    if (val && !option.values.includes(val)) {
-      const updated = [...options]
-      updated[index].values = [...option.values, val]
-      updated[index].inputValue = ''
-      setOptions(updated)
-    }
-  }
-
-  const removeOptionValue = (optIndex: number, valIndex: number) => {
-    const updated = [...options]
-    updated[optIndex].values = updated[optIndex].values.filter((_, i) => i !== valIndex)
+    updated[index].values = updated[index].values.includes(value)
+      ? updated[index].values.filter((selected) => selected !== value)
+      : [...updated[index].values, value]
     setOptions(updated)
   }
 
@@ -372,7 +384,6 @@ export default function CreateProductPage() {
     const payload = {
       title: title.trim(),
       handle: generatedHandle,
-      description: description.trim() || null,
       thumbnail: uploadedThumbnailUrl.trim() || null,
       images: uploadedImageUrls.map((url) => ({ url })),
       status: 'draft',
@@ -500,8 +511,6 @@ export default function CreateProductPage() {
             <StepOneGeneral
               title={title}
               onTitleChange={setTitle}
-              description={description}
-              onDescriptionChange={setDescription}
               category={category}
               onCategoryChange={setCategory}
               tagsInput={tagsInput}
@@ -546,12 +555,12 @@ export default function CreateProductPage() {
               material={material}
               onMaterialChange={setMaterial}
               options={options}
+              optionTemplates={optionTemplates}
+              isLoadingOptionTemplates={isLoadingOptionTemplates}
               onAddOption={addOption}
               onRemoveOption={removeOption}
               onUpdateOptionTitle={updateOptionTitle}
-              onUpdateOptionInputValue={updateOptionInputValue}
-              onAddOptionValue={addOptionValue}
-              onRemoveOptionValue={removeOptionValue}
+              onToggleOptionValue={toggleOptionValue}
               fieldErrors={fieldErrors}
             />
           )}

@@ -6,7 +6,6 @@ import { CategorySelector } from '@/components/CategorySelector'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Tooltip } from '@/components/ui/tooltip'
 
 import type { FieldErrors } from '../utils'
@@ -14,8 +13,6 @@ import type { FieldErrors } from '../utils'
 interface StepOneGeneralProps {
   title: string
   onTitleChange: (value: string) => void
-  description: string
-  onDescriptionChange: (value: string) => void
   category: string
   onCategoryChange: (value: string) => void
   tagsInput: string
@@ -29,8 +26,6 @@ interface StepOneGeneralProps {
 export function StepOneGeneral({
   title,
   onTitleChange,
-  description,
-  onDescriptionChange,
   category,
   onCategoryChange,
   tagsInput,
@@ -65,21 +60,6 @@ export function StepOneGeneral({
           required
         />
         {fieldErrors.title && <p className="text-xs text-red-600">{fieldErrors.title}</p>}
-      </div>
-
-      {/* Description */}
-      <div className="grid gap-2">
-        <div className="flex items-center">
-          <Label htmlFor="description">Описание товара</Label>
-          <Tooltip content="Описание товара с его свойствами и преимуществами." />
-        </div>
-        <Textarea
-          id="description"
-          className="min-h-[140px]"
-          placeholder="Расскажите покупателям об этом товаре..."
-          value={description}
-          onChange={(e) => onDescriptionChange(e.target.value)}
-        />
       </div>
 
       {/* Category */}

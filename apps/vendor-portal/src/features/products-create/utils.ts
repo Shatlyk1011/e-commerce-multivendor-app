@@ -23,7 +23,6 @@ export const STEPS_INFO = [
 export interface ProductOption {
   title: string
   values: string[]
-  inputValue: string // temporary for adding tags
 }
 
 export interface ProductVariant {

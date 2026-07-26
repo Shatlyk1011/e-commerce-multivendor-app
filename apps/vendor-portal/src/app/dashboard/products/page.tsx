@@ -8,8 +8,8 @@ import type { VendorProduct, VendorProductsResponse } from '@dtc/api-contracts'
 import { ArrowRight, Loader2, Plus, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { ProductItem } from '@/components/products/ProductItem'
 import { Button } from '@/components/ui/button'
+import { ProductItem } from '@/features/products/components/ProductItem'
 import { medusa } from '@/lib/medusa'
 
 export default function ProductsPage() {
