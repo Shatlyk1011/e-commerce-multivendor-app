@@ -45,7 +45,7 @@ export default function ProductsPage() {
 
   return (
     <div className="bg-apple-canvas-parchment min-h-[calc(100vh-3.5rem)] p-8 max-md:p-4">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="border-apple-hairline mb-8 flex items-center justify-between gap-6 border-b pb-6 max-sm:gap-4">
           <div>
@@ -56,7 +56,7 @@ export default function ProductsPage() {
           </div>
           <Link href="/dashboard/products/create">
             <Button className="shadow-xs active:scale-[0.98]">
-              <Plus className="mr-1.5 size-4" />
+              <Plus className="size-4" />
               Добавить товар
             </Button>
           </Link>
@@ -81,7 +81,7 @@ export default function ProductsPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1">
+          <div className="max-xs:grid-cols-1 grid grid-cols-4 gap-4 max-2xl:grid-cols-4 max-xl:grid-cols-3 max-md:grid-cols-2">
             {products.map((product) => (
               <ProductItem key={product.id} product={product} />
             ))}

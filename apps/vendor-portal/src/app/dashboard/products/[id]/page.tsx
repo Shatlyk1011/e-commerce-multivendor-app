@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { getProductPriceLabel } from '@/features/products/components/ProductItem'
 import { copyToClipboard } from '@/lib/clipboard'
 import { productStatus } from '@/lib/constants'
 import { medusa } from '@/lib/medusa'
@@ -226,7 +227,7 @@ export default function ProductDetailsPage() {
               {/* Price */}
               <div className="border-apple-divider-soft mt-6 border-t pt-5">
                 <p className="text-apple-fine-print text-apple-ink-muted-48 tracking-wide uppercase">Стоимость</p>
-                <p className="text-apple-lead text-apple-ink mt-1 font-semibold">{'????'}</p>
+                <p className="text-apple-lead text-apple-ink mt-1 font-semibold">{getProductPriceLabel(product)}</p>
               </div>
 
               {/* ID + copy button */}

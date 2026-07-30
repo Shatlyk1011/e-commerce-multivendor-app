@@ -173,7 +173,7 @@ export function StepThreeVariants({
       <div className="bg-apple-canvas border-apple-hairline rounded-apple-lg space-y-6 border p-8 shadow-xs max-md:p-5">
         <div className="border-apple-divider-soft flex items-center justify-between border-b pb-4 max-sm:flex-col max-sm:items-start max-sm:gap-2">
           <div>
-            <h2 className="text-apple-ink text-[17px] font-semibold">Варианты товара (Характеристики)</h2>
+            <h2 className="text-apple-ink text-[17px] font-semibold">Варианты товара (размер, цвет и т.д.)</h2>
             <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
               Выберите свойства и их значения, утверждённые администратором.
             </p>

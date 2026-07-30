@@ -179,7 +179,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   autoFocus
                 />
               </div>
-              <p className="text-apple-ink-muted-48 text-[11px]">Введите 8-значный номер без +993</p>
+              <p className="text-apple-ink-muted-48 text-[11px]">Введите 8-значный номер</p>
             </div>
 
             {error && (
