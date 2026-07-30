@@ -132,7 +132,7 @@ export type VendorProduct = {
     id: string
     title: string
     sku?: string | null
-    barcode?: string | null
+    inventory_quantity?: number | null
     options?: Array<{ value: string; option?: { title: string } }>
     prices?: Array<{
       amount: number

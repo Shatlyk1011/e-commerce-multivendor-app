@@ -28,7 +28,8 @@ const toVendorProduct = (product: {
     id: string;
     title: string;
     sku?: string | null;
-    barcode?: string | null;
+    inventory_quantity?: number | null;
+    metadata?: Record<string, unknown> | null;
     options?: Array<{ value: string; option?: { title: string } }> | null;
     prices?: Array<{
       amount: number;
@@ -60,7 +61,13 @@ const toVendorProduct = (product: {
     id: variant.id,
     title: variant.title,
     sku: variant.sku,
-    barcode: variant.barcode,
+    inventory_quantity:
+      variant.inventory_quantity ??
+      (typeof variant.metadata?.inventory_quantity === 'number'
+        ? variant.metadata.inventory_quantity
+        : typeof variant.metadata?.inventory_quantity === 'string'
+          ? parseInt(variant.metadata.inventory_quantity, 10)
+          : null),
     options: variant.options?.map((opt) => ({
       value: opt.value,
       option: opt.option ? { title: opt.option.title } : undefined,
@@ -117,7 +124,8 @@ export const GET = async (
       "vendor.products.variants.id",
       "vendor.products.variants.title",
       "vendor.products.variants.sku",
-      "vendor.products.variants.barcode",
+      "vendor.products.variants.inventory_quantity",
+      "vendor.products.variants.metadata",
       "vendor.products.variants.options.value",
       "vendor.products.variants.options.option.title",
       "vendor.products.variants.prices.amount",

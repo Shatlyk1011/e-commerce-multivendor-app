@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation'
 import type { VendorProduct, VendorProductsResponse } from '@dtc/api-contracts'
 import {
   ArrowLeft,
+  Boxes,
   Check,
   Clipboard,
   Globe,
@@ -47,17 +48,28 @@ function formatPrice(amount: number, currencyCode: string) {
 
 function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-apple-canvas border-apple-hairline rounded-apple-lg border p-6 lg:p-8 ${className}`}>
+    <div className={`bg-apple-canvas border-apple-hairline rounded-apple-lg border p-5 sm:p-6 ${className}`}>
       {children}
     </div>
   )
 }
 
-function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
+function SectionHeader({
+  icon: Icon,
+  title,
+  extra,
+}: {
+  icon: React.ElementType
+  title: string
+  extra?: React.ReactNode
+}) {
   return (
-    <div className="border-apple-divider-soft mb-5 flex items-center gap-2.5 border-b pb-4">
-      <Icon className="text-apple-primary size-5 shrink-0" aria-hidden="true" />
-      <h2 className="text-apple-tagline text-apple-ink">{title}</h2>
+    <div className="border-apple-divider-soft mb-4 flex items-center justify-between border-b pb-3">
+      <div className="flex items-center gap-2">
+        <Icon className="text-apple-primary size-4 shrink-0" aria-hidden="true" />
+        <h2 className="text-apple-ink text-[15px] font-semibold tracking-tight">{title}</h2>
+      </div>
+      {extra}
     </div>
   )
 }
@@ -124,8 +136,6 @@ export default function ProductDetailsPage() {
     }
   }, [id])
 
-  console.log('product', product)
-
   if (isLoading) {
     return (
       <div className="bg-apple-canvas-parchment flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center">
@@ -167,6 +177,9 @@ export default function ProductDetailsPage() {
   const categories = product.categories ?? []
   const keywords: string[] = product.metadata?.keywords ?? []
 
+  // Total inventory across all variants
+  const totalInventory = variants.reduce((sum, v) => sum + (v.inventory_quantity ?? 0), 0)
+
   // Collect unique product options from variant option values
   const optionMap = new Map<string, Set<string>>()
   variants.forEach((v) => {
@@ -184,57 +197,55 @@ export default function ProductDetailsPage() {
     product.weight || product.length || product.width || product.height || product.origin_country || product.material
 
   return (
-    <div className="bg-apple-canvas-parchment min-h-[calc(100vh-3.5rem)] p-8 max-md:p-4">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <div className="bg-apple-canvas-parchment min-h-[calc(100vh-3.5rem)] p-6 max-md:p-4">
+      <div className="mx-auto max-w-5xl space-y-5">
         {/* Back link */}
         <Link
           href="/dashboard/products"
-          className="text-apple-caption text-apple-primary inline-flex min-h-11 items-center gap-2 font-semibold"
+          className="text-apple-caption text-apple-primary inline-flex items-center gap-1.5 font-semibold hover:underline"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
           Все товары
         </Link>
 
-        {/* ── HERO CARD: thumbnail + core info ── */}
+        {/* ── HERO CARD: thumbnail + core info (Compact fit layout) ── */}
         <SectionCard className="overflow-hidden !p-0">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)]">
+          <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr]">
             {/* Left — Thumbnail */}
-            <section className="bg-apple-canvas-parchment border-apple-hairline flex min-h-80 items-center justify-center border-b p-8 lg:min-h-[26rem] lg:border-r lg:border-b-0">
+            <div className="bg-apple-canvas-parchment border-apple-hairline flex items-center justify-center border-b p-5 lg:border-r lg:border-b-0">
               {product.thumbnail ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={product.thumbnail} alt={product.title} className="max-h-[22rem] w-full object-contain" />
+                <img
+                  src={product.thumbnail}
+                  alt={product.title}
+                  className="rounded-apple-md max-h-48 w-full object-contain"
+                />
               ) : (
-                <div className="text-apple-ink-muted-48 flex flex-col items-center gap-3 text-center">
-                  <ImageOff className="size-12" aria-hidden="true" />
-                  <p className="text-apple-caption">Изображение товара не добавлено</p>
+                <div className="text-apple-ink-muted-48 flex flex-col items-center gap-2 py-6 text-center">
+                  <ImageOff className="size-10" aria-hidden="true" />
+                  <p className="text-apple-fine-print">Без фото</p>
                 </div>
               )}
-            </section>
+            </div>
 
             {/* Right — Core product info */}
-            <section className="flex flex-col p-6 lg:p-8">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <p className="text-apple-fine-print text-apple-ink-muted-48 truncate text-[11px] tracking-widest uppercase">
-                  {product.handle}
-                </p>
-                <Badge className={`shrink-0 ${status.className}`}>{status.label}</Badge>
-              </div>
+            <div className="flex flex-col justify-between space-y-4 p-5 sm:p-6">
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-apple-fine-print text-apple-ink-muted-48 truncate text-[11px] tracking-wider uppercase">
+                    {product.handle}
+                  </p>
+                  <Badge className={`shrink-0 ${status.className}`}>{status.label}</Badge>
+                </div>
 
-              <h1 className="text-apple-ink mt-4 text-[clamp(1.4rem,3vw,2rem)] leading-tight font-semibold tracking-tight">
-                {product.title}
-              </h1>
+                <h1 className="text-apple-ink mt-2 text-xl leading-tight font-semibold tracking-tight sm:text-2xl">
+                  {product.title}
+                </h1>
 
-              {/* Price */}
-              <div className="border-apple-divider-soft mt-6 border-t pt-5">
-                <p className="text-apple-fine-print text-apple-ink-muted-48 tracking-wide uppercase">Стоимость</p>
-                <p className="text-apple-lead text-apple-ink mt-1 font-semibold">{getProductPriceLabel(product)}</p>
-              </div>
-
-              {/* ID + copy button */}
-              <div className="mt-5">
-                <p className="text-apple-fine-print text-apple-ink-muted-48 tracking-wide uppercase">ID товара</p>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="text-apple-caption text-apple-ink truncate font-mono" title={product.id}>
+                {/* ID + copy button */}
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-apple-fine-print text-apple-ink-muted-48 uppercase">ID:</span>
+                  <span className="text-apple-caption text-apple-ink truncate font-mono text-[12px]" title={product.id}>
                     {product.id}
                   </span>
                   <button
@@ -247,90 +258,123 @@ export default function ProductDetailsPage() {
                     {idCopied ? <Check className="size-3.5 text-green-500" /> : <Clipboard className="size-3.5" />}
                   </button>
                   {idCopied && (
-                    <span className="animate-fade-in text-[11px] font-medium text-green-600">ID скопирован</span>
+                    <span className="animate-fade-in text-[11px] font-medium text-green-600">Скопирован</span>
                   )}
                 </div>
               </div>
-            </section>
+
+              {/* Core metrics summary bar */}
+              <div className="border-apple-divider-soft flex flex-wrap items-center justify-between gap-4 border-t pt-3">
+                <div>
+                  <p className="text-apple-fine-print text-apple-ink-muted-48 text-[11px] tracking-wide uppercase">
+                    Стоимость
+                  </p>
+                  <p className="text-apple-ink mt-0.5 text-lg font-semibold">{getProductPriceLabel(product)}</p>
+                </div>
+
+                <div className="bg-apple-canvas-parchment border-apple-hairline rounded-apple-md flex items-center gap-2 border px-3 py-1.5">
+                  <Boxes className="text-apple-primary size-4 shrink-0" />
+                  <div>
+                    <p className="text-apple-fine-print text-apple-ink-muted-48 text-[10px] uppercase">Общий остаток</p>
+                    <p className="text-apple-ink text-[13px] leading-tight font-semibold">
+                      {totalInventory > 0 ? (
+                        <span className="font-medium text-green-700">{totalInventory} шт. в наличии</span>
+                      ) : (
+                        <span className="font-medium text-red-600">Нет в наличии</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </SectionCard>
 
-        {/* ── SECTION 1: General info (Step 1 of create form) ── */}
-        <SectionCard>
-          <SectionHeader icon={Info} title="Общая информация" />
-          <dl className="grid gap-6 sm:grid-cols-2">
-            {/* Category */}
-            <FieldRow
-              label="Категория"
-              value={
-                categories.length ? (
-                  <div className="mt-0.5 flex flex-wrap gap-1.5">
-                    {categories.map((cat) => (
-                      <span
-                        key={cat.id}
-                        className="bg-apple-canvas-parchment text-apple-ink border-apple-hairline rounded-apple-pill inline-flex items-center border px-2.5 py-1 text-[13px]"
-                      >
-                        {cat.name}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyValue />
-                )
-              }
-            />
-
-            {/* Tags / Keywords */}
-            <FieldRow
-              label="Теги / Поисковые слова"
-              value={
-                keywords.length ? (
-                  <div className="mt-0.5 flex flex-wrap gap-1.5">
-                    {keywords.map((kw) => (
-                      <span
-                        key={kw}
-                        className="bg-apple-primary/8 text-apple-primary border-apple-primary/20 rounded-apple-pill inline-flex items-center gap-1 border px-2.5 py-1 text-[13px]"
-                      >
-                        <Tag className="size-3 opacity-70" />
-                        {kw}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyValue />
-                )
-              }
-            />
-          </dl>
-        </SectionCard>
-
-        {/* ── SECTION 2: Gallery images (Step 2 of create form) ── */}
-        {images.length > 0 && (
+        {/* ── 2-COLUMN SECTION GRID ── */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          {/* ── SECTION 1: General info ── */}
           <SectionCard>
-            <SectionHeader icon={ImageOff} title="Галерея изображений" />
-            <div className="grid grid-cols-6 gap-3 max-md:grid-cols-4 max-sm:grid-cols-3">
-              {images.map((img, idx) => (
-                <div
-                  key={idx}
-                  className="border-apple-hairline rounded-apple-sm bg-apple-canvas-parchment overflow-hidden border"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={`Изображение ${idx + 1}`}
-                    className="aspect-square w-full object-contain p-2"
-                  />
-                </div>
-              ))}
-            </div>
-          </SectionCard>
-        )}
+            <SectionHeader icon={Info} title="Общая информация" />
+            <dl className="space-y-4">
+              {/* Category */}
+              <FieldRow
+                label="Категория"
+                value={
+                  categories.length ? (
+                    <div className="mt-0.5 flex flex-wrap gap-1.5">
+                      {categories.map((cat) => (
+                        <span
+                          key={cat.id}
+                          className="bg-apple-canvas-parchment text-apple-ink border-apple-hairline rounded-apple-pill inline-flex items-center border px-2.5 py-0.5 text-[13px]"
+                        >
+                          {cat.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyValue />
+                  )
+                }
+              />
 
-        {/* ── SECTION 3: Logistics, dimensions & product options (merged) ── */}
+              {/* Tags / Keywords */}
+              <FieldRow
+                label="Теги / Поисковые слова"
+                value={
+                  keywords.length ? (
+                    <div className="mt-0.5 flex flex-wrap gap-1.5">
+                      {keywords.map((kw) => (
+                        <span
+                          key={kw}
+                          className="bg-apple-primary/8 text-apple-primary border-apple-primary/20 rounded-apple-pill inline-flex items-center gap-1 border px-2.5 py-0.5 text-[13px]"
+                        >
+                          <Tag className="size-3 opacity-70" />
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyValue />
+                  )
+                }
+              />
+            </dl>
+          </SectionCard>
+
+          {/* ── SECTION 2: Gallery images ── */}
+          <SectionCard>
+            <SectionHeader
+              icon={ImageOff}
+              title="Галерея изображений"
+              extra={
+                images.length > 0 ? (
+                  <span className="text-apple-ink-muted-48 text-[12px]">{images.length} фото</span>
+                ) : undefined
+              }
+            />
+            {images.length > 0 ? (
+              <div className="grid grid-cols-4 gap-2.5 max-sm:grid-cols-3">
+                {images.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="border-apple-hairline rounded-apple-sm bg-apple-canvas-parchment overflow-hidden border p-1"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.url} alt={`Изображение ${idx + 1}`} className="aspect-square w-full object-contain" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-apple-caption text-apple-ink-muted-48 italic">Дополнительные фото не загружены</p>
+            )}
+          </SectionCard>
+        </div>
+
+        {/* ── SECTION 3: Logistics, dimensions & product options ── */}
         {(hasLogistics || optionMap.size > 0) && (
           <SectionCard>
             <SectionHeader icon={Ruler} title="Характеристики и Габариты" />
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Dimensions row */}
               {(product.weight || product.length || product.width || product.height) && (
                 <dl className="grid grid-cols-4 gap-4 max-sm:grid-cols-2">
@@ -340,16 +384,25 @@ export default function ProductDetailsPage() {
                       product.weight != null ? (
                         <span className="flex items-center gap-1.5">
                           <Weight className="text-apple-ink-muted-48 size-3.5" />
-                          {product.weight}
+                          {product.weight} г
                         </span>
                       ) : (
                         <EmptyValue />
                       )
                     }
                   />
-                  <FieldRow label="Длина (см)" value={product.length != null ? product.length : <EmptyValue />} />
-                  <FieldRow label="Ширина (см)" value={product.width != null ? product.width : <EmptyValue />} />
-                  <FieldRow label="Высота (см)" value={product.height != null ? product.height : <EmptyValue />} />
+                  <FieldRow
+                    label="Длина (см)"
+                    value={product.length != null ? `${product.length} см` : <EmptyValue />}
+                  />
+                  <FieldRow
+                    label="Ширина (см)"
+                    value={product.width != null ? `${product.width} см` : <EmptyValue />}
+                  />
+                  <FieldRow
+                    label="Высота (см)"
+                    value={product.height != null ? `${product.height} см` : <EmptyValue />}
+                  />
                 </dl>
               )}
 
@@ -358,7 +411,7 @@ export default function ProductDetailsPage() {
                 <dl
                   className={`grid grid-cols-2 gap-4 max-sm:grid-cols-1${
                     product.weight || product.length || product.width || product.height
-                      ? 'border-apple-divider-soft border-t pt-5'
+                      ? 'border-apple-divider-soft border-t pt-4'
                       : ''
                   }`}
                 >
@@ -383,7 +436,7 @@ export default function ProductDetailsPage() {
               {optionMap.size > 0 && (
                 <dl
                   className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3${
-                    hasLogistics ? 'border-apple-divider-soft border-t pt-5' : ''
+                    hasLogistics ? 'border-apple-divider-soft border-t pt-4' : ''
                   }`}
                 >
                   {Array.from(optionMap.entries()).map(([optionTitle, values]) => (
@@ -410,28 +463,41 @@ export default function ProductDetailsPage() {
           </SectionCard>
         )}
 
-        {/* ── SECTION 5: Variants table (Step 3 of create form) ── */}
+        {/* ── SECTION 4: Variants table ── */}
         <SectionCard>
           <SectionHeader icon={Layers} title={`Варианты товара${variants.length ? ` (${variants.length})` : ''}`} />
-          <p className="text-apple-caption text-apple-ink-muted-48 -mt-2 mb-5">Цена и артикул для каждого варианта.</p>
 
           {variants.length ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="border-apple-hairline text-apple-ink-muted-48 border-b text-[12px] font-semibold tracking-wide uppercase">
-                    <th className="px-2 py-3">Вариант</th>
-                    <th className="px-2 py-3">Цена</th>
-                    <th className="px-2 py-3">Артикул (SKU)</th>
+                  <tr className="border-apple-hairline text-apple-ink-muted-48 border-b text-[11px] font-semibold tracking-wider uppercase">
+                    <th className="px-3 py-2.5">Вариант</th>
+                    <th className="px-3 py-2.5">Количество (Остаток)</th>
+                    <th className="px-3 py-2.5">Цена</th>
+                    <th className="px-3 py-2.5">Артикул (SKU)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-apple-divider-soft divide-y text-[14px]">
+                <tbody className="divide-apple-divider-soft divide-y text-[13px]">
                   {variants.map((variant) => {
                     const price = variant.prices?.[0]
+                    const qty = variant.inventory_quantity ?? 0
                     return (
                       <tr key={variant.id} className="hover:bg-apple-canvas-parchment/50 transition-colors">
-                        <td className="text-apple-ink px-2 py-4 font-semibold">{variant.title}</td>
-                        <td className="px-2 py-4 whitespace-nowrap">
+                        <td className="text-apple-ink px-3 py-3 font-semibold">{variant.title}</td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          {qty > 0 ? (
+                            <span className="rounded-apple-pill inline-flex items-center gap-1 border border-green-200 bg-green-50 px-2.5 py-0.5 text-[12px] font-medium text-green-700">
+                              <span className="size-1.5 rounded-full bg-green-500" />
+                              {qty} шт.
+                            </span>
+                          ) : (
+                            <span className="rounded-apple-pill inline-flex items-center gap-1 border border-red-200 bg-red-50 px-2.5 py-0.5 text-[12px] font-medium text-red-600">
+                              <span className="size-1.5 rounded-full bg-red-500" />0 шт. (Нет в наличии)
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
                           {price ? (
                             <span className="text-apple-ink font-medium">
                               {formatPrice(price.amount, price.currency_code)}
@@ -440,7 +506,7 @@ export default function ProductDetailsPage() {
                             <EmptyValue />
                           )}
                         </td>
-                        <td className="px-2 py-4">
+                        <td className="px-3 py-3">
                           {variant.sku ? (
                             <code className="bg-apple-canvas-parchment text-apple-ink-muted-80 rounded px-1.5 py-0.5 font-mono text-[12px]">
                               {variant.sku}
@@ -456,7 +522,7 @@ export default function ProductDetailsPage() {
               </table>
             </div>
           ) : (
-            <div className="bg-apple-canvas-parchment border-apple-hairline rounded-apple-md flex min-h-28 items-center justify-center border p-5 text-center">
+            <div className="bg-apple-canvas-parchment border-apple-hairline rounded-apple-md flex min-h-24 items-center justify-center border p-4 text-center">
               <p className="text-apple-caption text-apple-ink-muted-48">Варианты для этого товара ещё не добавлены.</p>
             </div>
           )}
