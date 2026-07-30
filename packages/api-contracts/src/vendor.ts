@@ -36,12 +36,43 @@ export type VendorOrderItem = {
   id: string
   quantity: number
   title?: string
+  unit_price?: number
+  thumbnail?: string
   variant?: {
     title?: string
     product?: {
       title?: string
     }
   }
+}
+
+export type OrderDeliveryDetails = {
+  method: "pickup" | "courier"
+  shipping_option_id: string
+  pickup_point?: {
+    id: string
+    title: string
+    area: string
+    address: string
+    city: string
+    hours: string
+  }
+  delivery_date?: string
+  time_slot?: string
+  recipient_phone?: string
+  customer_note?: string
+}
+
+export type VendorOrderAddress = {
+  first_name?: string
+  last_name?: string
+  address_1?: string
+  address_2?: string
+  city?: string
+  province?: string
+  postal_code?: string
+  country_code?: string
+  phone?: string
 }
 
 export type VendorOrder = {
@@ -53,7 +84,14 @@ export type VendorOrder = {
   created_at: string
   currency_code: string
   total?: number
+  subtotal?: number
+  shipping_total?: number
+  tax_total?: number
+  discount_total?: number
+  email?: string
   items?: VendorOrderItem[]
+  shipping_address?: VendorOrderAddress
+  delivery?: OrderDeliveryDetails
   metadata?: {
     parent_order_id?: string
   }
@@ -64,6 +102,10 @@ export type VendorOrdersResponse = {
   count: number
   offset: number
   limit: number
+}
+
+export type VendorOrderResponse = {
+  order: VendorOrder
 }
 
 export type VendorProduct = {
