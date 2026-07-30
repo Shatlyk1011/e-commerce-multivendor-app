@@ -1,18 +1,28 @@
-import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { MARKETPLACE_MODULE } from "../../../modules/marketplace"
-import MarketplaceModuleService from "../../../modules/marketplace/service"
-import { z } from "@medusajs/framework/zod"
-import adminCreateVendorWorkflow from "../../../workflows/marketplace/admin-create-vendor"
+import {
+  AuthenticatedMedusaRequest,
+  MedusaResponse,
+} from "@medusajs/framework/http";
+import { MARKETPLACE_MODULE } from "../../../modules/marketplace";
+import MarketplaceModuleService from "../../../modules/marketplace/service";
+import { z } from "@medusajs/framework/zod";
+import adminCreateVendorWorkflow from "../../../workflows/marketplace/admin-create-vendor";
 
-export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
+export async function GET(
+  req: AuthenticatedMedusaRequest,
+  res: MedusaResponse,
+) {
   const marketplaceService: MarketplaceModuleService =
-    req.scope.resolve(MARKETPLACE_MODULE)
+    req.scope.resolve(MARKETPLACE_MODULE);
 
-  const { q, limit = "20", offset = "0" } = req.query as {
-    q?: string
-    limit?: string
-    offset?: string
-  }
+  const {
+    q,
+    limit = "20",
+    offset = "0",
+  } = req.query as {
+    q?: string;
+    limit?: string;
+    offset?: string;
+  };
 
   const [vendors, count] = await marketplaceService.listAndCountVendors(
     q ? { name: { $ilike: `%${q}%` } } : {},
@@ -20,15 +30,15 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
       take: parseInt(limit),
       skip: parseInt(offset),
       relations: ["admins"],
-    }
-  )
+    },
+  );
 
   res.json({
     vendors,
     count,
     limit: parseInt(limit),
     offset: parseInt(offset),
-  })
+  });
 }
 
 export const AdminCreateVendorSchema = z.strictObject({
@@ -47,14 +57,17 @@ export const AdminCreateVendorSchema = z.strictObject({
     first_name: z.string().optional(),
     last_name: z.string().optional(),
   }),
-})
+});
 
-type RequestBody = z.infer<typeof AdminCreateVendorSchema>
+type RequestBody = z.infer<typeof AdminCreateVendorSchema>;
 
-export async function POST(req: AuthenticatedMedusaRequest<RequestBody>, res: MedusaResponse) {
+export async function POST(
+  req: AuthenticatedMedusaRequest<RequestBody>,
+  res: MedusaResponse,
+) {
   const { result } = await adminCreateVendorWorkflow(req.scope).run({
     input: req.validatedBody,
-  })
+  });
 
-  res.status(201).json({ vendor: result.vendor })
+  res.status(201).json({ vendor: result.vendor });
 }

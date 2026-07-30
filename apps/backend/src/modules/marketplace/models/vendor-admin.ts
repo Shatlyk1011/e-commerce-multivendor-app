@@ -1,5 +1,5 @@
-import { model } from "@medusajs/framework/utils"
-import Vendor from "./vendor"
+import { model } from "@medusajs/framework/utils";
+import Vendor from "./vendor";
 
 const VendorAdmin = model.define("vendor_admin", {
   id: model.id().primaryKey(),
@@ -10,6 +10,6 @@ const VendorAdmin = model.define("vendor_admin", {
   vendor: model.belongsTo(() => Vendor, {
     mappedBy: "admins",
   }),
-})
+});
 
-export default VendorAdmin
+export default VendorAdmin;

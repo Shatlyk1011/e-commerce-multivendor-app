@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { useParams, useNavigate, Link } from "react-router-dom"
+import { useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Button,
   Container,
@@ -8,7 +8,7 @@ import {
   Badge,
   IconButton,
   Prompt,
-} from "@medusajs/ui"
+} from "@medusajs/ui";
 import {
   ArrowLeft,
   PencilSquare,
@@ -20,66 +20,69 @@ import {
   Calendar,
   LockClosedSolid,
   ExclamationCircle,
-
-} from "@medusajs/icons"
-import { useVendor, useDeleteVendor } from "../../../hooks/api/vendors"
-import { GeneralEditDrawer } from "../../../components/vendors/general-edit-drawer"
-import { AccountEditDrawer } from "../../../components/vendors/account-edit-drawer"
-import { StoreInfoEditDrawer } from "../../../components/vendors/store-info-edit-drawer"
-import { ResetPasswordDrawer } from "../../../components/vendors/reset-password-drawer"
+} from "@medusajs/icons";
+import { useVendor, useDeleteVendor } from "../../../hooks/api/vendors";
+import { GeneralEditDrawer } from "../../../components/vendors/general-edit-drawer";
+import { AccountEditDrawer } from "../../../components/vendors/account-edit-drawer";
+import { StoreInfoEditDrawer } from "../../../components/vendors/store-info-edit-drawer";
+import { ResetPasswordDrawer } from "../../../components/vendors/reset-password-drawer";
 
 const formatDate = (dateString?: string) => {
-  if (!dateString) return "—"
+  if (!dateString) return "—";
   return new Date(dateString).toLocaleDateString(undefined, {
     dateStyle: "medium",
     // timeStyle: "short",
-  })
-}
+  });
+};
 
 const VendorDetailPage = () => {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   // Drawer states
-  const [generalEditOpen, setGeneralEditOpen] = useState(false)
-  const [accountEditOpen, setAccountEditOpen] = useState(false)
-  const [storeInfoEditOpen, setStoreInfoEditOpen] = useState(false)
-  const [resetPasswordOpen, setResetPasswordOpen] = useState(false)
-  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [generalEditOpen, setGeneralEditOpen] = useState(false);
+  const [accountEditOpen, setAccountEditOpen] = useState(false);
+  const [storeInfoEditOpen, setStoreInfoEditOpen] = useState(false);
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data, isLoading, error } = useVendor(id!)
-  const deleteVendor = useDeleteVendor()
+  const { data, isLoading, error } = useVendor(id!);
+  const deleteVendor = useDeleteVendor();
 
-  const vendor = data?.vendor
+  const vendor = data?.vendor;
 
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center p-12">
         <div className="border-ui-border-strong h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
       </div>
-    )
+    );
   }
 
   if (error || !vendor) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-y-4 p-12">
         <Text className="text-ui-fg-subtle">Vendor not found.</Text>
-        <Button variant="secondary" size="small" onClick={() => navigate("/vendors")}>
+        <Button
+          variant="secondary"
+          size="small"
+          onClick={() => navigate("/vendors")}
+        >
           Back to Vendors
         </Button>
       </div>
-    )
+    );
   }
 
   const handleDelete = () => {
     deleteVendor.mutate(vendor.id, {
       onSuccess: () => {
-        navigate("/vendors")
+        navigate("/vendors");
       },
-    })
-  }
+    });
+  };
 
-  const admin = vendor.admins?.[0]
+  const admin = vendor.admins?.[0];
 
   return (
     <>
@@ -96,11 +99,16 @@ const VendorDetailPage = () => {
             </IconButton>
             <div className="flex items-center gap-x-1">
               <Link to="/vendors">
-                <Text size="small" className="text-ui-fg-subtle hover:text-ui-fg-base">
+                <Text
+                  size="small"
+                  className="text-ui-fg-subtle hover:text-ui-fg-base"
+                >
                   Vendors
                 </Text>
               </Link>
-              <Text size="small" className="text-ui-fg-muted">/</Text>
+              <Text size="small" className="text-ui-fg-muted">
+                /
+              </Text>
               <Text size="small" weight="plus">
                 {vendor.name}
               </Text>
@@ -128,7 +136,7 @@ const VendorDetailPage = () => {
                 alt={vendor.name}
                 className="h-16 w-16 rounded-xl object-cover shadow"
                 onError={(e) => {
-                  ;(e.target as HTMLImageElement).style.display = "none"
+                  (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
             ) : (
@@ -142,7 +150,10 @@ const VendorDetailPage = () => {
                 /{vendor.handle}
               </Text>
               <div className="mt-2 flex items-center gap-x-2">
-                <Badge size="2xsmall" color={vendor.status === "active" ? "green" : "red"}>
+                <Badge
+                  size="2xsmall"
+                  color={vendor.status === "active" ? "green" : "red"}
+                >
                   {vendor.status === "active" ? "Active" : "Disabled"}
                 </Badge>
                 {vendor.store_name && (
@@ -157,7 +168,6 @@ const VendorDetailPage = () => {
 
         {/* Details grid */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-
           {/* SECTION 1: GENERAL */}
           <Container className="divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
@@ -180,7 +190,11 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       Name
                     </Text>
-                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                    <Text
+                      size="small"
+                      leading="compact"
+                      className="text-ui-fg-subtle"
+                    >
                       {vendor.name}
                     </Text>
                   </div>
@@ -255,7 +269,11 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       Email
                     </Text>
-                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                    <Text
+                      size="small"
+                      leading="compact"
+                      className="text-ui-fg-subtle"
+                    >
                       {admin?.email || "—"}
                     </Text>
                   </div>
@@ -268,7 +286,10 @@ const VendorDetailPage = () => {
                       Status
                     </Text>
                     <div>
-                      <Badge size="2xsmall" color={vendor.status === "active" ? "green" : "red"}>
+                      <Badge
+                        size="2xsmall"
+                        color={vendor.status === "active" ? "green" : "red"}
+                      >
                         {vendor.status === "active" ? "Active" : "Disabled"}
                       </Badge>
                     </div>
@@ -279,7 +300,12 @@ const VendorDetailPage = () => {
                   <div className="flex items-start gap-x-3 bg-ui-bg-error-subtle rounded-md border p-3">
                     <ExclamationCircle className="text-ui-fg-error mt-0.5 h-4 w-4 shrink-0" />
                     <div className="flex flex-col gap-y-0.5">
-                      <Text size="small" leading="compact" weight="plus" className="text-ui-fg-error">
+                      <Text
+                        size="small"
+                        leading="compact"
+                        weight="plus"
+                        className="text-ui-fg-error"
+                      >
                         Reason for Disabling
                       </Text>
                       <Text size="small" className="text-ui-fg-error-strong">
@@ -295,8 +321,14 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       Last Login
                     </Text>
-                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
-                      {admin?.last_login ? formatDate(admin.last_login) : "Never"}
+                    <Text
+                      size="small"
+                      leading="compact"
+                      className="text-ui-fg-subtle"
+                    >
+                      {admin?.last_login
+                        ? formatDate(admin.last_login)
+                        : "Never"}
                     </Text>
                   </div>
                 </div>
@@ -326,7 +358,11 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       Store Name
                     </Text>
-                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                    <Text
+                      size="small"
+                      leading="compact"
+                      className="text-ui-fg-subtle"
+                    >
                       {vendor.store_name || "—"}
                     </Text>
                   </div>
@@ -338,7 +374,11 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       City
                     </Text>
-                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                    <Text
+                      size="small"
+                      leading="compact"
+                      className="text-ui-fg-subtle"
+                    >
                       {vendor.city || "—"}
                     </Text>
                   </div>
@@ -350,7 +390,11 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       Address
                     </Text>
-                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                    <Text
+                      size="small"
+                      leading="compact"
+                      className="text-ui-fg-subtle"
+                    >
                       {vendor.address || "—"}
                     </Text>
                   </div>
@@ -362,7 +406,10 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       Store Description
                     </Text>
-                    <Text size="small" className="text-ui-fg-subtle whitespace-pre-wrap">
+                    <Text
+                      size="small"
+                      className="text-ui-fg-subtle whitespace-pre-wrap"
+                    >
                       {vendor.store_description || "—"}
                     </Text>
                   </div>
@@ -385,7 +432,11 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       Created At
                     </Text>
-                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                    <Text
+                      size="small"
+                      leading="compact"
+                      className="text-ui-fg-subtle"
+                    >
                       {formatDate(vendor.created_at)}
                     </Text>
                   </div>
@@ -397,7 +448,11 @@ const VendorDetailPage = () => {
                     <Text size="small" leading="compact" weight="plus">
                       Updated At
                     </Text>
-                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                    <Text
+                      size="small"
+                      leading="compact"
+                      className="text-ui-fg-subtle"
+                    >
                       {formatDate(vendor.updated_at)}
                     </Text>
                   </div>
@@ -423,7 +478,6 @@ const VendorDetailPage = () => {
               </div>
             </div>
           </Container>
-
         </div>
       </div>
 
@@ -463,7 +517,9 @@ const VendorDetailPage = () => {
             </Prompt.Description>
           </Prompt.Header>
           <Prompt.Footer>
-            <Prompt.Cancel onClick={() => setDeleteOpen(false)}>Cancel</Prompt.Cancel>
+            <Prompt.Cancel onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Prompt.Cancel>
             <Prompt.Action onClick={handleDelete}>
               {deleteVendor.isPending ? "Deleting..." : "Delete Vendor"}
             </Prompt.Action>
@@ -471,7 +527,7 @@ const VendorDetailPage = () => {
         </Prompt.Content>
       </Prompt>
     </>
-  )
-}
+  );
+};
 
-export default VendorDetailPage
+export default VendorDetailPage;

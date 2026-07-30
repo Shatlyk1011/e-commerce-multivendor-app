@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react"
-import { Drawer, Button, Input, Label, Text, Heading } from "@medusajs/ui"
-import { useUpdateVendor } from "../../hooks/api/vendors"
-import type { Vendor, UpdateVendorInput } from "../../types/vendor"
+import { useEffect, useState } from "react";
+import { Drawer, Button, Input, Label, Text, Heading } from "@medusajs/ui";
+import { useUpdateVendor } from "../../hooks/api/vendors";
+import type { Vendor, UpdateVendorInput } from "../../types/vendor";
 
 type GeneralEditDrawerProps = {
-  vendor: Vendor
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+  vendor: Vendor;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
 function slugify(value: string) {
   return value
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(/^-+|-+$/g, "");
 }
 
 export function GeneralEditDrawer({
@@ -26,10 +26,10 @@ export function GeneralEditDrawer({
     name: vendor.name,
     handle: vendor.handle,
     logo: vendor.logo ?? "",
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const updateVendor = useUpdateVendor(vendor.id)
+  const updateVendor = useUpdateVendor(vendor.id);
 
   useEffect(() => {
     if (open) {
@@ -37,23 +37,23 @@ export function GeneralEditDrawer({
         name: vendor.name,
         handle: vendor.handle,
         logo: vendor.logo ?? "",
-      })
-      setErrors({})
+      });
+      setErrors({});
     }
-  }, [open, vendor])
+  }, [open, vendor]);
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
-    if (!formData.name?.trim()) newErrors.name = "Name is required"
-    if (!formData.handle?.trim()) newErrors.handle = "Slug is required"
-    return newErrors
-  }
+    const newErrors: Record<string, string> = {};
+    if (!formData.name?.trim()) newErrors.name = "Name is required";
+    if (!formData.handle?.trim()) newErrors.handle = "Slug is required";
+    return newErrors;
+  };
 
   const handleSubmit = () => {
-    const validationErrors = validate()
+    const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
+      setErrors(validationErrors);
+      return;
     }
 
     updateVendor.mutate(
@@ -64,17 +64,19 @@ export function GeneralEditDrawer({
       },
       {
         onSuccess: () => {
-          onOpenChange(false)
+          onOpenChange(false);
         },
-      }
-    )
-  }
+      },
+    );
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <Drawer.Content>
         <Drawer.Header>
-          <Heading className="text-ui-fg-base">Edit General Information</Heading>
+          <Heading className="text-ui-fg-base">
+            Edit General Information
+          </Heading>
         </Drawer.Header>
 
         <Drawer.Body className="flex flex-1 flex-col gap-y-6 overflow-y-auto p-6">
@@ -87,8 +89,8 @@ export function GeneralEditDrawer({
               id="edit-vendor-name"
               value={formData.name ?? ""}
               onChange={(e) => {
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-                setErrors((prev) => ({ ...prev, name: "" }))
+                setFormData((prev) => ({ ...prev, name: e.target.value }));
+                setErrors((prev) => ({ ...prev, name: "" }));
               }}
               className={errors.name ? "border-ui-border-error" : ""}
             />
@@ -116,8 +118,8 @@ export function GeneralEditDrawer({
                   setFormData((prev) => ({
                     ...prev,
                     handle: slugify(e.target.value),
-                  }))
-                  setErrors((prev) => ({ ...prev, handle: "" }))
+                  }));
+                  setErrors((prev) => ({ ...prev, handle: "" }));
                 }}
               />
             </div>
@@ -170,5 +172,5 @@ export function GeneralEditDrawer({
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>
-  )
+  );
 }

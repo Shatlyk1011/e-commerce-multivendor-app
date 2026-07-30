@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Container,
@@ -11,50 +11,46 @@ import {
   createDataTableColumnHelper,
   type DataTablePaginationState,
   Prompt,
-} from "@medusajs/ui"
-import {
-  Trash,
-  BuildingStorefront,
-  Plus,
-} from "@medusajs/icons"
-import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { useVendors, useDeleteVendor } from "../../hooks/api/vendors"
-import { CreateVendorForm } from "../../components/vendors/create-vendor-form"
-import type { Vendor } from "../../types/vendor"
+} from "@medusajs/ui";
+import { Trash, BuildingStorefront, Plus } from "@medusajs/icons";
+import { defineRouteConfig } from "@medusajs/admin-sdk";
+import { useVendors, useDeleteVendor } from "../../hooks/api/vendors";
+import { CreateVendorForm } from "../../components/vendors/create-vendor-form";
+import type { Vendor } from "../../types/vendor";
 
 // ─── Column helper ────────────────────────────────────────────────────────────
 
-const colHelper = createDataTableColumnHelper<Vendor>()
+const colHelper = createDataTableColumnHelper<Vendor>();
 
 const formatDate = (dateString?: string) => {
-  if (!dateString) return "—"
+  if (!dateString) return "—";
   return new Date(dateString).toLocaleDateString(undefined, {
     dateStyle: "medium",
     // timeStyle: "short",
-  })
-}
+  });
+};
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const VendorsPage = () => {
-  const navigate = useNavigate()
-  const [search, setSearch] = useState("")
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState<DataTablePaginationState>({
     pageIndex: 0,
     pageSize: 20,
-  })
-  const [createOpen, setCreateOpen] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<Vendor | null>(null)
+  });
+  const [createOpen, setCreateOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Vendor | null>(null);
 
-  const offset = pagination.pageIndex * pagination.pageSize
+  const offset = pagination.pageIndex * pagination.pageSize;
 
   const { data, isLoading } = useVendors({
     q: search || undefined,
     limit: pagination.pageSize,
     offset,
-  })
+  });
 
-  const deleteVendor = useDeleteVendor()
+  const deleteVendor = useDeleteVendor();
 
   // ─── Columns ───────────────────────────────────────────────────────────────
 
@@ -70,7 +66,7 @@ const VendorsPage = () => {
                 alt={row.original.name}
                 className="h-8 w-8 rounded-full object-cover"
                 onError={(e) => {
-                  ;(e.target as HTMLImageElement).style.display = "none"
+                  (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
             ) : (
@@ -88,12 +84,12 @@ const VendorsPage = () => {
         id: "email",
         header: "Email",
         cell: ({ row }) => {
-          const admin = row.original.admins?.[0]
+          const admin = row.original.admins?.[0];
           return (
             <Text size="small" className="text-ui-fg-subtle">
               {admin?.email || "—"}
             </Text>
-          )
+          );
         },
       }),
       colHelper.accessor("store_name", {
@@ -107,24 +103,24 @@ const VendorsPage = () => {
       colHelper.accessor("status", {
         header: "Status",
         cell: ({ getValue }) => {
-          const status = getValue() ?? "active"
+          const status = getValue() ?? "active";
           return (
             <Badge size="2xsmall" color={status === "active" ? "green" : "red"}>
               {status === "active" ? "Active" : "Disabled"}
             </Badge>
-          )
+          );
         },
       }),
       colHelper.display({
         id: "last_login",
         header: "Last Login",
         cell: ({ row }) => {
-          const admin = row.original.admins?.[0]
+          const admin = row.original.admins?.[0];
           return (
             <Text size="small" className="text-ui-fg-subtle">
               {admin?.last_login ? formatDate(admin.last_login) : "Never"}
             </Text>
-          )
+          );
         },
       }),
       colHelper.accessor("created_at", {
@@ -144,8 +140,8 @@ const VendorsPage = () => {
               size="small"
               variant="transparent"
               onClick={(e) => {
-                e.stopPropagation()
-                setDeleteTarget(row.original)
+                e.stopPropagation();
+                setDeleteTarget(row.original);
               }}
             >
               <Trash className="text-ui-fg-subtle" />
@@ -154,8 +150,8 @@ const VendorsPage = () => {
         ),
       }),
     ],
-    []
-  )
+    [],
+  );
 
   const table = useDataTable({
     data: data?.vendors ?? [],
@@ -172,20 +168,20 @@ const VendorsPage = () => {
       onPaginationChange: setPagination,
     },
     onRowClick: (_e, row) => {
-      navigate(`/vendors/${row.id}`)
+      navigate(`/vendors/${row.id}`);
     },
-  })
+  });
 
   // ─── Delete confirm ────────────────────────────────────────────────────────
 
   const handleConfirmDelete = () => {
-    if (!deleteTarget) return
+    if (!deleteTarget) return;
     deleteVendor.mutate(deleteTarget.id, {
       onSuccess: () => {
-        setDeleteTarget(null)
+        setDeleteTarget(null);
       },
-    })
-  }
+    });
+  };
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -228,7 +224,13 @@ const VendorsPage = () => {
       <CreateVendorForm open={createOpen} onOpenChange={setCreateOpen} />
 
       {/* Delete Confirmation Prompt */}
-      <Prompt open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }} variant="danger">
+      <Prompt
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        variant="danger"
+      >
         <Prompt.Content>
           <Prompt.Header>
             <Prompt.Title>Delete "{deleteTarget?.name}"?</Prompt.Title>
@@ -238,22 +240,22 @@ const VendorsPage = () => {
             </Prompt.Description>
           </Prompt.Header>
           <Prompt.Footer>
-            <Prompt.Cancel onClick={() => setDeleteTarget(null)}>Cancel</Prompt.Cancel>
-            <Prompt.Action
-              onClick={handleConfirmDelete}
-            >
+            <Prompt.Cancel onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Prompt.Cancel>
+            <Prompt.Action onClick={handleConfirmDelete}>
               {deleteVendor.isPending ? "Deleting..." : "Delete"}
             </Prompt.Action>
           </Prompt.Footer>
         </Prompt.Content>
       </Prompt>
     </>
-  )
-}
+  );
+};
 
 export const config = defineRouteConfig({
   label: "Vendors",
   icon: BuildingStorefront,
-})
+});
 
-export default VendorsPage
+export default VendorsPage;

@@ -16,7 +16,9 @@
 
     /* Module paths */
     "paths": {
-      "@medusajs/js-sdk": ["../../node_modules/@medusajs/js-sdk/dist/index.d.ts"],
+      "@medusajs/js-sdk": [
+        "../../node_modules/@medusajs/js-sdk/dist/index.d.ts"
+      ],
       "@medusajs/icons": ["../../node_modules/@medusajs/icons/dist/index.d.ts"]
     },
 
@@ -26,8 +28,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    ".",
-    "../../.medusa/types/plugin-augmentations.d.ts"
-  ]
+  "include": [".", "../../.medusa/types/plugin-augmentations.d.ts"]
 }

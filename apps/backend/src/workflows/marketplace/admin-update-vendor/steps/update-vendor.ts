@@ -1,39 +1,40 @@
-import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { MARKETPLACE_MODULE } from "../../../../modules/marketplace"
-import MarketplaceModuleService from "../../../../modules/marketplace/service"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
+import { MARKETPLACE_MODULE } from "../../../../modules/marketplace";
+import MarketplaceModuleService from "../../../../modules/marketplace/service";
 
 export type UpdateVendorStepInput = {
-  id: string
-  name?: string
-  handle?: string
-  logo?: string | null
-  status?: "active" | "disabled"
-  status_reason?: string | null
-  store_name?: string | null
-  store_description?: string | null
-  address?: string | null
-  city?: string | null
-}
+  id: string;
+  name?: string;
+  handle?: string;
+  logo?: string | null;
+  status?: "active" | "disabled";
+  status_reason?: string | null;
+  store_name?: string | null;
+  store_description?: string | null;
+  address?: string | null;
+  city?: string | null;
+};
 
 export const updateVendorStep = createStep(
   "update-vendor",
   async (input: UpdateVendorStepInput, { container }) => {
-
-    const marketplaceModuleService: MarketplaceModuleService = 
-      container.resolve(MARKETPLACE_MODULE)
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
 
     // Retrieve original for compensation rollback
-    const originalVendor = await marketplaceModuleService.retrieveVendor(input.id)
+    const originalVendor = await marketplaceModuleService.retrieveVendor(
+      input.id,
+    );
 
-    const vendor = await marketplaceModuleService.updateVendors(input)
+    const vendor = await marketplaceModuleService.updateVendors(input);
 
-    return new StepResponse(vendor, originalVendor)
+    return new StepResponse(vendor, originalVendor);
   },
   async (originalVendor, { container }) => {
-    if (!originalVendor) return
+    if (!originalVendor) return;
 
-    const marketplaceModuleService: MarketplaceModuleService = 
-      container.resolve(MARKETPLACE_MODULE)
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
 
     await marketplaceModuleService.updateVendors({
       id: originalVendor.id,
@@ -46,6 +47,6 @@ export const updateVendorStep = createStep(
       store_description: originalVendor.store_description,
       address: originalVendor.address,
       city: originalVendor.city,
-    })
-  }
-)
+    });
+  },
+);

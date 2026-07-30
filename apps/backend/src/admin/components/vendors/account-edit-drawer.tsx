@@ -1,78 +1,89 @@
-import { useEffect, useState } from "react"
-import { Drawer, Button, Input, Label, Text, Heading, Select, Textarea } from "@medusajs/ui"
-import { useUpdateVendor } from "../../hooks/api/vendors"
-import type { Vendor } from "../../types/vendor"
+import { useEffect, useState } from "react";
+import {
+  Drawer,
+  Button,
+  Input,
+  Label,
+  Text,
+  Heading,
+  Select,
+  Textarea,
+} from "@medusajs/ui";
+import { useUpdateVendor } from "../../hooks/api/vendors";
+import type { Vendor } from "../../types/vendor";
 
 type AccountEditDrawerProps = {
-  vendor: Vendor
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+  vendor: Vendor;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
 export function AccountEditDrawer({
   vendor,
   open,
   onOpenChange,
 }: AccountEditDrawerProps) {
-  const admin = vendor.admins?.[0]
-  
-  const [email, setEmail] = useState("")
-  const [status, setStatus] = useState<"active" | "disabled">("active")
-  const [statusReason, setStatusReason] = useState("")
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const admin = vendor.admins?.[0];
 
-  const updateVendor = useUpdateVendor(vendor.id)
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"active" | "disabled">("active");
+  const [statusReason, setStatusReason] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const updateVendor = useUpdateVendor(vendor.id);
 
   useEffect(() => {
     if (open) {
-      setEmail(admin?.email ?? "")
-      setStatus(vendor.status ?? "active")
-      setStatusReason(vendor.status_reason ?? "")
-      setErrors({})
+      setEmail(admin?.email ?? "");
+      setStatus(vendor.status ?? "active");
+      setStatusReason(vendor.status_reason ?? "");
+      setErrors({});
     }
-  }, [open, vendor, admin])
+  }, [open, vendor, admin]);
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
     if (!email.trim()) {
-      newErrors.email = "Email is required"
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Invalid email format"
+      newErrors.email = "Invalid email format";
     }
 
     if (status === "disabled" && !statusReason.trim()) {
-      newErrors.statusReason = "Reason is required when status is disabled"
+      newErrors.statusReason = "Reason is required when status is disabled";
     }
 
-    return newErrors
-  }
+    return newErrors;
+  };
 
   const handleSubmit = () => {
-    const validationErrors = validate()
+    const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
+      setErrors(validationErrors);
+      return;
     }
 
     updateVendor.mutate(
       {
         status,
         status_reason: status === "disabled" ? statusReason.trim() : null,
-        ...(admin ? {
-          admin: {
-            id: admin.id,
-            email: email.trim(),
-            oldEmail: admin.email,
-          }
-        } : {})
+        ...(admin
+          ? {
+              admin: {
+                id: admin.id,
+                email: email.trim(),
+                oldEmail: admin.email,
+              },
+            }
+          : {}),
       },
       {
         onSuccess: () => {
-          onOpenChange(false)
+          onOpenChange(false);
         },
-      }
-    )
-  }
+      },
+    );
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -92,8 +103,8 @@ export function AccountEditDrawer({
               type="email"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value)
-                setErrors((prev) => ({ ...prev, email: "" }))
+                setEmail(e.target.value);
+                setErrors((prev) => ({ ...prev, email: "" }));
               }}
               className={errors.email ? "border-ui-border-error" : ""}
             />
@@ -112,8 +123,8 @@ export function AccountEditDrawer({
             <Select
               value={status}
               onValueChange={(val) => {
-                setStatus(val as "active" | "disabled")
-                setErrors((prev) => ({ ...prev, statusReason: "" }))
+                setStatus(val as "active" | "disabled");
+                setErrors((prev) => ({ ...prev, statusReason: "" }));
               }}
             >
               <Select.Trigger id="edit-vendor-status">
@@ -137,8 +148,8 @@ export function AccountEditDrawer({
                 placeholder="Enter description why account is disabled..."
                 value={statusReason}
                 onChange={(e) => {
-                  setStatusReason(e.target.value)
-                  setErrors((prev) => ({ ...prev, statusReason: "" }))
+                  setStatusReason(e.target.value);
+                  setErrors((prev) => ({ ...prev, statusReason: "" }));
                 }}
                 className={errors.statusReason ? "border-ui-border-error" : ""}
               />
@@ -173,6 +184,6 @@ export function AccountEditDrawer({
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>
-  )
+  );
 }
-export default AccountEditDrawer
+export default AccountEditDrawer;

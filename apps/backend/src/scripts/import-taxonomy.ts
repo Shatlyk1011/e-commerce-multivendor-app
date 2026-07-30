@@ -1,5 +1,8 @@
 import { MedusaContainer } from "@medusajs/framework";
-import { ContainerRegistrationKeys, ModuleRegistrationName } from "@medusajs/framework/utils";
+import {
+  ContainerRegistrationKeys,
+  ModuleRegistrationName,
+} from "@medusajs/framework/utils";
 import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
@@ -14,7 +17,10 @@ interface CategoryNode {
 
 const seenHandles = new Set<string>();
 
-function generateUniqueHandle(name: string, parentPath?: string | null): string {
+function generateUniqueHandle(
+  name: string,
+  parentPath?: string | null,
+): string {
   const base = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -46,9 +52,15 @@ function generateUniqueHandle(name: string, parentPath?: string | null): string 
   return uniqueHandle;
 }
 
-export default async function importTaxonomy({ container }: { container: MedusaContainer }) {
+export default async function importTaxonomy({
+  container,
+}: {
+  container: MedusaContainer;
+}) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
-  const productModuleService = container.resolve(ModuleRegistrationName.PRODUCT);
+  const productModuleService = container.resolve(
+    ModuleRegistrationName.PRODUCT,
+  );
 
   // Try finding file in workspace root or current directory
   let filePath = path.resolve(process.cwd(), "../../google-taxonomy-en.md");
@@ -67,7 +79,7 @@ export default async function importTaxonomy({ container }: { container: MedusaC
   logger.info("Loading existing product categories from database...");
   const existingCategories = await productModuleService.listProductCategories(
     {},
-    { select: ["id", "handle"] }
+    { select: ["id", "handle"] },
   );
 
   const existingHandleMap = new Map<string, string>();
@@ -122,7 +134,9 @@ export default async function importTaxonomy({ container }: { container: MedusaC
   }
 
   const maxDepth = Math.max(...Array.from(depthGroups.keys()));
-  logger.info(`Found ${seenPaths.size} unique categories in the file across ${maxDepth + 1} depth levels.`);
+  logger.info(
+    `Found ${seenPaths.size} unique categories in the file across ${maxDepth + 1} depth levels.`,
+  );
 
   const pathIdMap = new Map<string, string>();
   let totalCreated = 0;
@@ -133,7 +147,9 @@ export default async function importTaxonomy({ container }: { container: MedusaC
     const nodes = depthGroups.get(depth) || [];
     if (nodes.length === 0) continue;
 
-    logger.info(`Processing depth level ${depth} (${nodes.length} categories)...`);
+    logger.info(
+      `Processing depth level ${depth} (${nodes.length} categories)...`,
+    );
 
     const toCreateNodes: CategoryNode[] = [];
 
@@ -149,7 +165,9 @@ export default async function importTaxonomy({ container }: { container: MedusaC
     }
 
     if (toCreateNodes.length === 0) {
-      logger.info(`All categories at depth level ${depth} already exist. Skipped.`);
+      logger.info(
+        `All categories at depth level ${depth} already exist. Skipped.`,
+      );
       continue;
     }
 
@@ -164,14 +182,16 @@ export default async function importTaxonomy({ container }: { container: MedusaC
       };
     });
 
-    logger.info(`Inserting ${inputs.length} new categories at depth level ${depth}...`);
+    logger.info(
+      `Inserting ${inputs.length} new categories at depth level ${depth}...`,
+    );
 
     // Bulk insert in batches of 100 to avoid DB query parameter limits
     const batchSize = 100;
     for (let i = 0; i < inputs.length; i += batchSize) {
       const batch = inputs.slice(i, i + batchSize);
       const created = await productModuleService.createProductCategories(batch);
-      
+
       for (const cat of created) {
         // Map fullPath -> database ID
         const match = toCreateNodes.find((n) => n.handle === cat.handle);
@@ -183,5 +203,7 @@ export default async function importTaxonomy({ container }: { container: MedusaC
     }
   }
 
-  logger.info(`Import complete! Created: ${totalCreated}, Skipped: ${totalSkipped}`);
+  logger.info(
+    `Import complete! Created: ${totalCreated}, Skipped: ${totalSkipped}`,
+  );
 }

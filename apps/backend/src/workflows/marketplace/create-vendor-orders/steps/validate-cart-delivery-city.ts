@@ -1,32 +1,35 @@
-import { MedusaError, ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
+import {
+  MedusaError,
+  ContainerRegistrationKeys,
+} from "@medusajs/framework/utils";
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
 import type { DeliveryDetails } from "../../../../lib/delivery";
 
 type CartItem = {
-  product_id?: string | null
-}
+  product_id?: string | null;
+};
 
 type DeliveryCityCart = {
-  items?: Array<CartItem | null>
+  items?: Array<CartItem | null>;
   shipping_address?: {
-    city?: string | null
-  } | null
-}
+    city?: string | null;
+  } | null;
+};
 
-type ProductDeliveryMetadata = Record<string, unknown>
+type ProductDeliveryMetadata = Record<string, unknown>;
 
 function getMetadataString(metadata: unknown, key: string): string | undefined {
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
-    return undefined
+    return undefined;
   }
 
-  const value = (metadata as ProductDeliveryMetadata)[key]
+  const value = (metadata as ProductDeliveryMetadata)[key];
 
-  return typeof value === "string" ? value : undefined
+  return typeof value === "string" ? value : undefined;
 }
 
 function normalizeCity(value: string): string {
-  return value.trim().toLocaleLowerCase()
+  return value.trim().toLocaleLowerCase();
 }
 
 const validateCartDeliveryCityStep = createStep(
@@ -66,17 +69,25 @@ const validateCartDeliveryCityStep = createStep(
       },
     });
 
-    const productsById = new Map(products.map((product) => [product.id, product]));
+    const productsById = new Map(
+      products.map((product) => [product.id, product]),
+    );
 
     for (const productId of productIds) {
       const product = productsById.get(productId);
-      const deliveryScope = getMetadataString(product?.metadata, "delivery_scope");
+      const deliveryScope = getMetadataString(
+        product?.metadata,
+        "delivery_scope",
+      );
 
       if (deliveryScope !== "origin_city") {
         continue;
       }
 
-      const deliveryCity = getMetadataString(product?.metadata, "delivery_city");
+      const deliveryCity = getMetadataString(
+        product?.metadata,
+        "delivery_city",
+      );
 
       // if (!deliveryCity || normalizeCity(deliveryCity) !== normalizeCity(shippingCity)) {
       //   throw new MedusaError(
@@ -90,4 +101,4 @@ const validateCartDeliveryCityStep = createStep(
   },
 );
 
-export default validateCartDeliveryCityStep
+export default validateCartDeliveryCityStep;

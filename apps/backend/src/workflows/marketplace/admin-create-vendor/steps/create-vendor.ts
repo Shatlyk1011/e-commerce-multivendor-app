@@ -1,38 +1,37 @@
-import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { MARKETPLACE_MODULE } from "../../../../modules/marketplace"
-import MarketplaceModuleService from "../../../../modules/marketplace/service"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
+import { MARKETPLACE_MODULE } from "../../../../modules/marketplace";
+import MarketplaceModuleService from "../../../../modules/marketplace/service";
 
 export type CreateVendorStepInput = {
-  name: string
-  handle: string
-  logo?: string
-  status?: "active" | "disabled"
-  status_reason?: string | null
-  store_name?: string | null
-  store_description?: string | null
-  address?: string | null
-  city: string
-}
+  name: string;
+  handle: string;
+  logo?: string;
+  status?: "active" | "disabled";
+  status_reason?: string | null;
+  store_name?: string | null;
+  store_description?: string | null;
+  address?: string | null;
+  city: string;
+};
 
 export const createVendorStep = createStep(
   "create-vendor",
   async (vendorData: CreateVendorStepInput, { container }) => {
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
 
-    const marketplaceModuleService: MarketplaceModuleService = 
-      container.resolve(MARKETPLACE_MODULE)
+    const vendor = await marketplaceModuleService.createVendors(vendorData);
 
-    const vendor = await marketplaceModuleService.createVendors(vendorData)
-
-    return new StepResponse(vendor, vendor.id)
+    return new StepResponse(vendor, vendor.id);
   },
   async (vendorId, { container }) => {
     if (!vendorId) {
-      return
+      return;
     }
 
-    const marketplaceModuleService: MarketplaceModuleService = 
-      container.resolve(MARKETPLACE_MODULE)
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
 
-    await marketplaceModuleService.deleteVendors(vendorId)
-  }
-)
+    await marketplaceModuleService.deleteVendors(vendorId);
+  },
+);

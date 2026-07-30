@@ -31,7 +31,10 @@ function cleanTaxonomy() {
     }
 
     // 2. Tobacco Products
-    if (levels[0] === "Food, Beverages & Tobacco" && levels[1] === "Tobacco Products") {
+    if (
+      levels[0] === "Food, Beverages & Tobacco" &&
+      levels[1] === "Tobacco Products"
+    ) {
       removedCount++;
       continue;
     }
@@ -47,7 +50,10 @@ function cleanTaxonomy() {
     }
 
     // 4. Live Animals
-    if (levels[0] === "Animals & Pet Supplies" && levels[1] === "Live Animals") {
+    if (
+      levels[0] === "Animals & Pet Supplies" &&
+      levels[1] === "Live Animals"
+    ) {
       removedCount++;
       continue;
     }
@@ -73,7 +79,9 @@ function cleanTaxonomy() {
   fs.writeFileSync(filePath, cleanedLines.join("\n"), "utf-8");
   console.log(`Successfully cleaned google-taxonomy-en.md!`);
   console.log(`Total categories removed: ${removedCount}`);
-  console.log(`Remaining categories: ${cleanedLines.filter(l => l.trim()).length}`);
+  console.log(
+    `Remaining categories: ${cleanedLines.filter((l) => l.trim()).length}`,
+  );
 }
 
 cleanTaxonomy();

@@ -1,12 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "@medusajs/ui"
-import { sdk } from "../../lib/client"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@medusajs/ui";
+import { sdk } from "../../lib/client";
 import type {
   VendorListResponse,
   VendorResponse,
   CreateVendorInput,
   UpdateVendorInput,
-} from "../../types/vendor"
+} from "../../types/vendor";
 
 // ─── Query Keys ──────────────────────────────────────────────────────────────
 
@@ -17,15 +17,15 @@ export const vendorQueryKeys = {
     [...vendorQueryKeys.lists(), params] as const,
   details: () => [...vendorQueryKeys.all, "detail"] as const,
   detail: (id: string) => [...vendorQueryKeys.details(), id] as const,
-}
+};
 
 // ─── List Vendors ─────────────────────────────────────────────────────────────
 
 type UseVendorsParams = {
-  q?: string
-  limit?: number
-  offset?: number
-}
+  q?: string;
+  limit?: number;
+  offset?: number;
+};
 
 export const useVendors = (params: UseVendorsParams = {}) => {
   return useQuery<VendorListResponse>({
@@ -38,24 +38,23 @@ export const useVendors = (params: UseVendorsParams = {}) => {
           offset: params.offset ?? 0,
         },
       }),
-  })
-}
+  });
+};
 
 // ─── Single Vendor ────────────────────────────────────────────────────────────
 
 export const useVendor = (id: string) => {
   return useQuery<VendorResponse>({
     queryKey: vendorQueryKeys.detail(id),
-    queryFn: () =>
-      sdk.client.fetch<VendorResponse>(`/admin/vendors/${id}`),
+    queryFn: () => sdk.client.fetch<VendorResponse>(`/admin/vendors/${id}`),
     enabled: !!id,
-  })
-}
+  });
+};
 
 // ─── Create Vendor ────────────────────────────────────────────────────────────
 
 export const useCreateVendor = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: CreateVendorInput) =>
@@ -64,19 +63,19 @@ export const useCreateVendor = () => {
         body: data,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() })
-      toast.success("Vendor created successfully")
+      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() });
+      toast.success("Vendor created successfully");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to create vendor")
+      toast.error(error.message || "Failed to create vendor");
     },
-  })
-}
+  });
+};
 
 // ─── Update Vendor ────────────────────────────────────────────────────────────
 
 export const useUpdateVendor = (id: string) => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: UpdateVendorInput) =>
@@ -85,52 +84,54 @@ export const useUpdateVendor = (id: string) => {
         body: data,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.detail(id) })
-      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() })
-      toast.success("Vendor updated successfully")
+      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() });
+      toast.success("Vendor updated successfully");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to update vendor")
+      toast.error(error.message || "Failed to update vendor");
     },
-  })
-}
+  });
+};
 
 // ─── Delete Vendor ────────────────────────────────────────────────────────────
 
 export const useDeleteVendor = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string) =>
       sdk.client.fetch<{ id: string; deleted: boolean }>(
         `/admin/vendors/${id}`,
-        { method: "DELETE" }
+        { method: "DELETE" },
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() })
-      toast.success("Vendor deleted")
+      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() });
+      toast.success("Vendor deleted");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete vendor")
+      toast.error(error.message || "Failed to delete vendor");
     },
-  })
-}
+  });
+};
 
 // ─── Reset Vendor Password ───────────────────────────────────────────────────
 
 export const useResetVendorPassword = (id: string) => {
   return useMutation({
     mutationFn: (data: { email: string; password?: string }) =>
-      sdk.client.fetch<{ success: boolean }>(`/admin/vendors/${id}/reset-password`, {
-        method: "POST",
-        body: data,
-      }),
+      sdk.client.fetch<{ success: boolean }>(
+        `/admin/vendors/${id}/reset-password`,
+        {
+          method: "POST",
+          body: data,
+        },
+      ),
     onSuccess: () => {
-      toast.success("Password reset successfully")
+      toast.success("Password reset successfully");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to reset password")
+      toast.error(error.message || "Failed to reset password");
     },
-  })
-}
-
+  });
+};

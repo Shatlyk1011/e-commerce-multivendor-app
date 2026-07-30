@@ -1,6 +1,6 @@
 export interface OtpService {
-  send(phone: string): Promise<void>
-  verify(phone: string, otp: string): Promise<boolean>
+  send(phone: string): Promise<void>;
+  verify(phone: string, otp: string): Promise<boolean>;
 }
 
 class DevelopmentOtpService implements OtpService {
@@ -11,8 +11,8 @@ class DevelopmentOtpService implements OtpService {
 
   async verify(_phone: string, otp: string): Promise<boolean> {
     // TODO: Replace this development-only check with the real OTP provider.
-    return otp === "1234"
+    return otp === "1234";
   }
 }
 
-export const otpService: OtpService = new DevelopmentOtpService()
+export const otpService: OtpService = new DevelopmentOtpService();

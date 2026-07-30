@@ -1,5 +1,8 @@
 import { MedusaContainer } from "@medusajs/framework";
-import { ContainerRegistrationKeys, ModuleRegistrationName } from "@medusajs/framework/utils";
+import {
+  ContainerRegistrationKeys,
+  ModuleRegistrationName,
+} from "@medusajs/framework/utils";
 import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
@@ -12,7 +15,10 @@ interface CategoryNode {
 
 const seenHandles = new Set<string>();
 
-function generateUniqueHandle(name: string, parentPath?: string | null): string {
+function generateUniqueHandle(
+  name: string,
+  parentPath?: string | null,
+): string {
   const base = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -43,9 +49,15 @@ function generateUniqueHandle(name: string, parentPath?: string | null): string 
   return uniqueHandle;
 }
 
-export default async function cleanupDbTaxonomy({ container }: { container: MedusaContainer }) {
+export default async function cleanupDbTaxonomy({
+  container,
+}: {
+  container: MedusaContainer;
+}) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
-  const productModuleService = container.resolve(ModuleRegistrationName.PRODUCT);
+  const productModuleService = container.resolve(
+    ModuleRegistrationName.PRODUCT,
+  );
 
   let filePath = path.resolve(process.cwd(), "../../google-taxonomy-en.md");
   if (!fs.existsSync(filePath)) {
@@ -53,7 +65,9 @@ export default async function cleanupDbTaxonomy({ container }: { container: Medu
   }
 
   if (!fs.existsSync(filePath)) {
-    logger.error(`Cleaned taxonomy file not found. Tried checking path: ${filePath}`);
+    logger.error(
+      `Cleaned taxonomy file not found. Tried checking path: ${filePath}`,
+    );
     return;
   }
 
@@ -84,17 +98,19 @@ export default async function cleanupDbTaxonomy({ container }: { container: Medu
     }
   }
 
-  logger.info(`Generated ${validHandles.size} valid handles from taxonomy file.`);
+  logger.info(
+    `Generated ${validHandles.size} valid handles from taxonomy file.`,
+  );
 
   // Load all categories from database
   const dbCategories = await productModuleService.listProductCategories(
     {},
-    { select: ["id", "handle", "name", "parent_category_id"] as any }
+    { select: ["id", "handle", "name", "parent_category_id"] as any },
   );
 
   logger.info(`Found ${dbCategories.length} categories in database.`);
 
-  const catMap = new Map<string, typeof dbCategories[0]>();
+  const catMap = new Map<string, (typeof dbCategories)[0]>();
   for (const cat of dbCategories) {
     catMap.set(cat.id, cat);
   }
@@ -112,7 +128,12 @@ export default async function cleanupDbTaxonomy({ container }: { container: Medu
     return depth;
   }
 
-  const toDelete: Array<{ id: string; name: string; handle: string; depth: number }> = [];
+  const toDelete: Array<{
+    id: string;
+    name: string;
+    handle: string;
+    depth: number;
+  }> = [];
   for (const cat of dbCategories) {
     if (!validHandles.has(cat.handle)) {
       toDelete.push({
@@ -125,14 +146,18 @@ export default async function cleanupDbTaxonomy({ container }: { container: Medu
   }
 
   if (toDelete.length === 0) {
-    logger.info("No invalid categories found in the database. Cleanup complete.");
+    logger.info(
+      "No invalid categories found in the database. Cleanup complete.",
+    );
     return;
   }
 
   // Sort by depth descending (deepest children first)
   toDelete.sort((a, b) => b.depth - a.depth);
 
-  logger.info(`Deleting ${toDelete.length} invalid categories from database sequentially (deepest first)...`);
+  logger.info(
+    `Deleting ${toDelete.length} invalid categories from database sequentially (deepest first)...`,
+  );
 
   let count = 0;
   for (const cat of toDelete) {
@@ -143,9 +168,13 @@ export default async function cleanupDbTaxonomy({ container }: { container: Medu
         logger.info(`Deleted ${count}/${toDelete.length} categories...`);
       }
     } catch (err: any) {
-      logger.error(`Failed to delete category ${cat.name} (${cat.id}): ${err.message}`);
+      logger.error(
+        `Failed to delete category ${cat.name} (${cat.id}): ${err.message}`,
+      );
     }
   }
 
-  logger.info(`Successfully deleted ${count} invalid categories from database!`);
+  logger.info(
+    `Successfully deleted ${count} invalid categories from database!`,
+  );
 }

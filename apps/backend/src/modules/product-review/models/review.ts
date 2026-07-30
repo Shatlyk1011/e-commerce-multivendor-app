@@ -1,4 +1,4 @@
-import { model } from "@medusajs/framework/utils"
+import { model } from "@medusajs/framework/utils";
 
 const Review = model.define("product_review", {
   id: model.id().primaryKey(),
@@ -10,6 +10,6 @@ const Review = model.define("product_review", {
   comment: model.text(),
   status: model.enum(["published", "hidden"]).default("published"),
   verified_purchase: model.boolean().default(true),
-})
+});
 
-export default Review
+export default Review;

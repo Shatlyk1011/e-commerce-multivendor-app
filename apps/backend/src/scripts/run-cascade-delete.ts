@@ -1,7 +1,11 @@
 import { MedusaContainer } from "@medusajs/framework";
 import { cascadeDeleteCategoryWorkflow } from "../workflows/cascade-delete-category";
 
-export default async function runCascadeDelete({ container }: { container: MedusaContainer }) {
+export default async function runCascadeDelete({
+  container,
+}: {
+  container: MedusaContainer;
+}) {
   const logger = container.resolve("logger");
   const targetId = "pcat_01KXNP7XMHBT45RAJEK9NMVVYF";
 

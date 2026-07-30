@@ -1,7 +1,5 @@
 {
-  "namespaces": [
-    "public"
-  ],
+  "namespaces": ["public"],
   "name": "public",
   "tables": [
     {
@@ -126,9 +124,7 @@
         },
         {
           "keyName": "vendor_product_option_template_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -261,9 +257,7 @@
         },
         {
           "keyName": "vendor_product_option_template_value_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -274,13 +268,9 @@
       "foreignKeys": {
         "vendor_product_option_template_value_template_id_foreign": {
           "constraintName": "vendor_product_option_template_value_template_id_foreign",
-          "columnNames": [
-            "template_id"
-          ],
+          "columnNames": ["template_id"],
           "localTableName": "public.vendor_product_option_template_value",
-          "referencedColumnNames": [
-            "id"
-          ],
+          "referencedColumnNames": ["id"],
           "referencedTableName": "public.vendor_product_option_template",
           "updateRule": "cascade"
         }

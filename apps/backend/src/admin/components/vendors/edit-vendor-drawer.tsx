@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react"
-import { Drawer, Button, Input, Label, Text, Heading } from "@medusajs/ui"
-import { useUpdateVendor } from "../../hooks/api/vendors"
-import type { Vendor, UpdateVendorInput } from "../../types/vendor"
+import { useEffect, useState } from "react";
+import { Drawer, Button, Input, Label, Text, Heading } from "@medusajs/ui";
+import { useUpdateVendor } from "../../hooks/api/vendors";
+import type { Vendor, UpdateVendorInput } from "../../types/vendor";
 
 type EditVendorDrawerProps = {
-  vendor: Vendor
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+  vendor: Vendor;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
 function slugify(value: string) {
   return value
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(/^-+|-+$/g, "");
 }
 
 export function EditVendorDrawer({
@@ -26,10 +26,12 @@ export function EditVendorDrawer({
     name: vendor.name,
     handle: vendor.handle,
     logo: vendor.logo ?? "",
-  })
-  const [errors, setErrors] = useState<Partial<Record<keyof UpdateVendorInput, string>>>({})
+  });
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof UpdateVendorInput, string>>
+  >({});
 
-  const updateVendor = useUpdateVendor(vendor.id)
+  const updateVendor = useUpdateVendor(vendor.id);
 
   // Sync form data when vendor prop changes (e.g. after re-open)
   useEffect(() => {
@@ -38,23 +40,23 @@ export function EditVendorDrawer({
         name: vendor.name,
         handle: vendor.handle,
         logo: vendor.logo ?? "",
-      })
-      setErrors({})
+      });
+      setErrors({});
     }
-  }, [open, vendor])
+  }, [open, vendor]);
 
   const validate = () => {
-    const newErrors: Partial<Record<keyof UpdateVendorInput, string>> = {}
-    if (!formData.name?.trim()) newErrors.name = "Name is required"
-    if (!formData.handle?.trim()) newErrors.handle = "Handle is required"
-    return newErrors
-  }
+    const newErrors: Partial<Record<keyof UpdateVendorInput, string>> = {};
+    if (!formData.name?.trim()) newErrors.name = "Name is required";
+    if (!formData.handle?.trim()) newErrors.handle = "Handle is required";
+    return newErrors;
+  };
 
   const handleSubmit = () => {
-    const validationErrors = validate()
+    const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
+      setErrors(validationErrors);
+      return;
     }
 
     updateVendor.mutate(
@@ -65,11 +67,11 @@ export function EditVendorDrawer({
       },
       {
         onSuccess: () => {
-          onOpenChange(false)
+          onOpenChange(false);
         },
-      }
-    )
-  }
+      },
+    );
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -88,8 +90,8 @@ export function EditVendorDrawer({
               id="edit-vendor-name"
               value={formData.name ?? ""}
               onChange={(e) => {
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-                setErrors((prev) => ({ ...prev, name: undefined }))
+                setFormData((prev) => ({ ...prev, name: e.target.value }));
+                setErrors((prev) => ({ ...prev, name: undefined }));
               }}
               className={errors.name ? "border-ui-border-error" : ""}
             />
@@ -117,8 +119,8 @@ export function EditVendorDrawer({
                   setFormData((prev) => ({
                     ...prev,
                     handle: slugify(e.target.value),
-                  }))
-                  setErrors((prev) => ({ ...prev, handle: undefined }))
+                  }));
+                  setErrors((prev) => ({ ...prev, handle: undefined }));
                 }}
               />
             </div>
@@ -171,5 +173,5 @@ export function EditVendorDrawer({
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>
-  )
+  );
 }

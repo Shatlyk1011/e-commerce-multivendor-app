@@ -33,7 +33,11 @@ const vendorMediaUpload = multer({
   },
 });
 
-const vendorCorsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: any) => {
+const vendorCorsMiddleware = (
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: any,
+) => {
   const origin = req.headers.origin;
   const allowedOrigins = process.env.AUTH_CORS
     ? process.env.AUTH_CORS.split(",")
@@ -42,7 +46,10 @@ const vendorCorsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: any
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS",
+    );
 
     // Dynamically echo requested headers back, or fallback to standard ones
     const requestHeaders = req.headers["access-control-request-headers"];
@@ -99,7 +106,9 @@ const checkVendorStatusMiddleware = async (
     }
   } catch (error) {
     console.error("Error checking vendor status in middleware:", error);
-    return res.status(500).json({ message: "Internal server error during vendor status check" });
+    return res
+      .status(500)
+      .json({ message: "Internal server error during vendor status check" });
   }
 
   next();
@@ -170,7 +179,9 @@ export default defineMiddlewares({
     {
       matcher: "/admin/product-option-templates",
       method: ["POST"],
-      middlewares: [validateAndTransformBody(AdminCreateProductOptionTemplateSchema)],
+      middlewares: [
+        validateAndTransformBody(AdminCreateProductOptionTemplateSchema),
+      ],
     },
 
     // Vendor-portal facing routes

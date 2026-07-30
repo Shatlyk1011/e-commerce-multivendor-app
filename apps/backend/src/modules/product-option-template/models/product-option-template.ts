@@ -1,6 +1,6 @@
-import { model } from "@medusajs/framework/utils"
+import { model } from "@medusajs/framework/utils";
 
-import ProductOptionValue from "./product-option-value"
+import ProductOptionValue from "./product-option-value";
 
 const ProductOptionTemplate = model.define("vendor_product_option_template", {
   id: model.id().primaryKey(),
@@ -9,6 +9,6 @@ const ProductOptionTemplate = model.define("vendor_product_option_template", {
   values: model.hasMany(() => ProductOptionValue, {
     mappedBy: "template",
   }),
-})
+});
 
-export default ProductOptionTemplate
+export default ProductOptionTemplate;

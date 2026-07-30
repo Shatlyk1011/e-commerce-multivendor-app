@@ -1,21 +1,24 @@
-import type { AuthIdentityDTO, IAuthModuleService } from "@medusajs/framework/types"
-import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { MedusaError, Modules } from "@medusajs/framework/utils"
+import type {
+  AuthIdentityDTO,
+  IAuthModuleService,
+} from "@medusajs/framework/types";
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
+import { MedusaError, Modules } from "@medusajs/framework/utils";
 
-import { PHONE_OTP_PROVIDER } from "../../../providers/phone-otp/service"
+import { PHONE_OTP_PROVIDER } from "../../../providers/phone-otp/service";
 
 type AuthenticatePhoneOtpStepInput = {
-  phone: string
-  otp: string
-}
+  phone: string;
+  otp: string;
+};
 
 type AuthenticatePhoneOtpStepOutput = {
-  authIdentity: AuthIdentityDTO
-}
+  authIdentity: AuthIdentityDTO;
+};
 
 type AuthenticatePhoneOtpCompensation = {
-  createdAuthIdentityId?: string
-}
+  createdAuthIdentityId?: string;
+};
 
 export const authenticatePhoneOtpStep = createStep<
   AuthenticatePhoneOtpStepInput,
@@ -26,8 +29,13 @@ export const authenticatePhoneOtpStep = createStep<
   async (
     input: AuthenticatePhoneOtpStepInput,
     { container },
-  ): Promise<StepResponse<AuthenticatePhoneOtpStepOutput, AuthenticatePhoneOtpCompensation>> => {
-    const authService: IAuthModuleService = container.resolve(Modules.AUTH)
+  ): Promise<
+    StepResponse<
+      AuthenticatePhoneOtpStepOutput,
+      AuthenticatePhoneOtpCompensation
+    >
+  > => {
+    const authService: IAuthModuleService = container.resolve(Modules.AUTH);
     const existingIdentities = await authService.listAuthIdentities(
       {
         provider_identities: {
@@ -36,33 +44,37 @@ export const authenticatePhoneOtpStep = createStep<
         },
       },
       { take: 1 },
-    )
+    );
 
     const response = await authService.authenticate(PHONE_OTP_PROVIDER, {
       body: input,
-    })
+    });
 
     if (!response.success || !response.authIdentity) {
       throw new MedusaError(
         MedusaError.Types.UNAUTHORIZED,
         response.error || "Authentication failed",
-      )
+      );
     }
 
     return new StepResponse(
       { authIdentity: response.authIdentity },
       {
         createdAuthIdentityId:
-          existingIdentities.length === 0 ? response.authIdentity.id : undefined,
+          existingIdentities.length === 0
+            ? response.authIdentity.id
+            : undefined,
       },
-    )
+    );
   },
   async (compensation, { container }) => {
     if (!compensation?.createdAuthIdentityId) {
-      return
+      return;
     }
 
-    const authService: IAuthModuleService = container.resolve(Modules.AUTH)
-    await authService.deleteAuthIdentities([compensation.createdAuthIdentityId])
+    const authService: IAuthModuleService = container.resolve(Modules.AUTH);
+    await authService.deleteAuthIdentities([
+      compensation.createdAuthIdentityId,
+    ]);
   },
-)
+);

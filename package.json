@@ -15,6 +15,7 @@
     "backend:dev": "turbo dev --filter=@dtc/backend",
     "storefront:dev": "turbo dev --filter=@dtc/storefront",
     "storefront:format": "pnpm --filter @dtc/storefront exec prettier --write .",
+    "format": "pnpm -r format",
     "prepare": "husky"
   },
   "pnpm": {

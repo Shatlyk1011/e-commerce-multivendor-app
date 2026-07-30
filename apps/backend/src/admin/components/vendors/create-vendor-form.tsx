@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState } from "react";
 import {
   FocusModal,
   Button,
@@ -8,14 +8,14 @@ import {
   Heading,
   Select,
   Textarea,
-} from "@medusajs/ui"
-import { useCreateVendor } from "../../hooks/api/vendors"
-import type { CreateVendorInput } from "../../types/vendor"
+} from "@medusajs/ui";
+import { useCreateVendor } from "../../hooks/api/vendors";
+import type { CreateVendorInput } from "../../types/vendor";
 
 type CreateVendorFormProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
 const initialState: CreateVendorInput = {
   name: "",
@@ -33,73 +33,76 @@ const initialState: CreateVendorInput = {
     first_name: "",
     last_name: "",
   },
-}
+};
 
 function slugify(value: string) {
   return value
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(/^-+|-+$/g, "");
 }
 
-export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) {
-  const [formData, setFormData] = useState<CreateVendorInput>(initialState)
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [handleManuallyEdited, setHandleManuallyEdited] = useState(false)
+export function CreateVendorForm({
+  open,
+  onOpenChange,
+}: CreateVendorFormProps) {
+  const [formData, setFormData] = useState<CreateVendorInput>(initialState);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [handleManuallyEdited, setHandleManuallyEdited] = useState(false);
 
-  const createVendor = useCreateVendor()
+  const createVendor = useCreateVendor();
 
   const handleNameChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
       name: value,
       handle: handleManuallyEdited ? prev.handle : slugify(value),
-    }))
-    setErrors((e) => ({ ...e, name: "" }))
-  }
+    }));
+    setErrors((e) => ({ ...e, name: "" }));
+  };
 
   const handleHandleChange = (value: string) => {
-    setHandleManuallyEdited(true)
-    setFormData((prev) => ({ ...prev, handle: slugify(value) }))
-    setErrors((e) => ({ ...e, handle: "" }))
-  }
+    setHandleManuallyEdited(true);
+    setFormData((prev) => ({ ...prev, handle: slugify(value) }));
+    setErrors((e) => ({ ...e, handle: "" }));
+  };
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
-    if (!formData.name.trim()) newErrors.name = "Name is required"
-    if (!formData.handle.trim()) newErrors.handle = "Slug is required"
-    if (!formData.city.trim()) newErrors.city = "Origin city is required"
-    
+    const newErrors: Record<string, string> = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.handle.trim()) newErrors.handle = "Slug is required";
+    if (!formData.city.trim()) newErrors.city = "Origin city is required";
+
     if (!formData.admin.email.trim()) {
-      newErrors.email = "Email is required"
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.admin.email)) {
-      newErrors.email = "Invalid email format"
+      newErrors.email = "Invalid email format";
     }
 
     if (!formData.admin.password) {
-      newErrors.password = "Password is required"
+      newErrors.password = "Password is required";
     } else if (formData.admin.password.length < 8) {
-      newErrors.password = "Password must contain at least 8 characters"
+      newErrors.password = "Password must contain at least 8 characters";
     }
 
     if (formData.admin.password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     if (formData.status === "disabled" && !formData.status_reason?.trim()) {
-      newErrors.status_reason = "Reason is required when account is disabled"
+      newErrors.status_reason = "Reason is required when account is disabled";
     }
 
-    return newErrors
-  }
+    return newErrors;
+  };
 
   const handleSubmit = () => {
-    const validationErrors = validate()
+    const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
+      setErrors(validationErrors);
+      return;
     }
 
     createVendor.mutate(
@@ -108,7 +111,10 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
         handle: formData.handle.trim(),
         logo: formData.logo?.trim() || undefined,
         status: formData.status,
-        status_reason: formData.status === "disabled" ? formData.status_reason?.trim() : null,
+        status_reason:
+          formData.status === "disabled"
+            ? formData.status_reason?.trim()
+            : null,
         store_name: formData.store_name?.trim() || null,
         store_description: formData.store_description?.trim() || null,
         address: formData.address?.trim() || null,
@@ -122,25 +128,25 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
       },
       {
         onSuccess: () => {
-          setFormData(initialState)
-          setConfirmPassword("")
-          setErrors({})
-          setHandleManuallyEdited(false)
-          onOpenChange(false)
+          setFormData(initialState);
+          setConfirmPassword("");
+          setErrors({});
+          setHandleManuallyEdited(false);
+          onOpenChange(false);
         },
-      }
-    )
-  }
+      },
+    );
+  };
 
   const handleClose = (isOpen: boolean) => {
     if (!createVendor.isPending) {
-      setFormData(initialState)
-      setConfirmPassword("")
-      setErrors({})
-      setHandleManuallyEdited(false)
-      onOpenChange(isOpen)
+      setFormData(initialState);
+      setConfirmPassword("");
+      setErrors({});
+      setHandleManuallyEdited(false);
+      onOpenChange(isOpen);
     }
-  }
+  };
 
   return (
     <FocusModal open={open} onOpenChange={handleClose}>
@@ -178,8 +184,10 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
 
               {/* SECTION 1: GENERAL */}
               <div className="flex flex-col gap-y-4">
-                <Heading level="h2" className="border-b pb-2">General</Heading>
-                
+                <Heading level="h2" className="border-b pb-2">
+                  General
+                </Heading>
+
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="vendor-name" size="small" weight="plus">
@@ -244,8 +252,10 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
 
               {/* SECTION 2: ACCOUNT */}
               <div className="flex flex-col gap-y-4">
-                <Heading level="h2" className="border-b pb-2">Account</Heading>
-                
+                <Heading level="h2" className="border-b pb-2">
+                  Account
+                </Heading>
+
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="admin-email" size="small" weight="plus">
@@ -257,12 +267,12 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                       placeholder="seller@example.com"
                       value={formData.admin.email}
                       onChange={(e) => {
-                        const emailVal = e.target.value
+                        const emailVal = e.target.value;
                         setFormData((prev) => ({
                           ...prev,
                           admin: { ...prev.admin, email: emailVal },
-                        }))
-                        setErrors((prev) => ({ ...prev, email: "" }))
+                        }));
+                        setErrors((prev) => ({ ...prev, email: "" }));
                       }}
                       className={errors.email ? "border-ui-border-error" : ""}
                     />
@@ -280,8 +290,11 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                     <Select
                       value={formData.status}
                       onValueChange={(val) => {
-                        setFormData((prev) => ({ ...prev, status: val as "active" | "disabled" }))
-                        setErrors((prev) => ({ ...prev, status_reason: "" }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          status: val as "active" | "disabled",
+                        }));
+                        setErrors((prev) => ({ ...prev, status_reason: "" }));
                       }}
                     >
                       <Select.Trigger id="vendor-status">
@@ -298,18 +311,24 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                 {formData.status === "disabled" && (
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="status-reason" size="small" weight="plus">
-                      Reason for Disabling <span className="text-ui-fg-error">*</span>
+                      Reason for Disabling{" "}
+                      <span className="text-ui-fg-error">*</span>
                     </Label>
                     <Textarea
                       id="status-reason"
                       placeholder="Enter description why account is disabled..."
                       value={formData.status_reason ?? ""}
                       onChange={(e) => {
-                        const val = e.target.value
-                        setFormData((prev) => ({ ...prev, status_reason: val }))
-                        setErrors((prev) => ({ ...prev, status_reason: "" }))
+                        const val = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          status_reason: val,
+                        }));
+                        setErrors((prev) => ({ ...prev, status_reason: "" }));
                       }}
-                      className={errors.status_reason ? "border-ui-border-error" : ""}
+                      className={
+                        errors.status_reason ? "border-ui-border-error" : ""
+                      }
                     />
                     {errors.status_reason && (
                       <Text size="small" className="text-ui-fg-error">
@@ -330,14 +349,16 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                       placeholder="Minimum 8 characters"
                       value={formData.admin.password}
                       onChange={(e) => {
-                        const passVal = e.target.value
+                        const passVal = e.target.value;
                         setFormData((prev) => ({
                           ...prev,
                           admin: { ...prev.admin, password: passVal },
-                        }))
-                        setErrors((prev) => ({ ...prev, password: "" }))
+                        }));
+                        setErrors((prev) => ({ ...prev, password: "" }));
                       }}
-                      className={errors.password ? "border-ui-border-error" : ""}
+                      className={
+                        errors.password ? "border-ui-border-error" : ""
+                      }
                     />
                     {errors.password && (
                       <Text size="small" className="text-ui-fg-error">
@@ -347,8 +368,13 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                   </div>
 
                   <div className="flex flex-col gap-y-2">
-                    <Label htmlFor="confirm-password" size="small" weight="plus">
-                      Confirm Password <span className="text-ui-fg-error">*</span>
+                    <Label
+                      htmlFor="confirm-password"
+                      size="small"
+                      weight="plus"
+                    >
+                      Confirm Password{" "}
+                      <span className="text-ui-fg-error">*</span>
                     </Label>
                     <Input
                       id="confirm-password"
@@ -356,10 +382,12 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                       placeholder="Confirm password"
                       value={confirmPassword}
                       onChange={(e) => {
-                        setConfirmPassword(e.target.value)
-                        setErrors((prev) => ({ ...prev, confirmPassword: "" }))
+                        setConfirmPassword(e.target.value);
+                        setErrors((prev) => ({ ...prev, confirmPassword: "" }));
                       }}
-                      className={errors.confirmPassword ? "border-ui-border-error" : ""}
+                      className={
+                        errors.confirmPassword ? "border-ui-border-error" : ""
+                      }
                     />
                     {errors.confirmPassword && (
                       <Text size="small" className="text-ui-fg-error">
@@ -371,7 +399,11 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-y-2">
-                    <Label htmlFor="admin-first-name" size="small" weight="plus">
+                    <Label
+                      htmlFor="admin-first-name"
+                      size="small"
+                      weight="plus"
+                    >
                       First Name
                     </Label>
                     <Input
@@ -379,11 +411,11 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                       placeholder="e.g. John"
                       value={formData.admin.first_name}
                       onChange={(e) => {
-                        const nameVal = e.target.value
+                        const nameVal = e.target.value;
                         setFormData((prev) => ({
                           ...prev,
                           admin: { ...prev.admin, first_name: nameVal },
-                        }))
+                        }));
                       }}
                     />
                   </div>
@@ -397,11 +429,11 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                       placeholder="e.g. Doe"
                       value={formData.admin.last_name}
                       onChange={(e) => {
-                        const nameVal = e.target.value
+                        const nameVal = e.target.value;
                         setFormData((prev) => ({
                           ...prev,
                           admin: { ...prev.admin, last_name: nameVal },
-                        }))
+                        }));
                       }}
                     />
                   </div>
@@ -410,8 +442,10 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
 
               {/* SECTION 3: STORE INFORMATION */}
               <div className="flex flex-col gap-y-4">
-                <Heading level="h2" className="border-b pb-2">Store Information</Heading>
-                
+                <Heading level="h2" className="border-b pb-2">
+                  Store Information
+                </Heading>
+
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="store-name" size="small" weight="plus">
@@ -422,7 +456,10 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                       placeholder="e.g. Acme Official Store"
                       value={formData.store_name ?? ""}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, store_name: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          store_name: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -438,10 +475,17 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                       required
                       aria-invalid={!!errors.city}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, city: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          city: e.target.value,
+                        }))
                       }
                     />
-                    {errors.city && <Text size="small" className="text-ui-fg-error">{errors.city}</Text>}
+                    {errors.city && (
+                      <Text size="small" className="text-ui-fg-error">
+                        {errors.city}
+                      </Text>
+                    )}
                   </div>
                 </div>
 
@@ -454,7 +498,10 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                     placeholder="e.g. 123 Main St, Suite 100"
                     value={formData.address ?? ""}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, address: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -468,16 +515,18 @@ export function CreateVendorForm({ open, onOpenChange }: CreateVendorFormProps) 
                     placeholder="Provide a brief description of the seller store..."
                     value={formData.store_description ?? ""}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, store_description: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        store_description: e.target.value,
+                      }))
                     }
                   />
                 </div>
               </div>
-
             </div>
           </FocusModal.Body>
         </div>
       </FocusModal.Content>
     </FocusModal>
-  )
+  );
 }

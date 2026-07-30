@@ -1,15 +1,13 @@
-import { 
-  AuthenticatedMedusaRequest, 
+import {
+  AuthenticatedMedusaRequest,
   MedusaResponse,
-} from "@medusajs/framework/http"
-import type { HttpTypes } from "@medusajs/framework/types"
-import createVendorProductWorkflow from "../../../workflows/marketplace/create-vendor-product"
-import { 
-  ContainerRegistrationKeys,
-} from "@medusajs/framework/utils"
-import type { VendorProduct, VendorProductsResponse } from "@dtc/api-contracts"
+} from "@medusajs/framework/http";
+import type { HttpTypes } from "@medusajs/framework/types";
+import createVendorProductWorkflow from "../../../workflows/marketplace/create-vendor-product";
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import type { VendorProduct, VendorProductsResponse } from "@dtc/api-contracts";
 
-type VendorCreateProduct = Omit<HttpTypes.AdminCreateProduct, "description">
+type VendorCreateProduct = Omit<HttpTypes.AdminCreateProduct, "description">;
 
 const toVendorProduct = (product: {
   id: string;
@@ -76,26 +74,25 @@ const toVendorProduct = (product: {
 
 export const POST = async (
   req: AuthenticatedMedusaRequest<VendorCreateProduct>,
-  res: MedusaResponse
+  res: MedusaResponse,
 ) => {
-  const { result } = await createVendorProductWorkflow(req.scope)
-    .run({
-      input: {
-        vendor_admin_id: req.auth_context.actor_id,
-        product: req.validatedBody,
-      },
-    })
+  const { result } = await createVendorProductWorkflow(req.scope).run({
+    input: {
+      vendor_admin_id: req.auth_context.actor_id,
+      product: req.validatedBody,
+    },
+  });
 
   res.json({
     product: result.product,
-  })
-}
+  });
+};
 
 export const GET = async (
   req: AuthenticatedMedusaRequest,
-  res: MedusaResponse
+  res: MedusaResponse,
 ) => {
-  const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+  const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
 
   const {
     data: [vendorAdmin],
@@ -136,9 +133,11 @@ export const GET = async (
 
   const response: VendorProductsResponse = {
     products: (vendorAdmin?.vendor?.products ?? [])
-      .filter((product): product is NonNullable<typeof product> => product !== null)
+      .filter(
+        (product): product is NonNullable<typeof product> => product !== null,
+      )
       .map((p) => toVendorProduct(p as Parameters<typeof toVendorProduct>[0])),
   };
 
-  res.json(response)
-}
+  res.json(response);
+};

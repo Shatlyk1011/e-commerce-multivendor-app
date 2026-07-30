@@ -1,7 +1,5 @@
 {
-  "namespaces": [
-    "public"
-  ],
+  "namespaces": ["public"],
   "name": "public",
   "tables": [
     {
@@ -83,10 +81,7 @@
           "scale": null,
           "default": "'active'",
           "comment": null,
-          "enumItems": [
-            "active",
-            "disabled"
-          ],
+          "enumItems": ["active", "disabled"],
           "mappedType": "enum"
         },
         "status_reason": {
@@ -257,9 +252,7 @@
         },
         {
           "keyName": "vendor_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -449,9 +442,7 @@
         },
         {
           "keyName": "vendor_admin_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -462,13 +453,9 @@
       "foreignKeys": {
         "vendor_admin_vendor_id_foreign": {
           "constraintName": "vendor_admin_vendor_id_foreign",
-          "columnNames": [
-            "vendor_id"
-          ],
+          "columnNames": ["vendor_id"],
           "localTableName": "public.vendor_admin",
-          "referencedColumnNames": [
-            "id"
-          ],
+          "referencedColumnNames": ["id"],
           "referencedTableName": "public.vendor",
           "updateRule": "cascade"
         }

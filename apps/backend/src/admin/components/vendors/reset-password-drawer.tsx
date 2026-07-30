@@ -1,59 +1,59 @@
-import { useEffect, useState } from "react"
-import { Drawer, Button, Input, Label, Text, Heading } from "@medusajs/ui"
-import { useResetVendorPassword } from "../../hooks/api/vendors"
-import type { Vendor } from "../../types/vendor"
+import { useEffect, useState } from "react";
+import { Drawer, Button, Input, Label, Text, Heading } from "@medusajs/ui";
+import { useResetVendorPassword } from "../../hooks/api/vendors";
+import type { Vendor } from "../../types/vendor";
 
 type ResetPasswordDrawerProps = {
-  vendor: Vendor
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+  vendor: Vendor;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
 export function ResetPasswordDrawer({
   vendor,
   open,
   onOpenChange,
 }: ResetPasswordDrawerProps) {
-  const admin = vendor.admins?.[0]
-  
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const admin = vendor.admins?.[0];
 
-  const resetPassword = useResetVendorPassword(vendor.id)
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const resetPassword = useResetVendorPassword(vendor.id);
 
   useEffect(() => {
     if (open) {
-      setPassword("")
-      setConfirmPassword("")
-      setErrors({})
+      setPassword("");
+      setConfirmPassword("");
+      setErrors({});
     }
-  }, [open])
+  }, [open]);
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
     if (!password) {
-      newErrors.password = "Password is required"
+      newErrors.password = "Password is required";
     } else if (password.length < 8) {
-      newErrors.password = "Password must contain at least 8 characters"
+      newErrors.password = "Password must contain at least 8 characters";
     }
 
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     if (!admin?.email) {
-      newErrors.general = "Vendor email not found"
+      newErrors.general = "Vendor email not found";
     }
 
-    return newErrors
-  }
+    return newErrors;
+  };
 
   const handleSubmit = () => {
-    const validationErrors = validate()
+    const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
+      setErrors(validationErrors);
+      return;
     }
 
     resetPassword.mutate(
@@ -63,11 +63,11 @@ export function ResetPasswordDrawer({
       },
       {
         onSuccess: () => {
-          onOpenChange(false)
+          onOpenChange(false);
         },
-      }
-    )
-  }
+      },
+    );
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -99,8 +99,8 @@ export function ResetPasswordDrawer({
               placeholder="Minimum 8 characters"
               value={password}
               onChange={(e) => {
-                setPassword(e.target.value)
-                setErrors((prev) => ({ ...prev, password: "" }))
+                setPassword(e.target.value);
+                setErrors((prev) => ({ ...prev, password: "" }));
               }}
               className={errors.password ? "border-ui-border-error" : ""}
             />
@@ -122,8 +122,8 @@ export function ResetPasswordDrawer({
               placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) => {
-                setConfirmPassword(e.target.value)
-                setErrors((prev) => ({ ...prev, confirmPassword: "" }))
+                setConfirmPassword(e.target.value);
+                setErrors((prev) => ({ ...prev, confirmPassword: "" }));
               }}
               className={errors.confirmPassword ? "border-ui-border-error" : ""}
             />
@@ -157,6 +157,6 @@ export function ResetPasswordDrawer({
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>
-  )
+  );
 }
-export default ResetPasswordDrawer
+export default ResetPasswordDrawer;

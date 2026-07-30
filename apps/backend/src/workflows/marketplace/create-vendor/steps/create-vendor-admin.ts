@@ -1,45 +1,35 @@
-import { 
-  createStep,
-  StepResponse,
-} from "@medusajs/framework/workflows-sdk"
-import MarketplaceModuleService from "../../../../modules/marketplace/service"
-import { MARKETPLACE_MODULE } from "../../../../modules/marketplace"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
+import MarketplaceModuleService from "../../../../modules/marketplace/service";
+import { MARKETPLACE_MODULE } from "../../../../modules/marketplace";
 
 type CreateVendorAdminStepInput = {
-  email: string
-  first_name?: string
-  last_name?: string
-  vendor_id: string
-}
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  vendor_id: string;
+};
 
 const createVendorAdminStep = createStep(
   "create-vendor-admin",
-  async (
-    adminData: CreateVendorAdminStepInput, 
-    { container }
-  ) => {
-    const marketplaceModuleService: MarketplaceModuleService = 
-      container.resolve(MARKETPLACE_MODULE)
+  async (adminData: CreateVendorAdminStepInput, { container }) => {
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
 
-    const vendorAdmin = await marketplaceModuleService.createVendorAdmins(
-      adminData
-    )
+    const vendorAdmin =
+      await marketplaceModuleService.createVendorAdmins(adminData);
 
-    return new StepResponse(
-      vendorAdmin,
-      vendorAdmin.id
-    )
+    return new StepResponse(vendorAdmin, vendorAdmin.id);
   },
   async (vendorAdminId, { container }) => {
     if (!vendorAdminId) {
-      return
+      return;
     }
-    
-    const marketplaceModuleService: MarketplaceModuleService = 
-      container.resolve(MARKETPLACE_MODULE)
 
-    marketplaceModuleService.deleteVendorAdmins(vendorAdminId)
-  }
-)
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
 
-export default createVendorAdminStep
+    marketplaceModuleService.deleteVendorAdmins(vendorAdminId);
+  },
+);
+
+export default createVendorAdminStep;

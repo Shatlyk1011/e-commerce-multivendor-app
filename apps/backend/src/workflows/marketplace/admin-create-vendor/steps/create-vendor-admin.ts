@@ -1,35 +1,33 @@
-import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import MarketplaceModuleService from "../../../../modules/marketplace/service"
-import { MARKETPLACE_MODULE } from "../../../../modules/marketplace"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
+import MarketplaceModuleService from "../../../../modules/marketplace/service";
+import { MARKETPLACE_MODULE } from "../../../../modules/marketplace";
 
 export type CreateVendorAdminStepInput = {
-  email: string
-  first_name?: string
-  last_name?: string
-  vendor_id: string
-}
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  vendor_id: string;
+};
 
 export const createVendorAdminStep = createStep(
   "create-vendor-admin",
   async (adminData: CreateVendorAdminStepInput, { container }) => {
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
 
-    const marketplaceModuleService: MarketplaceModuleService = 
-      container.resolve(MARKETPLACE_MODULE)
+    const vendorAdmin =
+      await marketplaceModuleService.createVendorAdmins(adminData);
 
-    const vendorAdmin = await marketplaceModuleService.createVendorAdmins(
-      adminData
-    )
-
-    return new StepResponse(vendorAdmin, vendorAdmin.id)
+    return new StepResponse(vendorAdmin, vendorAdmin.id);
   },
   async (vendorAdminId, { container }) => {
     if (!vendorAdminId) {
-      return
+      return;
     }
 
-    const marketplaceModuleService: MarketplaceModuleService = 
-      container.resolve(MARKETPLACE_MODULE)
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
 
-    await marketplaceModuleService.deleteVendorAdmins(vendorAdminId)
-  }
-)
+    await marketplaceModuleService.deleteVendorAdmins(vendorAdminId);
+  },
+);

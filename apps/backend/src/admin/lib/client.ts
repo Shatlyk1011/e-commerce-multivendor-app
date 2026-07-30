@@ -1,4 +1,4 @@
-import Medusa from "@medusajs/js-sdk"
+import Medusa from "@medusajs/js-sdk";
 
 export const sdk = new Medusa({
   baseUrl: (import.meta as any).env?.VITE_BACKEND_URL || "/",
@@ -6,5 +6,4 @@ export const sdk = new Medusa({
   auth: {
     type: "session",
   },
-})
-
+});

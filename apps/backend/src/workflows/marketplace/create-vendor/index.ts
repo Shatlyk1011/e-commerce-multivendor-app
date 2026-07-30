@@ -42,7 +42,9 @@ const createVendorWorkflow = createWorkflow(
       entity: "fulfillment_set",
       fields: ["id"],
     }).config({ name: "retrieve-delivery-fulfillment-set" });
-    const fulfillmentSetId = requireDeliveryFulfillmentSetStep({ fulfillment_sets: fulfillmentSets })
+    const fulfillmentSetId = requireDeliveryFulfillmentSetStep({
+      fulfillment_sets: fulfillmentSets,
+    });
 
     const vendor = createVendorStep({
       name: input.name,
@@ -101,19 +103,36 @@ const createVendorWorkflow = createWorkflow(
     // Shipping options are filtered by fulfillment sets attached to the sales
     // channel's stock locations. Every vendor location must use the delivery
     // set created during seeding or checkout has no eligible options.
-    const fulfillmentSetLinkDefs = transform({ stockLocations, fulfillmentSetId }, (data) => {
-      return [{
-        [Modules.STOCK_LOCATION]: { stock_location_id: data.stockLocations[0].id },
-        [Modules.FULFILLMENT]: { fulfillment_set_id: data.fulfillmentSetId },
-      }]
-    })
-    createRemoteLinkStep(fulfillmentSetLinkDefs).config({ name: "link-vendor-location-to-fulfillment-set" })
+    const fulfillmentSetLinkDefs = transform(
+      { stockLocations, fulfillmentSetId },
+      (data) => {
+        return [
+          {
+            [Modules.STOCK_LOCATION]: {
+              stock_location_id: data.stockLocations[0].id,
+            },
+            [Modules.FULFILLMENT]: {
+              fulfillment_set_id: data.fulfillmentSetId,
+            },
+          },
+        ];
+      },
+    );
+    createRemoteLinkStep(fulfillmentSetLinkDefs).config({
+      name: "link-vendor-location-to-fulfillment-set",
+    });
 
-    const providerLinkDefs = transform({ stockLocations }, (data) => [{
-      [Modules.STOCK_LOCATION]: { stock_location_id: data.stockLocations[0].id },
-      [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" },
-    }])
-    createRemoteLinkStep(providerLinkDefs).config({ name: "link-vendor-location-to-fulfillment-provider" })
+    const providerLinkDefs = transform({ stockLocations }, (data) => [
+      {
+        [Modules.STOCK_LOCATION]: {
+          stock_location_id: data.stockLocations[0].id,
+        },
+        [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" },
+      },
+    ]);
+    createRemoteLinkStep(providerLinkDefs).config({
+      name: "link-vendor-location-to-fulfillment-provider",
+    });
 
     // Storefront inventory is calculated only from stock locations linked to
     // the product's sales channel. Include each vendor's location in the

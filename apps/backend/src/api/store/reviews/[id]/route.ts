@@ -1,6 +1,9 @@
-import type { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import updateOwnedReviewWorkflow from "../../../../workflows/product-reviews/update-owned-review"
-import type { CreateReviewSchema } from "../../products/[id]/reviews/middlewares"
+import type {
+  AuthenticatedMedusaRequest,
+  MedusaResponse,
+} from "@medusajs/framework/http";
+import updateOwnedReviewWorkflow from "../../../../workflows/product-reviews/update-owned-review";
+import type { CreateReviewSchema } from "../../products/[id]/reviews/middlewares";
 
 const toReview = (review: Record<string, unknown>) => ({
   id: review.id,
@@ -10,9 +13,12 @@ const toReview = (review: Record<string, unknown>) => ({
   author_name: review.author_name,
   verified_purchase: review.verified_purchase,
   created_at: review.created_at,
-})
+});
 
-export async function POST(req: AuthenticatedMedusaRequest<CreateReviewSchema>, res: MedusaResponse) {
+export async function POST(
+  req: AuthenticatedMedusaRequest<CreateReviewSchema>,
+  res: MedusaResponse,
+) {
   const { result } = await updateOwnedReviewWorkflow(req.scope).run({
     input: {
       review_id: String(req.params.id),
@@ -20,7 +26,7 @@ export async function POST(req: AuthenticatedMedusaRequest<CreateReviewSchema>, 
       rating: req.validatedBody.rating,
       comment: req.validatedBody.comment,
     },
-  })
+  });
 
-  res.json({ review: toReview(result.review as Record<string, unknown>) })
+  res.json({ review: toReview(result.review as Record<string, unknown>) });
 }

@@ -91,10 +91,14 @@ export default async function backfillVendorStockLocationSalesChannels({
     shippingProfileId = result[0].id;
   }
 
-  const productsWithoutShippingProfile = vendors.flatMap((vendor) =>
-    vendor.products
-      ?.filter((product) => product && !product.shipping_profile?.id)
-      .map((product) => ({ id: product!.id, shipping_profile_id: shippingProfileId })) ?? [],
+  const productsWithoutShippingProfile = vendors.flatMap(
+    (vendor) =>
+      vendor.products
+        ?.filter((product) => product && !product.shipping_profile?.id)
+        .map((product) => ({
+          id: product!.id,
+          shipping_profile_id: shippingProfileId,
+        })) ?? [],
   );
   if (productsWithoutShippingProfile.length > 0) {
     await updateProductsWorkflow(container).run({
@@ -110,14 +114,18 @@ export default async function backfillVendorStockLocationSalesChannels({
   let deliveryServiceZoneId = fulfillmentSets[0]?.service_zones?.[0]?.id;
 
   if (!deliveryFulfillmentSetId || !deliveryServiceZoneId) {
-    const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-      name: "Marketplace delivery",
-      type: "shipping",
-      service_zones: [{
-        name: "Turkmenistan delivery",
-        geo_zones: [{ country_code: "tm", type: "country" }],
-      }],
-    });
+    const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets(
+      {
+        name: "Marketplace delivery",
+        type: "shipping",
+        service_zones: [
+          {
+            name: "Turkmenistan delivery",
+            geo_zones: [{ country_code: "tm", type: "country" }],
+          },
+        ],
+      },
+    );
     deliveryFulfillmentSetId = fulfillmentSet.id;
     deliveryServiceZoneId = fulfillmentSet.service_zones[0].id;
   }
@@ -129,21 +137,29 @@ export default async function backfillVendorStockLocationSalesChannels({
     entity: "stock_location",
     fields: ["id", "fulfillment_sets.id", "fulfillment_providers.id"],
   });
-  const existingBootstrapLocation = stockLocations.find((location) => Boolean(location?.id));
+  const existingBootstrapLocation = stockLocations.find((location) =>
+    Boolean(location?.id),
+  );
   let bootstrapLocationId = existingBootstrapLocation?.id;
   let bootstrapHasProvider = Boolean(
-    existingBootstrapLocation?.fulfillment_providers?.some((provider) => provider?.id === "manual_manual"),
+    existingBootstrapLocation?.fulfillment_providers?.some(
+      (provider) => provider?.id === "manual_manual",
+    ),
   );
   let bootstrapHasFulfillmentSet = Boolean(
-    existingBootstrapLocation?.fulfillment_sets?.some((set) => set?.id === deliveryFulfillmentSetId),
+    existingBootstrapLocation?.fulfillment_sets?.some(
+      (set) => set?.id === deliveryFulfillmentSetId,
+    ),
   );
   if (!bootstrapLocationId) {
     const { result } = await createStockLocationsWorkflow(container).run({
       input: {
-        locations: [{
-          name: "Marketplace Delivery",
-          address: { city: "Ashgabat", country_code: "tm", address_1: "" },
-        }],
+        locations: [
+          {
+            name: "Marketplace Delivery",
+            address: { city: "Ashgabat", country_code: "tm", address_1: "" },
+          },
+        ],
       },
     });
     bootstrapLocationId = result[0].id;
@@ -171,7 +187,10 @@ export default async function backfillVendorStockLocationSalesChannels({
   });
   const deliveryOptionCodes = new Set(
     shippingOptions
-      .filter((option) => option.service_zone?.fulfillment_set_id === deliveryFulfillmentSetId)
+      .filter(
+        (option) =>
+          option.service_zone?.fulfillment_set_id === deliveryFulfillmentSetId,
+      )
       .map((option) => option.type?.code)
       .filter((code): code is string => Boolean(code)),
   );
@@ -206,7 +225,9 @@ export default async function backfillVendorStockLocationSalesChannels({
           description: option.description,
           code: option.code,
         },
-        prices: [{ currency_code: "tmt", amount: option.code === "courier" ? 10 : 0 }],
+        prices: [
+          { currency_code: "tmt", amount: option.code === "courier" ? 10 : 0 },
+        ],
         rules: [
           { attribute: "enabled_in_store", value: "true", operator: "eq" },
           { attribute: "is_return", value: "false", operator: "eq" },
@@ -225,7 +246,11 @@ export default async function backfillVendorStockLocationSalesChannels({
   const vendorLocationIds = new Map<string, string>();
   const providerLocationIds = new Set(
     stockLocations
-      ?.filter((location) => location?.fulfillment_providers?.some((provider) => provider?.id === "manual_manual"))
+      ?.filter((location) =>
+        location?.fulfillment_providers?.some(
+          (provider) => provider?.id === "manual_manual",
+        ),
+      )
       .map((location) => location?.id)
       .filter((id): id is string => Boolean(id)) ?? [],
   );

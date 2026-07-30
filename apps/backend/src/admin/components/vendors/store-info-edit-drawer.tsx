@@ -1,13 +1,21 @@
-import { useEffect, useState } from "react"
-import { Drawer, Button, Input, Label, Heading, Text, Textarea } from "@medusajs/ui"
-import { useUpdateVendor } from "../../hooks/api/vendors"
-import type { Vendor, UpdateVendorInput } from "../../types/vendor"
+import { useEffect, useState } from "react";
+import {
+  Drawer,
+  Button,
+  Input,
+  Label,
+  Heading,
+  Text,
+  Textarea,
+} from "@medusajs/ui";
+import { useUpdateVendor } from "../../hooks/api/vendors";
+import type { Vendor, UpdateVendorInput } from "../../types/vendor";
 
 type StoreInfoEditDrawerProps = {
-  vendor: Vendor
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+  vendor: Vendor;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
 export function StoreInfoEditDrawer({
   vendor,
@@ -19,10 +27,10 @@ export function StoreInfoEditDrawer({
     store_description: vendor.store_description ?? "",
     address: vendor.address ?? "",
     city: vendor.city ?? "",
-  })
+  });
 
-  const updateVendor = useUpdateVendor(vendor.id)
-  const [cityError, setCityError] = useState("")
+  const updateVendor = useUpdateVendor(vendor.id);
+  const [cityError, setCityError] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -31,16 +39,16 @@ export function StoreInfoEditDrawer({
         store_description: vendor.store_description ?? "",
         address: vendor.address ?? "",
         city: vendor.city ?? "",
-      })
-      setCityError("")
+      });
+      setCityError("");
     }
-  }, [open, vendor])
+  }, [open, vendor]);
 
   const handleSubmit = () => {
-    const city = formData.city?.trim()
+    const city = formData.city?.trim();
     if (!city) {
-      setCityError("Origin city is required")
-      return
+      setCityError("Origin city is required");
+      return;
     }
 
     updateVendor.mutate(
@@ -52,11 +60,11 @@ export function StoreInfoEditDrawer({
       },
       {
         onSuccess: () => {
-          onOpenChange(false)
+          onOpenChange(false);
         },
-      }
-    )
-  }
+      },
+    );
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -96,7 +104,11 @@ export function StoreInfoEditDrawer({
                 setFormData((prev) => ({ ...prev, city: e.target.value }))
               }
             />
-            {cityError && <Text size="small" className="text-ui-fg-error">{cityError}</Text>}
+            {cityError && (
+              <Text size="small" className="text-ui-fg-error">
+                {cityError}
+              </Text>
+            )}
           </div>
 
           {/* Address */}
@@ -124,7 +136,10 @@ export function StoreInfoEditDrawer({
               placeholder="Provide a brief description of the seller store..."
               value={formData.store_description ?? ""}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, store_description: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  store_description: e.target.value,
+                }))
               }
             />
           </div>
@@ -152,6 +167,6 @@ export function StoreInfoEditDrawer({
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>
-  )
+  );
 }
-export default StoreInfoEditDrawer
+export default StoreInfoEditDrawer;
