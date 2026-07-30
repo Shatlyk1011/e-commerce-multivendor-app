@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 import type { StoreCustomerAddress } from '@medusajs/types'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -20,7 +21,6 @@ import {
   Package,
   Plus,
   Truck,
-  UserRoundCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -31,8 +31,12 @@ import { useCustomerAddresses } from '@/features/account/api/queries'
 import { AddressModal } from '@/features/account/components/AddressModal'
 import { useAuth } from '@/features/auth/components/AuthProvider'
 import { cartKeys, useCart } from '@/features/cart/api/queries'
+import { CartItem } from '@/features/cart/components/CartItem'
 import { formatPrice, getCartItemCount, getCartSubtotal } from '@/features/cart/utils'
+import { removeCartId } from '@/lib/cart-cookies'
 import { medusa } from '@/lib/medusa'
+
+import { type DeliveryMethod, completeVendorOrder } from '../api/client'
 
 function addressToCartAddress(address: StoreCustomerAddress) {
   return {
@@ -53,10 +57,19 @@ function formatAddress(address: StoreCustomerAddress) {
   return [address.city, address.address_1, address.address_2].filter(Boolean).join(', ')
 }
 
-type DeliveryMethod = 'pickup' | 'courier'
 type DeliveryDate = 1 | 2
 
 const COURIER_DELIVERY_FEE = 10
+const deliveryMethods: Array<{ id: DeliveryMethod; title: string; description: string }> = [
+  { id: 'pickup', title: 'Самовывоз из пункта выдачи', description: 'Заберите заказ в удобном пункте выдачи.' },
+  { id: 'courier', title: 'Курьерская доставка', description: 'Курьер доставит заказ по указанному адресу.' },
+]
+const pickupPoints = [
+  { id: 'central', title: 'Центральный пункт выдачи', area: 'Центральный район', hours: 'Ежедневно, 10:00–20:00' },
+  { id: 'east', title: 'Восточный пункт выдачи', area: 'Восточный район', hours: 'Ежедневно, 10:00–20:00' },
+  { id: 'north', title: 'Северный пункт выдачи', area: 'Северный район', hours: 'Ежедневно, 10:00–20:00' },
+]
+
 const tomorrowTimeSlots = ['14:00–15:00', '15:00–16:00', '16:00–17:00', '17:00–18:00', '18:00–19:00', '19:00–20:00']
 const laterTimeSlots = [
   '11:00–12:00',
@@ -68,29 +81,6 @@ const laterTimeSlots = [
   '17:00–18:00',
   '18:00–19:00',
   '19:00–20:00',
-]
-
-const deliveryMethods: Array<{
-  id: DeliveryMethod
-  title: string
-  description: string
-}> = [
-  {
-    id: 'pickup',
-    title: 'Самовывоз из пункта выдачи',
-    description: 'Заберите заказ в удобном пункте выдачи.',
-  },
-  {
-    id: 'courier',
-    title: 'Курьерская доставка',
-    description: 'Курьер доставит заказ по указанному адресу.',
-  },
-]
-
-const pickupPoints = [
-  { id: 'central', title: 'Центральный пункт выдачи', area: 'Центральный район', hours: 'Ежедневно, 10:00–20:00' },
-  { id: 'east', title: 'Восточный пункт выдачи', area: 'Восточный район', hours: 'Ежедневно, 10:00–20:00' },
-  { id: 'north', title: 'Северный пункт выдачи', area: 'Северный район', hours: 'Ежедневно, 10:00–20:00' },
 ]
 
 function getDeliveryDates(): Array<{ id: DeliveryDate; label: string; date: string }> {
@@ -127,6 +117,7 @@ function SectionTitle({
 }
 
 export function CheckoutPage() {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const { customer, isAuthenticated } = useAuth()
   const { data: cart, isLoading: cartLoading } = useCart()
@@ -185,13 +176,32 @@ export function CheckoutPage() {
     addressMutation.mutate(selectedAddress)
   }, [addressMutation.isPending, addressMutation.mutate, requiresAddress, selectedAddress])
 
+  console.log('customer?.phone_number', customer?.phone_number)
   const completeMutation = useMutation({
     mutationFn: async () => {
       if (!cart || !selectedDeliveryMethod) throw new Error('Выберите способ доставки')
       if (isPickup && !selectedPickupPoint) throw new Error('Выберите пункт выдачи')
       if (!isPickup && (!selectedDeliveryDate || !selectedTimeSlot)) throw new Error('Выберите дату и время доставки')
       if (requiresAddress && !selectedAddress) throw new Error('Выберите адрес доставки')
-      throw new Error('Оформление заказа станет доступно после подключения доставки к Medusa.')
+
+      const deliveryDate = selectedDeliveryDate
+        ? new Date(Date.now() + selectedDeliveryDate * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+        : undefined
+      const payload = {
+        delivery_method: selectedDeliveryMethod,
+        pickup_point_id: isPickup ? (selectedPickupPoint ?? undefined) : undefined,
+        delivery_date: deliveryDate,
+        time_slot: isPickup ? undefined : (selectedTimeSlot ?? undefined),
+        recipient_phone: selectedAddress?.phone || customer?.phone_number,
+      }
+
+      return completeVendorOrder(cart.id, payload)
+    },
+    onSuccess: (result) => {
+      removeCartId()
+      queryClient.setQueryData(cartKeys.all, null)
+      toast.success(`Заказ #${result.order.display_id ?? result.order.id.slice(-6)} оформлен`)
+      router.push('/account/orders')
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : 'Не удалось оформить заказ. Попробуйте ещё раз.'
@@ -238,8 +248,8 @@ export function CheckoutPage() {
   return (
     <main className="bg-apple-canvas min-h-screen pb-28 sm:pb-12">
       <div className="border-apple-divider-soft border-b">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-          <Button asChild variant="ghost" size="sm" className="-ml-2">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
+          <Button asChild variant="ghost" size="sm" className="-ml-[15px]">
             <Link href="/">
               <ChevronLeft /> Продолжить покупки
             </Link>
@@ -250,297 +260,258 @@ export function CheckoutPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-5 py-7 sm:py-10 lg:px-8">
+      <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-7">
           <p className="text-apple-primary text-xs font-semibold tracking-[0.08em] uppercase">Оформление заказа</p>
           <h1 className="text-apple-ink font-heading mt-1 text-3xl font-bold tracking-[-0.6px]">Почти готово</h1>
-          <p className="text-apple-ink-muted-48 mt-1 text-sm">Проверьте доставку и выберите удобный способ оплаты.</p>
+          <p className="text-apple-ink-muted-48 mt-1 text-sm">
+            Проверьте Ваш заказ и выберите удобный способ доставки.
+          </p>
         </div>
 
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="flex flex-col gap-4">
-            <Card className="order-1">
+            {!isAuthenticated && (
+              <div className="rounded-apple-md flex items-center justify-between gap-4 border border-amber-500/20 bg-amber-500/10 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-700">
+                    <LogIn className="size-4" />
+                  </div>
+                  <div>
+                    <p className="text-apple-ink text-sm font-semibold">Необходима авторизация</p>
+                    <p className="text-apple-ink-muted-48 mt-0.5 text-xs">
+                      Войдите в аккаунт, чтобы завершить оформление заказа.
+                    </p>
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => setAuthDialogOpen(true)} className="shrink-0">
+                  Войти
+                </Button>
+              </div>
+            )}
+
+            <Card className="order-1 gap-0">
               <CardHeader className="border-apple-divider-soft border-b">
-                <SectionTitle number="1" icon={UserRoundCheck}>
-                  Вход в аккаунт
+                <SectionTitle number="1" icon={Truck}>
+                  Способ доставки
                 </SectionTitle>
               </CardHeader>
               <CardContent className="pt-5">
-                {isAuthenticated ? (
-                  <div className="border-apple-primary bg-apple-primary/5 rounded-apple-md flex items-center gap-3 border p-4">
-                    <span className="bg-apple-primary flex size-8 shrink-0 items-center justify-center rounded-full">
-                      <Check className="size-4 text-white" />
-                    </span>
-                    <span>
-                      <span className="text-apple-ink block text-sm font-semibold">Вы вошли в аккаунт</span>
-                      <span className="text-apple-ink-muted-48 block text-xs">
-                        {customer?.phone_number ?? 'Данные профиля защищены'}
+                <div className="space-y-2.5">
+                  {deliveryMethods.map((method) => (
+                    <Button
+                      key={method.id}
+                      type="button"
+                      variant={'secondaryPill'}
+                      onClick={() => {
+                        setSelectedDeliveryMethod(method.id)
+                        setSelectedPickupPoint(null)
+                        setSelectedDeliveryDate(null)
+                        setSelectedTimeSlot(null)
+                      }}
+                      className={`flex h-full w-full justify-start gap-4 px-4 py-2 text-left ${selectedDeliveryMethod === method.id ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-primary/50 hover:bg-transparent'}`}
+                    >
+                      <span
+                        className={`flex size-4 shrink-0 items-center justify-center rounded-full border ${selectedDeliveryMethod === method.id ? 'border-apple-primary bg-apple-primary' : 'border-apple-ink-muted-48'}`}
+                      >
+                        {selectedDeliveryMethod === method.id && <Check className="size-3 text-white" />}
                       </span>
-                    </span>
-                  </div>
-                ) : (
-                  <div className="bg-apple-canvas-parchment rounded-apple-md p-5">
-                    <p className="text-apple-ink text-sm font-semibold">Войдите, чтобы продолжить оформление</p>
-                    <p className="text-apple-ink-muted-48 mt-1 text-[13px]">
-                      После входа мы покажем сохранённые адреса и варианты доставки.
-                    </p>
-                    <Button size="sm" className="mt-4" onClick={() => setAuthDialogOpen(true)}>
-                      <LogIn /> Войти по номеру
+                      <span className="min-w-0 flex-1">
+                        <span className="text-apple-ink mb-1 block text-sm font-semibold">{method.title}</span>
+                        <span className="text-apple-ink-muted-48 block text-xs">{method.description}</span>
+                      </span>
+                      {method.id === 'courier' && <span className="text-apple-ink text-sm font-semibold">+10 TMT</span>}
                     </Button>
-                  </div>
-                )}
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
-            {isAuthenticated && (
-              <>
-                <Card className="order-2">
-                  <CardHeader className="border-apple-divider-soft border-b">
-                    <SectionTitle number="2" icon={Truck}>
-                      Способ доставки
-                    </SectionTitle>
-                  </CardHeader>
-                  <CardContent className="pt-5">
-                    <div className="space-y-2.5">
-                      {deliveryMethods.map((method) => (
-                        <button
-                          key={method.id}
+            {isPickup && (
+              <Card className="order-2 gap-0">
+                <CardHeader className="border-apple-divider-soft border-b">
+                  <SectionTitle number="2" icon={MapPin}>
+                    Пункт выдачи
+                  </SectionTitle>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <div className="bg-apple-canvas-parchment rounded-apple-md mb-4 p-4">
+                    <p className="text-apple-ink text-sm font-semibold">Как работает самовывоз</p>
+                    <p className="text-apple-ink-muted-48 mt-1 text-[13px] leading-relaxed">
+                      Выберите удобный пункт, дождитесь сообщения о готовности и заберите заказ, оплатив его
+                      <b>наличными на месте</b>.
+                    </p>
+                  </div>
+                  <p className="text-apple-ink mb-3 text-sm font-semibold">Выберите пункт</p>
+                  <div className="space-y-2.5">
+                    {pickupPoints.map((point) => {
+                      const isSelected = selectedPickupPoint === point.id
+                      return (
+                        <Button
+                          key={point.id}
                           type="button"
-                          onClick={() => {
-                            setSelectedDeliveryMethod(method.id)
-                            setSelectedPickupPoint(null)
-                            setSelectedDeliveryDate(null)
-                            setSelectedTimeSlot(null)
-                          }}
-                          className={`rounded-apple-md flex w-full items-center gap-3 border p-4 text-left transition-colors ${selectedDeliveryMethod === method.id ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-ink-muted-48'}`}
+                          variant={'secondaryPill'}
+                          onClick={() => setSelectedPickupPoint(point.id)}
+                          className={`flex h-full w-full justify-start gap-4 px-4 py-2 text-left ${isSelected ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-primary/50 hover:bg-transparent'}`}
                         >
                           <span
-                            className={`flex size-4 shrink-0 items-center justify-center rounded-full border ${selectedDeliveryMethod === method.id ? 'border-apple-primary bg-apple-primary' : 'border-apple-ink-muted-48'}`}
+                            className={`flex size-4 shrink-0 items-center justify-center rounded-full border ${isSelected ? 'border-apple-primary bg-apple-primary' : 'border-apple-ink-muted-48'}`}
                           >
-                            {selectedDeliveryMethod === method.id && <Check className="size-3 text-white" />}
+                            {isSelected && <Check className="size-3 text-white" />}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="text-apple-ink block text-sm font-semibold">{method.title}</span>
-                            <span className="text-apple-ink-muted-48 block text-xs">{method.description}</span>
+                            <span className="text-apple-ink block text-sm font-semibold">{point.title}</span>
+                            <span className="text-apple-ink-muted-48 block text-xs">
+                              {point.area} · {point.hours}
+                            </span>
                           </span>
-                          {method.id === 'courier' && (
-                            <span className="text-apple-ink text-sm font-semibold">10 TMT</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-                {isPickup && (
-                  <Card className="order-3">
-                    <CardHeader className="border-apple-divider-soft border-b">
-                      <SectionTitle number="3" icon={MapPin}>
-                        Пункт выдачи
-                      </SectionTitle>
-                    </CardHeader>
-                    <CardContent className="pt-5">
-                      <div className="bg-apple-canvas-parchment rounded-apple-md mb-4 p-4">
-                        <p className="text-apple-ink text-sm font-semibold">Как работает самовывоз</p>
-                        <p className="text-apple-ink-muted-48 mt-1 text-[13px] leading-relaxed">
-                          Выберите удобный пункт, дождитесь сообщения о готовности и заберите заказ, оплатив его
-                          наличными на месте.
-                        </p>
-                      </div>
-                      <p className="text-apple-ink mb-3 text-sm font-semibold">Выберите пункт</p>
-                      <div className="space-y-2.5">
-                        {pickupPoints.map((point) => {
-                          const isSelected = selectedPickupPoint === point.id
-                          return (
-                            <button
-                              key={point.id}
-                              type="button"
-                              onClick={() => setSelectedPickupPoint(point.id)}
-                              className={`rounded-apple-md flex w-full items-center gap-3 border p-4 text-left transition-colors ${isSelected ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-ink-muted-48'}`}
-                            >
-                              <span
-                                className={`flex size-4 shrink-0 items-center justify-center rounded-full border ${isSelected ? 'border-apple-primary bg-apple-primary' : 'border-apple-ink-muted-48'}`}
-                              >
-                                {isSelected && <Check className="size-3 text-white" />}
-                              </span>
-                              <span className="min-w-0 flex-1">
-                                <span className="text-apple-ink block text-sm font-semibold">{point.title}</span>
-                                <span className="text-apple-ink-muted-48 block text-xs">
-                                  {point.area} · {point.hours}
-                                </span>
-                              </span>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {requiresAddress && (
-                  <Card className="order-3">
-                    <CardHeader className="border-apple-divider-soft border-b">
-                      <SectionTitle number="3" icon={MapPin}>
-                        Адрес доставки
-                      </SectionTitle>
-                    </CardHeader>
-                    <CardContent className="pt-5">
-                      {addresses.length > 0 ? (
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {addresses.map((address) => {
-                            const isSelected = selectedAddressId === address.id
-                            return (
-                              <button
-                                key={address.id}
-                                type="button"
-                                onClick={() => addressMutation.mutate(address)}
-                                disabled={addressMutation.isPending}
-                                className={`rounded-apple-md focus-visible:ring-apple-primary-focus relative min-h-32 border p-4 text-left transition-colors focus-visible:ring-2 disabled:opacity-60 ${isSelected ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-ink-muted-48'}`}
-                              >
-                                {isSelected && (
-                                  <Check className="bg-apple-primary absolute top-3 right-3 size-4 rounded-full p-0.5 text-white" />
-                                )}
-                                <p className="text-apple-ink pr-5 text-sm font-semibold">
-                                  {address.address_name || 'Адрес доставки'}
-                                </p>
-                                <p className="text-apple-ink-muted-80 mt-2 text-[13px] leading-relaxed">
-                                  {formatAddress(address)}
-                                </p>
-                                {address.phone && (
-                                  <p className="text-apple-ink-muted-48 mt-1 text-xs">{address.phone}</p>
-                                )}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <div className="bg-apple-canvas-parchment rounded-apple-md p-5">
-                          <p className="text-apple-ink text-sm font-medium">Добавьте адрес для курьерской доставки.</p>
-                          <p className="text-apple-ink-muted-48 mt-1 text-[13px]">
-                            Он сохранится в вашем профиле для следующего заказа.
-                          </p>
-                        </div>
-                      )}
-                      <Button
-                        variant="secondaryPill"
-                        size="sm"
-                        className="mt-4"
-                        onClick={() => setAddressDialogOpen(true)}
-                      >
-                        <Plus /> Новый адрес
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {requiresAddress && (
-                  <Card className="order-4">
-                    <CardHeader className="border-apple-divider-soft border-b">
-                      <SectionTitle number="4" icon={CalendarDays}>
-                        Дата и время доставки
-                      </SectionTitle>
-                    </CardHeader>
-                    <CardContent className="pt-5">
-                      <p className="text-apple-ink-muted-48 mb-3 text-[13px]">
-                        Выберите день, затем удобный часовой интервал получения.
-                      </p>
-                      <div className="grid gap-2 sm:grid-cols-3">
-                        {deliveryDates.map((date) => (
+            {requiresAddress && (
+              <Card className="order-2 gap-0">
+                <CardHeader className="border-apple-divider-soft border-b">
+                  <SectionTitle number="2" icon={MapPin}>
+                    Адрес доставки
+                  </SectionTitle>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  {addresses.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {addresses.map((address) => {
+                        const isSelected = selectedAddressId === address.id
+                        return (
                           <button
-                            key={date.id}
+                            key={address.id}
                             type="button"
-                            onClick={() => {
-                              setSelectedDeliveryDate(date.id)
-                              setSelectedTimeSlot(null)
-                            }}
-                            className={`rounded-apple-md border p-3 text-left transition-colors ${selectedDeliveryDate === date.id ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-ink-muted-48'}`}
+                            onClick={() => addressMutation.mutate(address)}
+                            disabled={addressMutation.isPending}
+                            className={`rounded-apple-lg focus-visible:ring-apple-primary-focus relative min-h-24 border p-4 text-left transition-colors focus-visible:ring-2 disabled:opacity-60 ${isSelected ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-primary/50 hover:bg-transparent'}`}
                           >
-                            <span className="text-apple-ink block text-sm font-semibold">{date.label}</span>
-                            <span className="text-apple-ink-muted-48 mt-0.5 block text-xs capitalize">{date.date}</span>
+                            {isSelected && (
+                              <Check className="bg-apple-primary absolute top-3 right-3 size-4 rounded-full p-0.5 text-white" />
+                            )}
+                            <p className="text-apple-ink pr-5 text-sm font-semibold">
+                              {address.address_name || 'Адрес доставки'}
+                            </p>
+                            <p className="text-apple-ink-muted-80 mt-2 text-[13px] leading-relaxed">
+                              {formatAddress(address)}
+                            </p>
+                            {address.phone && <p className="text-apple-ink-muted-48 mt-1 text-xs">{address.phone}</p>}
                           </button>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="bg-apple-canvas-parchment rounded-apple-md p-5">
+                      <p className="text-apple-ink text-sm font-medium">Добавьте адрес для курьерской доставки.</p>
+                      <p className="text-apple-ink-muted-48 mt-1 text-[13px]">
+                        Он сохранится в вашем профиле для следующего заказа.
+                      </p>
+                    </div>
+                  )}
+                  <Button
+                    variant="secondaryPill"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setAuthDialogOpen(true)
+                      } else {
+                        setAddressDialogOpen(true)
+                      }
+                    }}
+                  >
+                    <Plus /> Новый адрес
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {requiresAddress && (
+              <Card className="order-3 gap-0">
+                <CardHeader className="border-apple-divider-soft border-b">
+                  <SectionTitle number="3" icon={CalendarDays}>
+                    Дата и время доставки
+                  </SectionTitle>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <p className="text-apple-ink-muted-48 mb-3 text-[13px]">
+                    Выберите день, затем удобный часовой интервал получения.
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {deliveryDates.map((date) => (
+                      <button
+                        key={date.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDeliveryDate(date.id)
+                          setSelectedTimeSlot(null)
+                        }}
+                        className={`rounded-apple-lg border p-3 text-left transition-colors ${selectedDeliveryDate === date.id ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-primary/50 hover:bg-transparent'}`}
+                      >
+                        <span className="text-apple-ink block text-sm font-semibold">{date.label}</span>
+                        <span className="text-apple-ink-muted-48 mt-0.5 block text-xs capitalize">{date.date}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {selectedDeliveryDate && (
+                    <>
+                      <p className="text-apple-ink mt-5 mb-3 text-sm font-semibold">
+                        <Clock3 className="text-apple-primary mr-1.5 inline size-4" /> Удобное время для доставки
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {timeSlots.map((slot) => (
+                          <Button
+                            variant={'secondaryPill'}
+                            key={slot}
+                            type="button"
+                            onClick={() => setSelectedTimeSlot(slot)}
+                            className={`rounded-apple-md border px-3 py-2.5 text-sm font-medium transition-all ${selectedTimeSlot === slot ? 'border-apple-primary bg-apple-primary/5 ring-apple-primary/20 ring-1' : 'border-apple-hairline hover:border-apple-primary/50 text-foreground hover:bg-transparent'}`}
+                          >
+                            {slot}
+                          </Button>
                         ))}
                       </div>
-                      {selectedDeliveryDate && (
-                        <>
-                          <p className="text-apple-ink mt-5 mb-3 text-sm font-semibold">
-                            <Clock3 className="text-apple-primary mr-1.5 inline size-4" /> Удобное время
-                          </p>
-                          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                            {timeSlots.map((slot) => (
-                              <button
-                                key={slot}
-                                type="button"
-                                onClick={() => setSelectedTimeSlot(slot)}
-                                className={`rounded-apple-sm border px-3 py-2.5 text-sm font-medium transition-colors ${selectedTimeSlot === slot ? 'border-apple-primary bg-apple-primary text-white' : 'border-apple-hairline text-apple-ink hover:border-apple-ink-muted-48'}`}
-                              >
-                                {slot}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-
-                {(isPickup ? selectedPickupPoint : selectedTimeSlot) && (
-                  <Card className="order-5">
-                    <CardHeader className="border-apple-divider-soft border-b">
-                      <SectionTitle number={requiresAddress ? '5' : '4'} icon={CreditCard}>
-                        Оплата
-                      </SectionTitle>
-                    </CardHeader>
-                    <CardContent className="pt-5">
-                      <div className="border-apple-primary bg-apple-primary/5 rounded-apple-md flex items-center gap-3 border p-4">
-                        <span className="bg-apple-primary flex size-4 shrink-0 items-center justify-center rounded-full">
-                          <Check className="size-3 text-white" />
-                        </span>
-                        <span>
-                          <span className="text-apple-ink block text-sm font-semibold">Оплата наличными</span>
-                          <span className="text-apple-ink-muted-48 block text-xs">
-                            {isPickup ? 'Оплатите заказ в пункте выдачи.' : 'Оплатите заказ курьеру при получении.'}
-                          </span>
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </div>
 
-          <aside className="lg:sticky lg:top-5">
-            <Card variant="parchment">
+          <aside className="sticky top-20">
+            <Card variant="parchment" className="bg-accent text-accent-foreground gap-0">
               <CardHeader className="border-apple-divider-soft border-b">
                 <CardTitle>Ваш заказ</CardTitle>
               </CardHeader>
               <CardContent className="pt-5">
-                <div className="space-y-4">
+                <ul className="space-y-3 font-normal">
                   {cart.items?.map((item) => (
-                    <div key={item.id} className="flex gap-3">
-                      <div className="bg-apple-surface-pearl rounded-apple-sm size-12 shrink-0 overflow-hidden">
-                        {item.thumbnail && <img src={item.thumbnail} alt="" className="size-full object-cover" />}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-apple-ink line-clamp-1 text-[13px] font-semibold">{item.title}</p>
-                        <p className="text-apple-ink-muted-48 mt-0.5 text-xs">{item.quantity} шт.</p>
-                      </div>
-                      <span className="text-apple-ink text-[13px] font-semibold">
-                        {formatPrice((item.unit_price ?? 0) * (item.quantity ?? 0), currencyCode)}
-                      </span>
-                    </div>
+                    <CartItem key={item.id} item={item} />
                   ))}
-                </div>
+                </ul>
                 <div className="border-apple-divider-soft mt-5 space-y-2.5 border-t pt-4 text-[13px]">
                   <div className="text-apple-ink-muted-80 flex justify-between">
-                    <span>Товары</span>
+                    <span>Товары ({cart.items?.length})</span>
                     <span>{formatPrice(subtotal, currencyCode)}</span>
                   </div>
                   <div className="text-apple-ink-muted-80 flex justify-between">
                     <span>Доставка</span>
-                    <span>{!selectedDeliveryMethod ? 'Выберите способ' : deliveryFee ? '10 TMT' : 'Бесплатно'}</span>
+                    <span>
+                      {!selectedDeliveryMethod
+                        ? 'Выберите способ'
+                        : deliveryFee
+                          ? '10 TMT'
+                          : 'Бесплатно в пункт выдачи'}
+                    </span>
                   </div>
-                  <div className="text-apple-ink border-apple-divider-soft mt-3 flex justify-between border-t pt-3 text-base font-bold">
+                  <div className="border-apple-divider-soft mt-3 flex justify-between border-t pt-3 text-base font-bold">
                     <span>Итого</span>
                     <span>{formatPrice(total + deliveryFee, currencyCode)}</span>
                   </div>
@@ -548,7 +519,7 @@ export function CheckoutPage() {
                 <Button
                   className="mt-5 w-full"
                   size="lg"
-                  disabled={!canComplete || completeMutation.isPending}
+                  disabled={completeMutation.isPending}
                   onClick={() => completeMutation.mutate()}
                 >
                   {completeMutation.isPending ? (
@@ -556,7 +527,7 @@ export function CheckoutPage() {
                       <Loader2 className="animate-spin" /> Оформляем…
                     </>
                   ) : (
-                    `Оформить заказ · ${formatPrice(total, currencyCode)}`
+                    `Оформить заказ`
                   )}
                 </Button>
                 {!canComplete && (
@@ -570,7 +541,7 @@ export function CheckoutPage() {
                           : 'Выберите способ доставки.'}
                   </p>
                 )}
-                <p className="text-apple-ink-muted-48 mt-4 flex items-start gap-2 text-[11px] leading-relaxed">
+                <p className="text-apple-ink-muted-48 mt-4 flex items-start justify-start gap-2 text-[11px] leading-relaxed">
                   <LockKeyhole className="mt-0.5 size-3 shrink-0" /> Нажимая «Оформить заказ», вы подтверждаете данные
                   заказа.
                 </p>

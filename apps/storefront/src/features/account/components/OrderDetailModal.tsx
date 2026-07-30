@@ -13,6 +13,22 @@ interface OrderDetailModalProps {
   onOpenChange: (open: boolean) => void
 }
 
+type DeliveryDetails = {
+  method: 'pickup' | 'courier'
+  pickup_point?: { title?: string; address?: string; city?: string; hours?: string }
+  delivery_date?: string
+  time_slot?: string
+  recipient_phone?: string
+  customer_note?: string
+}
+
+function getDeliveryDetails(order: StoreOrder): DeliveryDetails | null {
+  const delivery = order.metadata?.delivery
+  if (!delivery || typeof delivery !== 'object' || Array.isArray(delivery)) return null
+  const method = (delivery as { method?: unknown }).method
+  return method === 'pickup' || method === 'courier' ? (delivery as DeliveryDetails) : null
+}
+
 function getFulfillmentStatusBadge(status?: string) {
   switch (status) {
     case 'fulfilled':
@@ -49,10 +65,11 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
   const items = order.items ?? []
   const shippingAddress = order.shipping_address
   const shippingMethods = order.shipping_methods ?? []
+  const delivery = getDeliveryDetails(order)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas max-h-[90vh] max-w-2xl overflow-y-auto p-6">
+      <DialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas max-h-[90vh] max-w-2xl min-w-[initial] overflow-y-auto p-6">
         <DialogHeader className="border-apple-divider-soft flex flex-row items-center justify-between border-b pb-4">
           <div>
             <DialogTitle className="text-apple-ink text-xl font-semibold tracking-[-0.28px]">
@@ -110,7 +127,15 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
               <h4 className="text-apple-ink mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
                 <MapPin className="text-apple-primary h-3.5 w-3.5" /> Адрес доставки
               </h4>
-              {shippingAddress ? (
+              {delivery?.method === 'pickup' ? (
+                <div className="text-apple-caption text-apple-ink-muted-80 space-y-0.5">
+                  <p className="text-apple-ink font-semibold">{delivery.pickup_point?.title || 'Пункт выдачи'}</p>
+                  <p>{delivery.pickup_point?.address}</p>
+                  <p>
+                    {delivery.pickup_point?.city} · {delivery.pickup_point?.hours}
+                  </p>
+                </div>
+              ) : shippingAddress ? (
                 <div className="text-apple-caption text-apple-ink-muted-80 space-y-0.5">
                   <p className="text-apple-ink font-semibold">
                     {[shippingAddress.first_name, shippingAddress.last_name].filter(Boolean).join(' ') || 'Покупатель'}
@@ -133,6 +158,11 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
               </h4>
               {shippingMethods.length > 0 ? (
                 <div className="text-apple-caption text-apple-ink-muted-80">
+                  {delivery?.method === 'courier' && (
+                    <p className="text-apple-ink mb-1 font-semibold">
+                      Курьер: {delivery.delivery_date} · {delivery.time_slot}
+                    </p>
+                  )}
                   {shippingMethods.map((sm, idx) => (
                     <div key={idx}>
                       <p className="text-apple-ink font-semibold">{sm.name || 'Стандартная доставка'}</p>
@@ -142,6 +172,9 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
                 </div>
               ) : (
                 <p className="text-apple-caption text-apple-ink-muted-80">Курьерская доставка</p>
+              )}
+              {delivery?.customer_note && (
+                <p className="text-apple-ink-muted-48 mt-2 text-xs">Комментарий: {delivery.customer_note}</p>
               )}
             </div>
           </div>

@@ -18,5 +18,5 @@ export function formatPrice(amount: number, currencyCode = 'TMT'): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
-  return `${formatted} ${currencyCode}`
+  return `${amount} ${currencyCode}`
 }

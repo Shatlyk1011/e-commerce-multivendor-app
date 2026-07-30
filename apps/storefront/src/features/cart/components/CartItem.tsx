@@ -28,6 +28,7 @@ import { formatPrice } from '../utils'
 
 interface CartItemProps {
   item: StoreCartLineItem
+  isSheet?: boolean
 }
 
 function getVariantDetails(item: CartItemProps['item']) {
@@ -58,7 +59,7 @@ function getVariantDetails(item: CartItemProps['item']) {
   return details
 }
 
-export function CartItem({ item }: CartItemProps) {
+export function CartItem({ item, isSheet = false }: CartItemProps) {
   const cartId = getCartId()
   const updateMutation = useUpdateLineItem()
   const deleteMutation = useDeleteLineItem()
@@ -150,8 +151,18 @@ export function CartItem({ item }: CartItemProps) {
     </h4>
   )
 
+  const renderProductLink = (children: React.ReactNode, className?: string) => {
+    if (!productHandleOrId) return children
+    const link = (
+      <Link href={`/product/${productHandleOrId}`} className={className}>
+        {children}
+      </Link>
+    )
+    return isSheet ? <SheetClose asChild>{link}</SheetClose> : link
+  }
+
   return (
-    <li className="border-apple-divider-soft border-b pb-4">
+    <li className="border-apple-divider-soft border-b pb-3 last:border-b-0 last:pb-0">
       <Card className="rounded-apple-sm border-apple-hairline bg-apple-canvas-parchment relative overflow-hidden border">
         {isPending && (
           <div className="bg-apple-canvas/30 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[0.5px] transition-opacity duration-200">
@@ -160,26 +171,12 @@ export function CartItem({ item }: CartItemProps) {
         )}
         <CardContent className="p-3">
           <div className="flex gap-3">
-            {productHandleOrId ? (
-              <SheetClose asChild>
-                <Link href={`/product/${productHandleOrId}`} className="shrink-0">
-                  {imageElement}
-                </Link>
-              </SheetClose>
-            ) : (
-              imageElement
-            )}
+            {renderProductLink(imageElement, 'shrink-0')}
 
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  {productHandleOrId ? (
-                    <SheetClose asChild>
-                      <Link href={`/product/${productHandleOrId}`}>{titleElement}</Link>
-                    </SheetClose>
-                  ) : (
-                    titleElement
-                  )}
+                  {renderProductLink(titleElement)}
 
                   {variantDetails.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">

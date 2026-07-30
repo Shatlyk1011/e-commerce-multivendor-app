@@ -255,7 +255,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
             <Button
               type="button"
               variant="outline"
-              size="md"
+              size="sm"
               onClick={() => onOpenChange(false)}
               className="border-apple-hairline text-apple-ink hover:bg-apple-canvas-parchment rounded-full font-semibold"
             >
@@ -263,9 +263,9 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
             </Button>
             <Button
               type="submit"
-              size="md"
+              size="sm"
               disabled={isPending}
-              className="bg-apple-primary hover:bg-apple-primary-focus rounded-full px-7 font-semibold text-white disabled:opacity-40"
+              className="bg-apple-primary hover:bg-apple-primary-focus rounded-full font-semibold text-white disabled:opacity-40"
             >
               {isPending ? 'Сохранение…' : isEditing ? 'Сохранить' : 'Добавить адрес'}
             </Button>

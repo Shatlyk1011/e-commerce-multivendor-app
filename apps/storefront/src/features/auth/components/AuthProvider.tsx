@@ -5,6 +5,10 @@ import { type ReactNode, createContext, useCallback, useContext } from 'react'
 import type { AuthCustomer, AuthMeResponse } from '@dtc/api-contracts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { accountKeys } from '@/features/account/api/queries'
+import { getCartId } from '@/lib/cart-cookies'
+import { medusa } from '@/lib/medusa'
+
 import { getCurrentUser, logoutCustomer, sendOtp, verifyOtp } from '../api/client'
 
 const authQueryKey = ['auth', 'me'] as const
@@ -35,6 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: ({ phone, otp }: { phone: string; otp: string }) => verifyOtp({ phone, otp }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: accountKeys.all })
+    },
   })
 
   const logoutMutation = useMutation({
@@ -44,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         authenticated: false,
         customer: null,
       })
+      queryClient.invalidateQueries({ queryKey: accountKeys.all })
     },
   })
 
@@ -72,8 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!customer) {
         throw new Error('The authentication session was not created.')
       }
+
+      const cartId = getCartId()
+      if (cartId) {
+        await medusa.store.cart.transferCart(cartId)
+      }
+
+      await queryClient.invalidateQueries({ queryKey: accountKeys.all })
     },
-    [loginMutation, refreshUser],
+    [loginMutation, refreshUser, queryClient],
   )
 
   const logout = useCallback(async () => {

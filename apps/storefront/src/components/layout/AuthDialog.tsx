@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 
 import Link from 'next/link'
 
-import { PencilIcon } from 'lucide-react'
+import { Loader2, LockKeyhole, PencilIcon, ShieldCheck, Smartphone } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -37,7 +37,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const handleOpenChange = (newOpen: boolean) => {
     onOpenChange(newOpen)
     if (!newOpen) {
-      // Reset state when closing the dialog
       setPhone('')
       setSmsCode('')
       setSmsSent(false)
@@ -137,90 +136,118 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-[360px] gap-6 shadow-none">
-        <DialogHeader className="gap-2 pr-7">
-          <DialogTitle className="text-apple-tagline">
-            {smsSent ? 'Подтверждение входа' : 'Введите номер телефона'}
+      <DialogContent className="border-apple-hairline bg-apple-canvas rounded-apple-lg max-w-[380px] gap-5 p-6 shadow-xl">
+        <DialogHeader className="flex flex-col items-center gap-1.5 pr-0 text-center">
+          <div className="bg-apple-primary/10 text-apple-primary mb-1 flex size-12 items-center justify-center rounded-full">
+            {smsSent ? <LockKeyhole className="size-6" /> : <Smartphone className="size-6" />}
+          </div>
+
+          <DialogTitle className="text-apple-ink font-heading text-xl font-bold tracking-[-0.3px]">
+            {smsSent ? 'Подтверждение входа' : 'Вход в аккаунт'}
           </DialogTitle>
-          <DialogDescription className="text-apple-caption">
+
+          <DialogDescription className="text-apple-ink-muted-48 text-[13px] leading-relaxed">
             {smsSent ? (
-              <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
-                <span>
-                  Мы отправили код на <span className="text-apple-ink font-semibold">+993 {phone}</span>
-                </span>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="link"
-                  className="text-apple-caption h-auto gap-1 p-0"
-                  onClick={handleChangePhone}
-                >
-                  <PencilIcon className="size-3" aria-hidden="true" />
-                  Изменить
-                </Button>
-              </span>
+              <span>Введите 4-значный код подтверждения</span>
             ) : (
-              'Отправим СМС-код для подтверждения входа'
+              'Укажите номер телефона для получения СМС-кода'
             )}
           </DialogDescription>
         </DialogHeader>
 
         {!smsSent ? (
-          <form onSubmit={handleSendCode} className="space-y-6">
-            <label className="border-apple-hairline rounded-apple-sm bg-apple-canvas focus-within:border-apple-primary-focus focus-within:ring-apple-primary-focus flex h-11 items-center overflow-hidden border px-3 transition-colors focus-within:ring-1">
-              <span className="text-apple-ink-muted-48 border-apple-hairline text-apple-caption-strong mr-2 border-r pr-2">
-                +993
-              </span>
-              <Input
-                type="tel"
-                inputMode="numeric"
-                autoComplete="tel-national"
-                aria-label="Номер телефона без кода страны"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, PHONE_LENGTH))}
-                className="text-apple-ink placeholder:text-apple-ink-muted-48 h-full w-full border-none bg-transparent p-0 text-[15px] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                placeholder="61 415926"
-                required
-              />
-            </label>
+          <form onSubmit={handleSendCode} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor="phone-input" className="text-apple-ink block text-xs font-semibold">
+                Номер телефона
+              </label>
+              <div className="border-apple-hairline bg-apple-canvas focus-within:border-apple-primary focus-within:ring-apple-primary/20 rounded-apple-md flex h-12 items-center overflow-hidden border px-3.5 transition-all focus-within:ring-2">
+                <div className="text-apple-ink-muted-80 border-apple-hairline flex items-center gap-1.5 border-r pr-3 text-sm font-bold select-none">
+                  <span>+993</span>
+                </div>
+                <Input
+                  id="phone-input"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  aria-label="Номер телефона без кода страны"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, PHONE_LENGTH))}
+                  className="text-apple-ink placeholder:text-apple-ink-muted-48 h-full w-full border-none bg-transparent pr-0 pl-3 text-[15px] font-medium shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  placeholder="61 415926"
+                  required
+                  autoFocus
+                />
+              </div>
+              <p className="text-apple-ink-muted-48 text-[11px]">Введите 8-значный номер без +993</p>
+            </div>
+
             {error && (
-              <p role="alert" className="text-apple-caption text-destructive text-center">
+              <div className="rounded-apple-sm border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs font-medium text-rose-600">
                 {error}
-              </p>
+              </div>
             )}
-            <Button type="submit" disabled={phone.length !== PHONE_LENGTH || isSending} className="w-full">
-              {isSending ? 'Отправляем…' : 'Получить код'}
+
+            <Button
+              type="submit"
+              disabled={phone.length !== PHONE_LENGTH || isSending}
+              className="h-11 w-full cursor-pointer rounded-full font-semibold transition-transform active:scale-[0.98]"
+            >
+              {isSending ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" /> Отправляем…
+                </>
+              ) : (
+                'Получить код'
+              )}
             </Button>
           </form>
         ) : (
-          <form onSubmit={handleVerify} className="space-y-6">
-            <div className="flex w-full justify-center">
-              <InputOTP
-                maxLength={OTP_LENGTH}
-                value={smsCode}
-                disabled={isVerifying}
-                autoFocus
-                aria-label="Код из СМС"
-                onChange={handleOtpChange}
-                className="w-full"
-                containerClassName="w-full"
+          <form onSubmit={handleVerify} className="space-y-5">
+            <div className="rounded-apple-md mx-auto flex max-w-max items-center justify-center gap-2 px-3.5 py-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-apple-ink text-sm font-semibold">+993 {phone}</span>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={handleChangePhone}
+                className="h-auto gap-0.5 p-0 text-xs font-semibold"
               >
-                <InputOTPGroup className="mx-auto justify-center gap-3">
-                  {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                    <InputOTPSlot
-                      key={index}
-                      index={index}
-                      className="rounded-apple-sm border-apple-hairline bg-apple-canvas text-apple-body-strong first:rounded-l-apple-sm last:rounded-r-apple-sm data-[active=true]:border-apple-primary-focus data-[active=true]:ring-apple-primary-focus/60 size-14 first:border-l"
-                    />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
+                <PencilIcon className="mr-1 size-3" aria-hidden="true" />
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex w-full justify-center">
+                <InputOTP
+                  maxLength={OTP_LENGTH}
+                  value={smsCode}
+                  disabled={isVerifying}
+                  autoFocus
+                  aria-label="Код из СМС"
+                  onChange={handleOtpChange}
+                  className="w-full"
+                  containerClassName="w-full"
+                >
+                  <InputOTPGroup className="mx-auto justify-center gap-3">
+                    {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                      <InputOTPSlot
+                        key={index}
+                        index={index}
+                        className="rounded-apple-md border-apple-hairline bg-apple-canvas text-apple-ink data-[active=true]:border-apple-primary data-[active=true]:ring-apple-primary/20 size-13 border text-lg font-bold transition-all first:border-l data-[active=true]:ring-2"
+                      />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
             </div>
 
             <div className="flex w-full justify-center">
               {timer > 0 ? (
-                <p className="text-apple-caption text-apple-ink-muted-48 text-center">
-                  Новый код можно запросить через <span className="text-apple-ink font-semibold">{timer} сек.</span>
+                <p className="text-apple-ink-muted-48 text-center text-xs">
+                  Повторный код через <span className="text-apple-ink font-semibold">{timer} сек.</span>
                 </p>
               ) : (
                 <Button
@@ -228,7 +255,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   variant="link"
                   onClick={handleResend}
                   disabled={isSending || isVerifying}
-                  className="text-apple-caption-strong h-auto p-0"
+                  className="text-apple-primary hover:text-apple-primary-focus h-auto p-0 text-xs font-semibold"
                 >
                   {isSending ? 'Отправляем…' : 'Отправить код повторно'}
                 </Button>
@@ -236,33 +263,46 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
 
             {error && (
-              <p role="alert" className="text-apple-caption text-destructive text-center">
+              <div className="rounded-apple-sm border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs font-medium text-rose-600">
                 {error}
-              </p>
+              </div>
             )}
 
-            <Button type="submit" disabled={smsCode.length !== OTP_LENGTH || isVerifying} className="w-full">
-              {isVerifying ? 'Входим…' : 'Подтвердить и войти'}
+            <Button
+              type="submit"
+              size="md"
+              disabled={smsCode.length !== OTP_LENGTH || isVerifying}
+              className="w-full cursor-pointer rounded-full font-semibold transition-transform active:scale-[0.98]"
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" /> Подтверждаем…
+                </>
+              ) : (
+                'Подтвердить и войти'
+              )}
             </Button>
           </form>
         )}
 
-        <p className="text-apple-fine-print text-apple-ink-muted-48 mt-2 text-center leading-[1.4]">
-          Авторизуясь, вы согласяетесь с{' '}
-          <Link
-            href="/terms"
-            className="text-apple-primary hover:text-apple-primary-focus underline underline-offset-3"
-          >
-            Пользовательским соглашением
-          </Link>{' '}
-          и{' '}
-          <Link
-            href="/privacy"
-            className="text-apple-primary hover:text-apple-primary-focus underline underline-offset-3"
-          >
-            Политикой конфиденциальности
-          </Link>
-        </p>
+        <div className="border-apple-divider-soft border-t pt-4 text-center">
+          <p className="text-apple-ink-muted-48 text-[11px] leading-relaxed">
+            Нажимая «Получить код», вы принимаете{' '}
+            <Link
+              href="/terms"
+              className="text-apple-primary hover:text-apple-primary-focus underline underline-offset-2"
+            >
+              Условия сервиса
+            </Link>{' '}
+            и{' '}
+            <Link
+              href="/privacy"
+              className="text-apple-primary hover:text-apple-primary-focus underline underline-offset-2"
+            >
+              Политику конфиденциальности
+            </Link>
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   )

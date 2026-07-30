@@ -94,7 +94,7 @@ function CartBody() {
     <div className="flex-1 scrollbar-thin overflow-y-auto p-6">
       <ul className="flex flex-col gap-4">
         {items.map((item) => (
-          <CartItem key={item.id} item={item} />
+          <CartItem key={item.id} item={item} isSheet />
         ))}
       </ul>
     </div>

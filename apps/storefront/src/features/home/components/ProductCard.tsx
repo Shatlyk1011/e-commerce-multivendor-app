@@ -30,7 +30,7 @@ export function ProductCard({ product, reviewSummary }: ProductCardProps) {
   const title = product.title ?? ''
   const image = product.thumbnail ?? ''
 
-  const variant = product.variants?.[0]
+  const variant = product.variants?.find((v) => v.calculated_price?.calculated_amount != null) ?? product.variants?.[0]
   const amount = variant?.calculated_price?.calculated_amount
   const originalAmount = variant?.calculated_price?.original_amount ?? null
 
@@ -112,30 +112,40 @@ function AddToCartButton({ product }: AddToCartButtonProps) {
   const [state, setState] = React.useState<'idle' | 'pending' | 'added'>('idle')
   const { mutateAsync: handleAddItem, isPending } = useAddLineItem()
 
-  const variant = product.variants?.[0]
-  const variantId = variant?.id
+  const variants = product.variants ?? []
+  const hasVariant = variants.some((v) => Boolean(v.id))
 
   const handleAdd = async () => {
-    if (!variantId) return
+    if (!hasVariant) return
     const cartId = getCartId()
     setState('pending')
-    await handleAddItem(
-      {
-        cartId: cartId ?? '',
-        payload: {
-          quantity: 1,
-          variant_id: variantId,
-          title: product.title,
-          thumbnail: product.thumbnail ?? product.images?.[0]?.url,
-        },
-      },
-      {
-        onSuccess: () => {
-          setState('added')
-          setTimeout(() => setState('idle'), 2000)
-        },
-      },
-    )
+
+    let added = false
+    for (const v of variants) {
+      if (!v.id) continue
+      try {
+        await handleAddItem({
+          cartId: cartId ?? '',
+          payload: {
+            quantity: 1,
+            variant_id: v.id,
+            title: product.title,
+            thumbnail: product.thumbnail ?? product.images?.[0]?.url,
+          },
+        })
+        added = true
+        break
+      } catch {
+        // If adding this variant fails, try the next variant
+      }
+    }
+
+    if (added) {
+      setState('added')
+      setTimeout(() => setState('idle'), 2000)
+    } else {
+      setState('idle')
+    }
   }
 
   return (
@@ -143,7 +153,7 @@ function AddToCartButton({ product }: AddToCartButtonProps) {
       variant="default"
       size="sm"
       onClick={handleAdd}
-      disabled={isPending || !variantId || state === 'pending'}
+      disabled={isPending || !hasVariant || state === 'pending'}
       className="w-full cursor-pointer font-semibold disabled:opacity-60"
     >
       {state === 'pending' && (

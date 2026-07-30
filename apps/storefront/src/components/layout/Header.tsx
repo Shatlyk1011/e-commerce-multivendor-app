@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, User, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -47,6 +47,9 @@ export function Header() {
   const { customer, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth()
   const storeCity = useUIStore((state) => state.selectedCity)
   const setSelectedCity = useUIStore((state) => state.setSelectedCity)
+
+  const pathname = usePathname()
+  const isCheckout = pathname.includes('checkout')
 
   const selectedCity = storeCity || CITIES[0]
   const [selectedLang, setSelectedLang] = useState('ru') // 'ru' or 'tk'
@@ -232,7 +235,7 @@ export function Header() {
       </div>
 
       {/* ROW 2: MAIN HEADER */}
-      <div className="bg-apple-canvas w-full px-4 py-4">
+      <div className="bg-apple-canvas w-full p-4">
         <div className="custom-container mx-auto flex items-center gap-6">
           {/* Logo Brand */}
           <Link href="/" className="group flex shrink-0 items-center gap-2 select-none">
