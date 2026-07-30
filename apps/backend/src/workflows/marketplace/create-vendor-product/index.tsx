@@ -14,6 +14,7 @@ import {
 import { MARKETPLACE_MODULE } from "../../../modules/marketplace"
 import { Modules } from "@medusajs/framework/utils"
 import { validateProductOptionsStep } from "../../product-option-templates/steps/validate-product-options"
+import requireShippingProfileStep from "../steps/require-shipping-profile"
 
 type WorkflowInput = {
   vendor_admin_id: string
@@ -30,6 +31,11 @@ const createVendorProductWorkflow = createWorkflow(
       entity: "store",
       fields: ["default_sales_channel_id"],
     })
+    const { data: shippingProfiles } = useQueryGraphStep({
+      entity: "shipping_profile",
+      fields: ["id"],
+    }).config({ name: "retrieve-default-shipping-profile" })
+    const shippingProfileId = requireShippingProfileStep({ shipping_profiles: shippingProfiles })
 
     // Fetch vendor details including city and their dedicated stock location
     const { data: vendorAdmins } = useQueryGraphStep({
@@ -48,6 +54,7 @@ const createVendorProductWorkflow = createWorkflow(
       input,
       stores,
       vendorAdmins,
+      shippingProfileId,
     }, (data) => {
       const deliveryCity = data.vendorAdmins[0]?.vendor?.city?.trim()
 
@@ -58,6 +65,7 @@ const createVendorProductWorkflow = createWorkflow(
       return {
         products: [{
           ...data.input.product,
+          shipping_profile_id: data.shippingProfileId,
           metadata: {
             ...(data.input.product.metadata ?? {}),
             delivery_city: deliveryCity,

@@ -1,7 +1,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { getOrdersListWorkflow } from "@medusajs/medusa/core-flows"
-import type { VendorOrder, VendorOrdersResponse } from "@dtc/api-contracts"
+import type { OrderDeliveryDetails, VendorOrder, VendorOrdersResponse } from "@dtc/api-contracts"
 
 const toIsoString = (value: Date | string) =>
   value instanceof Date ? value.toISOString() : value
@@ -15,10 +15,17 @@ const toVendorOrder = (order: {
   created_at: Date | string
   currency_code: string
   total?: unknown
+  subtotal?: unknown
+  shipping_total?: unknown
+  tax_total?: unknown
+  discount_total?: unknown
+  email?: string | null
   items?: Array<{
     id: string
     quantity: number
     title?: string | null
+    unit_price?: unknown
+    thumbnail?: string | null
     variant?: {
       title?: string | null
       product?: {
@@ -27,6 +34,17 @@ const toVendorOrder = (order: {
     } | null
   }> | null
   metadata?: Record<string, unknown> | null
+  shipping_address?: {
+    first_name?: string | null
+    last_name?: string | null
+    address_1?: string | null
+    address_2?: string | null
+    city?: string | null
+    province?: string | null
+    postal_code?: string | null
+    country_code?: string | null
+    phone?: string | null
+  } | null
 }): VendorOrder => ({
   id: order.id,
   display_id: order.display_id ?? undefined,
@@ -36,10 +54,17 @@ const toVendorOrder = (order: {
   created_at: toIsoString(order.created_at),
   currency_code: order.currency_code,
   total: order.total == null ? undefined : Number(order.total),
+  subtotal: order.subtotal == null ? undefined : Number(order.subtotal),
+  shipping_total: order.shipping_total == null ? undefined : Number(order.shipping_total),
+  tax_total: order.tax_total == null ? undefined : Number(order.tax_total),
+  discount_total: order.discount_total == null ? undefined : Number(order.discount_total),
+  email: order.email ?? undefined,
   items: order.items?.map((item) => ({
     id: item.id,
     quantity: item.quantity,
     title: item.title ?? undefined,
+    unit_price: item.unit_price == null ? undefined : Number(item.unit_price),
+    thumbnail: item.thumbnail ?? undefined,
     variant: item.variant
       ? {
           title: item.variant.title ?? undefined,
@@ -49,11 +74,28 @@ const toVendorOrder = (order: {
         }
       : undefined,
   })),
+  shipping_address: order.shipping_address
+    ? Object.fromEntries(
+        Object.entries(order.shipping_address).filter(([, value]) => value != null)
+      )
+    : undefined,
+  delivery: isDeliveryDetails(order.metadata?.delivery) ? order.metadata?.delivery : undefined,
   metadata:
     typeof order.metadata?.parent_order_id === "string"
       ? { parent_order_id: order.metadata.parent_order_id }
       : undefined,
 })
+
+export { toVendorOrder }
+
+function isDeliveryDetails(value: unknown): value is OrderDeliveryDetails {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      "method" in value &&
+      ((value as { method?: unknown }).method === "pickup" || (value as { method?: unknown }).method === "courier")
+  )
+}
 
 export const GET = async (
   req: AuthenticatedMedusaRequest,
@@ -93,7 +135,10 @@ export const GET = async (
           "items.variant",
           "items.variant.product",
           "items.detail",
+          "items.unit_price",
+          "items.thumbnail",
           "shipping_methods",
+          "shipping_address.*",
           "payment_collections",
           "fulfillments.*",
         ],

@@ -6,10 +6,16 @@ import {
 import { 
   setAuthAppMetadataStep,
   useQueryGraphStep,
+  createStockLocationsWorkflow,
+  createRemoteLinkStep,
+  linkSalesChannelsToStockLocationWorkflow,
 } from "@medusajs/medusa/core-flows"
+import { Modules } from "@medusajs/framework/utils"
 import { createVendorStep } from "./steps/create-vendor"
 import { createVendorAdminStep } from "./steps/create-vendor-admin"
 import { createAuthIdentityStep } from "./steps/create-auth-identity"
+import linkVendorStockLocationStep from "../create-vendor/steps/link-vendor-stock-location"
+import requireDeliveryFulfillmentSetStep from "../steps/require-delivery-fulfillment-set"
 
 export type AdminCreateVendorWorkflowInput = {
   name: string
@@ -32,6 +38,17 @@ export type AdminCreateVendorWorkflowInput = {
 export const adminCreateVendorWorkflow = createWorkflow(
   "admin-create-vendor",
   function (input: AdminCreateVendorWorkflowInput) {
+    const { data: stores } = useQueryGraphStep({
+      entity: "store",
+      fields: ["default_sales_channel_id"],
+    }).config({ name: "retrieve-default-store" })
+
+    const { data: fulfillmentSets } = useQueryGraphStep({
+      entity: "fulfillment_set",
+      fields: ["id"],
+    }).config({ name: "retrieve-delivery-fulfillment-set" })
+    const fulfillmentSetId = requireDeliveryFulfillmentSetStep({ fulfillment_sets: fulfillmentSets })
+
     const vendor = createVendorStep({
       name: input.name,
       handle: input.handle,
@@ -74,6 +91,44 @@ export const adminCreateVendorWorkflow = createWorkflow(
       actorType: "vendor",
       value: vendorAdmin.id,
     })
+
+    const stockLocationInput = transform({ input }, (data) => ({
+      locations: [{
+        name: `${data.input.name} - Склад`,
+        address: {
+          address_1: data.input.city,
+          city: data.input.city,
+          country_code: "tm",
+        },
+      }],
+    }))
+    const stockLocations = createStockLocationsWorkflow.runAsStep({ input: stockLocationInput })
+
+    const stockLocationLink = transform({ vendor, stockLocations }, (data) => ({
+      vendor_id: data.vendor.id,
+      stock_location_id: data.stockLocations[0].id,
+    }))
+    linkVendorStockLocationStep(stockLocationLink)
+
+    const fulfillmentSetLinkDefs = transform({ stockLocations, fulfillmentSetId }, (data) => {
+      return [{
+        [Modules.STOCK_LOCATION]: { stock_location_id: data.stockLocations[0].id },
+        [Modules.FULFILLMENT]: { fulfillment_set_id: data.fulfillmentSetId },
+      }]
+    })
+    createRemoteLinkStep(fulfillmentSetLinkDefs).config({ name: "link-admin-vendor-location-to-fulfillment-set" })
+
+    const providerLinkDefs = transform({ stockLocations }, (data) => [{
+      [Modules.STOCK_LOCATION]: { stock_location_id: data.stockLocations[0].id },
+      [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" },
+    }])
+    createRemoteLinkStep(providerLinkDefs).config({ name: "link-admin-vendor-location-to-fulfillment-provider" })
+
+    const salesChannelStockLocationLink = transform({ stockLocations, stores }, (data) => ({
+      id: data.stockLocations[0].id,
+      add: data.stores[0]?.default_sales_channel_id ? [data.stores[0].default_sales_channel_id] : [],
+    }))
+    linkSalesChannelsToStockLocationWorkflow.runAsStep({ input: salesChannelStockLocationLink })
 
     // @ts-ignore
     const { data: vendorWithAdmin } = useQueryGraphStep({

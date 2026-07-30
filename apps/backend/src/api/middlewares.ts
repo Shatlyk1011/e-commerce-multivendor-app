@@ -17,6 +17,7 @@ import { AdminResetVendorPasswordSchema } from "./admin/vendors/[id]/reset-passw
 import { otpMiddlewares } from "./store/auth/otp/middlewares";
 import { CreateReviewSchema } from "./store/products/[id]/reviews/middlewares";
 import { AdminCreateProductOptionTemplateSchema } from "./admin/product-option-templates/route";
+import { CompleteVendorOrderSchema } from "./store/carts/[id]/complete-vendor/route";
 // import { CategoryTranslationsSchema } from "./admin/product-categories/translations/route";
 import multer from "multer";
 
@@ -140,6 +141,14 @@ export default defineMiddlewares({
       middlewares: [
         authenticate("customer", ["session", "bearer"]),
         validateAndTransformBody(CreateReviewSchema),
+      ],
+    },
+    {
+      matcher: "/store/carts/*/complete-vendor",
+      method: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(CompleteVendorOrderSchema),
       ],
     },
     // Admin vendor routes

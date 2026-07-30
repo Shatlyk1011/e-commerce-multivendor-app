@@ -16,6 +16,7 @@ import {
 import MarketplaceModuleService from "../../../../modules/marketplace/service"
 import { MARKETPLACE_MODULE } from "../../../../modules/marketplace"
 import Vendor from "../../../../modules/marketplace/models/vendor"
+import type { DeliveryDetails } from "../../../../lib/delivery"
 
 export type VendorOrder = (OrderDTO & {
   vendor: InferTypeOf<typeof Vendor>
@@ -24,16 +25,19 @@ export type VendorOrder = (OrderDTO & {
 type StepInput = {
   parentOrder: OrderDTO
   vendorsItems: Record<string, CartLineItemDTO[]>
+  delivery: DeliveryDetails
 }
 
 function prepareOrderData(
   items: CartLineItemDTO[], 
-  parentOrder: OrderDTO
+  parentOrder: OrderDTO,
+  delivery: DeliveryDetails
 ) {
   return  {
     items,
     metadata: {
       parent_order_id: parentOrder.id,
+      delivery,
     },
     // use info from parent
     region_id: parentOrder.region_id,
@@ -43,37 +47,13 @@ function prepareOrderData(
     currency_code: parentOrder.currency_code,
     shipping_address_id: parentOrder.shipping_address?.id,
     billing_address_id: parentOrder.billing_address?.id,
-    // A better solution would be to have shipping methods for each
-    // item/vendor. This requires changes in the storefront to commodate that
-    // and passing the item/vendor ID in the `data` property, for example.
-    // For simplicity here we just use the same shipping method.
-    shipping_methods: parentOrder.shipping_methods?.map((shippingMethod) => ({
-      name: shippingMethod.name,
-      amount: shippingMethod.amount,
-      shipping_option_id: shippingMethod.shipping_option_id,
-      data: shippingMethod.data,
-      tax_lines: shippingMethod.tax_lines?.map((taxLine) => ({
-        code: taxLine.code,
-        rate: taxLine.rate,
-        provider_id: taxLine.provider_id,
-        tax_rate_id: taxLine.tax_rate_id,
-        description: taxLine.description,
-      })),
-      adjustments: shippingMethod.adjustments?.map((adjustment) => ({
-        code: adjustment.code,
-        amount: adjustment.amount,
-        description: adjustment.description,
-        promotion_id: adjustment.promotion_id,
-        provider_id: adjustment.provider_id,
-      })),
-    })),
   }
 }
 
 const createVendorOrdersStep = createStep(
   "create-vendor-orders",
   async (
-    { vendorsItems, parentOrder }: StepInput, 
+    { vendorsItems, parentOrder, delivery }: StepInput, 
     { container, context }
   ) => {
     const linkDefs: LinkDefinition[] = []
@@ -120,7 +100,7 @@ try {
         container
       )
       .run({
-        input: prepareOrderData(items, parentOrder),
+        input: prepareOrderData(items, parentOrder, delivery),
         context,
       }) as unknown as { result: VendorOrder }
 
