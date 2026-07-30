@@ -1,22 +1,20 @@
 'use client'
 
-import * as React from 'react'
-
 import Link from 'next/link'
 
 import { ChevronRight } from 'lucide-react'
 
-import { useCategories } from '@/features/category/api/queries'
+import { useCatalogCategories } from '@/features/category/api/queries'
 import { CategoryTreeNode } from '@/features/category/api/types'
 
 export default function CategoryRootPage() {
-  const { data, isLoading } = useCategories({ parent_category_id: null })
+  const { data, isLoading } = useCatalogCategories()
 
   const categories = (data ?? []) as CategoryTreeNode[]
 
   return (
     <main className="bg-apple-canvas text-apple-ink min-h-screen antialiased">
-      <div className="custom-container py-6">
+      <div className="custom-container px-4 py-8">
         <h1 className="font-heading mb-6 text-[28px] font-bold tracking-tight">Каталог</h1>
 
         {isLoading ? (

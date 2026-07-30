@@ -31,6 +31,11 @@ export function findCategoryPath(
   return null
 }
 
+// Returns a category and every visible descendant, for listing a whole catalog branch.
+export function getCategoryTreeIds(category: CategoryTreeNode): string[] {
+  return [category.id, ...(category.category_children ?? []).flatMap(getCategoryTreeIds)]
+}
+
 // Helper for Russian pluralization of products count
 export function getProductWord(count: number) {
   const mod10 = count % 10

@@ -28,7 +28,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 
-import { useCategories } from '../../features/category/api/queries'
+import { useCatalogCategories } from '../../features/category/api/queries'
 import { CategoryTreeNode } from '../../features/category/api/types'
 
 interface CatalogMenuProps {
@@ -60,7 +60,7 @@ function getCategoryIcon(name: string) {
 }
 
 export default function CatalogMenu({ onClose }: CatalogMenuProps) {
-  const { data: categories = [], isLoading } = useCategories({ parent_category_id: null })
+  const { data: categories = [], isLoading } = useCatalogCategories()
   const [activeRootId, setActiveRootId] = useState<string | null>(null)
 
   // Auto-select the first category as active when categories load

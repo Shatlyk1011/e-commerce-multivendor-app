@@ -80,7 +80,7 @@ export function ProductCard({ product, reviewSummary }: ProductCardProps) {
           </div>
 
           {/* Product Title */}
-          <h3 className="text-apple-ink font-text group-hover:text-apple-primary mt-2 line-clamp-2 min-h-[32px] text-[13px] leading-tight transition-colors">
+          <h3 className="text-apple-ink font-text group-hover:text-apple-primary mt-2 line-clamp-2 min-h-[32px] text-[13px] leading-tight font-medium transition-colors">
             {title}
           </h3>
 

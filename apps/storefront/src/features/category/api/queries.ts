@@ -1,7 +1,7 @@
 import type { HttpTypes } from '@medusajs/types'
 import { useQuery } from '@tanstack/react-query'
 
-import { fetchCategories, fetchCategory, fetchProductsByCategory } from './client'
+import { fetchCatalogCategories, fetchCategories, fetchCategory, fetchProductsByCategory } from './client'
 import type { CategoryTreeNode } from './types'
 
 export const categoryKeys = {
@@ -10,6 +10,7 @@ export const categoryKeys = {
   list: (filters: { parent_category_id?: string | null }) => [...categoryKeys.lists(), filters] as const,
   details: () => [...categoryKeys.all, 'detail'] as const,
   detail: (id: string) => [...categoryKeys.details(), id] as const,
+  catalog: () => [...categoryKeys.all, 'catalog'] as const,
 }
 
 export function useCategories(filters?: { parent_category_id?: string | null }) {
@@ -24,6 +25,13 @@ export function useCategory(id: string) {
     queryKey: categoryKeys.detail(id),
     queryFn: () => fetchCategory(id),
     enabled: !!id,
+  })
+}
+
+export function useCatalogCategories() {
+  return useQuery<CategoryTreeNode[]>({
+    queryKey: categoryKeys.catalog(),
+    queryFn: fetchCatalogCategories,
   })
 }
 

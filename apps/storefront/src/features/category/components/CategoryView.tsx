@@ -9,9 +9,9 @@ import { ChevronRight } from 'lucide-react'
 import { ProductCard } from '@/features/home/components/ProductCard'
 import { useProductReviewSummaries } from '@/features/reviews/api/queries'
 
-import { useCategories, useProductsByCategory } from '../api/queries'
+import { useCatalogCategories, useProductsByCategory } from '../api/queries'
 import { CategoryTreeNode } from '../api/types'
-import { findCategoryInTree, findCategoryPath, formatPrice, getProductWord } from '../utils'
+import { findCategoryInTree, findCategoryPath, formatPrice, getCategoryTreeIds, getProductWord } from '../utils'
 import { CategorySidebar } from './CategorySidebar'
 
 const PAGE_SIZE = 20
@@ -25,9 +25,7 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
   const [page, setPage] = useState(0)
 
   // Fetch all root categories with full tree
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
-    parent_category_id: null,
-  })
+  const { data: categoriesData, isLoading: categoriesLoading } = useCatalogCategories()
 
   const categories = categoriesData ?? []
 
@@ -37,11 +35,16 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
     return findCategoryInTree(categoriesData, categoryId)
   }, [categoriesData, categoryId])
 
-  // Fetch products for the derived category ID
+  const selectedCategoryIds = useMemo(
+    () => (selectedCategory ? getCategoryTreeIds(selectedCategory) : undefined),
+    [selectedCategory],
+  )
+
+  // Include products assigned to the selected category and its visible descendants.
   const { data: productsData, isLoading: productsLoading } = useProductsByCategory({
     limit: PAGE_SIZE,
     offset: page * PAGE_SIZE,
-    category_id: selectedCategory?.id,
+    category_id: selectedCategoryIds,
   })
 
   const products = productsData?.products ?? []
@@ -66,7 +69,7 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
 
   return (
     <main className="bg-apple-canvas text-apple-ink min-h-screen antialiased">
-      <div className="custom-container py-6">
+      <div className="custom-container px-4 py-8">
         {/* Breadcrumb Row */}
         <div className="text-apple-ink-muted-48 mb-6 flex flex-wrap items-center gap-1.5 text-[13px]">
           <Link href="/" className="hover:text-apple-primary cursor-pointer transition-colors">
