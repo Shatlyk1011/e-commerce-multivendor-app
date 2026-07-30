@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
+import Link from 'next/link'
+
 import type { VendorOrder, VendorOrdersResponse } from '@dtc/api-contracts'
 import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Loader2, Search } from 'lucide-react'
 import { toast } from 'sonner'
@@ -160,7 +162,9 @@ export default function OrdersPage() {
                   {filteredOrders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell>
-                        <div className="font-semibold">#{order.display_id || order.id.slice(-8)}</div>
+                        <Link href={`/dashboard/orders/${order.id}`} className="font-semibold hover:underline">
+                          #{order.display_id || order.id.slice(-8)}
+                        </Link>
                         {order.metadata?.parent_order_id && (
                           <div className="text-apple-ink-muted-48 mt-0.5 text-[11px]">Составной заказ</div>
                         )}
