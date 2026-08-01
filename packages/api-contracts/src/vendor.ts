@@ -38,10 +38,14 @@ export type VendorOrderItem = {
   title?: string
   unit_price?: number
   thumbnail?: string
+  product_id?: string
   variant?: {
     title?: string
+    product_id?: string
     product?: {
+      id?: string
       title?: string
+      thumbnail?: string
     }
   }
 }
@@ -75,6 +79,18 @@ export type VendorOrderAddress = {
   phone?: string
 }
 
+export type VendorOrderOperationalStatus =
+  | "new"
+  | "courier_handoff"
+  | "cancelled"
+
+export type VendorOrderOperation = {
+  status: VendorOrderOperationalStatus
+  reason?: string
+  updated_at: string
+  updated_by_vendor_admin_id: string
+}
+
 export type VendorOrder = {
   id: string
   display_id?: number | string
@@ -92,6 +108,7 @@ export type VendorOrder = {
   items?: VendorOrderItem[]
   shipping_address?: VendorOrderAddress
   delivery?: OrderDeliveryDetails
+  vendor_operation?: VendorOrderOperation
   metadata?: {
     parent_order_id?: string
   }

@@ -7,6 +7,8 @@ export type {
   VendorOrder,
   VendorOrderAddress,
   VendorOrderItem,
+  VendorOrderOperation,
+  VendorOrderOperationalStatus,
   VendorOrderResponse,
   VendorOrdersResponse,
   OrderDeliveryDetails,
