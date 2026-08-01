@@ -77,8 +77,10 @@ function SectionHeader({
 function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-apple-fine-print text-apple-ink-muted-48 mb-1 tracking-wide uppercase">{label}</dt>
-      <dd className="text-apple-body text-apple-ink">{value}</dd>
+      <dt className="text-apple-fine-print font-heading text-apple-ink-muted-48 mb-1 tracking-wide uppercase">
+        {label}
+      </dt>
+      <dd className="text-apple-ink text-sm font-semibold">{value}</dd>
     </div>
   )
 }

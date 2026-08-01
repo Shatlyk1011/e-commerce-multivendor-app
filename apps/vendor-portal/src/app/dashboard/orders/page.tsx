@@ -17,22 +17,16 @@ import { medusa } from '@/lib/medusa'
 
 const PAGE_SIZE = 20
 
-const statusLabels: Record<string, string> = {
-  pending: 'Новый',
-  completed: 'Завершён',
-  archived: 'Архивирован',
-  canceled: 'Отменён',
-  requires_action: 'Требует действия',
-}
-
-function formatStatus(status?: string) {
-  return statusLabels[status || ''] || status || 'Неизвестно'
+const vendorStatusLabels: Record<string, string> = {
+  new: 'Новый',
+  courier_handoff: 'Передан курьеру',
+  cancelled: 'Отменён продавцом',
 }
 
 function statusClass(status?: string) {
-  if (status === 'completed') return 'border-green-200 bg-green-50 text-green-700'
-  if (status === 'canceled' || status === 'archived') return 'border-red-200 bg-red-50 text-red-700'
-  return 'border-amber-200 bg-amber-50 text-amber-700'
+  if (status === 'courier_handoff') return 'border-emerald-200 bg-emerald-50 text-emerald-700'
+  if (status === 'cancelled') return 'border-rose-200 bg-rose-50 text-rose-700'
+  return 'border-sky-200 bg-sky-50 text-sky-700'
 }
 
 function formatMoney(amount: number | undefined, currency: string) {
@@ -154,7 +148,7 @@ export default function OrdersPage() {
                     <TableHead>Заказ</TableHead>
                     <TableHead>Дата</TableHead>
                     <TableHead>Товары</TableHead>
-                    <TableHead>Статус</TableHead>
+                    <TableHead>Статус продавца</TableHead>
                     <TableHead className="text-right">Сумма</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -181,7 +175,9 @@ export default function OrdersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={statusClass(order.status)}>{formatStatus(order.status)}</Badge>
+                        <Badge className={statusClass(order.vendor_operation?.status)}>
+                          {vendorStatusLabels[order.vendor_operation?.status || 'new']}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right font-semibold whitespace-nowrap">
                         {formatMoney(order.total, order.currency_code)}

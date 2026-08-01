@@ -97,7 +97,7 @@ export function ProductItem({ product }: ProductItemProps) {
       {/* Action Footer */}
       <CardFooter className="mt-3 rounded-none border-t-0 bg-transparent p-0 pb-2">
         <Link href={`/dashboard/products/${product.id}`} className="w-full">
-          <Button variant="default" size="sm" className="w-full cursor-pointer font-semibold">
+          <Button variant="default" size="xs" className="w-full cursor-pointer font-semibold">
             <Pencil className="size-3.5" />
             <span>Редактировать</span>
           </Button>

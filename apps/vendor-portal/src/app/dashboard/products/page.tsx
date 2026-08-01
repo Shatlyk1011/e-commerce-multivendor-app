@@ -81,7 +81,7 @@ export default function ProductsPage() {
             </Link>
           </div>
         ) : (
-          <div className="max-xs:grid-cols-1 grid grid-cols-4 gap-4 max-2xl:grid-cols-4 max-xl:grid-cols-3 max-md:grid-cols-2">
+          <div className="max-xs:grid-cols-1 grid grid-cols-6 gap-2 max-2xl:grid-cols-4 max-xl:grid-cols-3 max-md:grid-cols-2">
             {products.map((product) => (
               <ProductItem key={product.id} product={product} />
             ))}
