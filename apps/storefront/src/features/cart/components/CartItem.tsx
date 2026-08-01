@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 import type { StoreCartLineItem } from '@medusajs/types'
-import { Loader2, Minus, Plus, Trash2 } from 'lucide-react'
+import { ImageOff, Loader2, Minus, Plus, Trash2 } from 'lucide-react'
 
 import {
   AlertDialog,
@@ -75,7 +75,8 @@ export function CartItem({ item, isSheet = false }: CartItemProps) {
 
   const title = item.title ?? 'Товар'
   const thumbnail = item.thumbnail ?? ''
-  const priceTotal = (item.unit_price ?? 0) * localQuantity
+  const unitPrice = item.unit_price ?? 0
+  const priceTotal = unitPrice * localQuantity
   const isPending = updateMutation.isPending || deleteMutation.isPending
 
   const productHandleOrId =
@@ -139,14 +140,30 @@ export function CartItem({ item, isSheet = false }: CartItemProps) {
     setLocalQuantity(item.quantity ?? 1)
   }
 
+  const imageSizeClass = isSheet ? 'size-16' : 'size-20 max-sm:size-16'
+
   const imageElement = thumbnail ? (
-    <img src={thumbnail} alt={title} className="bg-apple-surface-pearl h-16 w-16 shrink-0 rounded-md object-cover" />
+    <div
+      className={cn(
+        'rounded-apple-md border-apple-hairline/80 bg-apple-surface-pearl group relative shrink-0 overflow-hidden border',
+        imageSizeClass,
+      )}
+    >
+      <img src={thumbnail} alt={title} className="h-full w-full object-cover" />
+    </div>
   ) : (
-    <div className="h-16 w-16 shrink-0 rounded-md bg-neutral-200" />
+    <div
+      className={cn(
+        'rounded-apple-md border-apple-hairline/80 bg-apple-surface-pearl text-apple-ink-muted-48 flex shrink-0 items-center justify-center border',
+        imageSizeClass,
+      )}
+    >
+      <ImageOff className="size-6 opacity-40" />
+    </div>
   )
 
   const titleElement = (
-    <h4 className="text-apple-ink hover:text-apple-primary line-clamp-2 text-[13px] leading-snug font-semibold transition-colors">
+    <h4 className="text-apple-ink hover:text-apple-primary line-clamp-2 text-[13px] leading-tight font-semibold tracking-[-0.1px] transition-colors">
       {title}
     </h4>
   )
@@ -162,20 +179,21 @@ export function CartItem({ item, isSheet = false }: CartItemProps) {
   }
 
   return (
-    <li className="border-apple-divider-soft border-b pb-3 last:border-b-0 last:pb-0">
-      <Card className="rounded-apple-sm border-apple-hairline bg-apple-canvas-parchment relative overflow-hidden border">
+    <li className="list-none">
+      <Card className="rounded-apple-lg border-apple-hairline/80 bg-apple-canvas hover:border-apple-hairline group relative overflow-hidden border p-0 shadow-xs transition-all duration-200">
         {isPending && (
-          <div className="bg-apple-canvas/30 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[0.5px] transition-opacity duration-200">
+          <div className="bg-apple-canvas/60 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[2px] transition-all duration-200">
             <Loader2 className="text-apple-primary size-5 animate-spin" />
           </div>
         )}
-        <CardContent className="p-3">
-          <div className="flex gap-3">
+        <CardContent className={cn('p-3.5', isSheet ? 'p-3' : 'p-4 max-sm:p-3')}>
+          <div className="flex items-start gap-3.5 max-sm:gap-3">
             {renderProductLink(imageElement, 'shrink-0')}
 
-            <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 flex-col justify-between self-stretch">
+              {/* Header row: Title, variants, unit price & remove button */}
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   {renderProductLink(titleElement)}
 
                   {variantDetails.length > 0 && (
@@ -183,7 +201,7 @@ export function CartItem({ item, isSheet = false }: CartItemProps) {
                       {variantDetails.map((detail, idx) => (
                         <span
                           key={idx}
-                          className="bg-apple-canvas border-apple-hairline text-apple-ink-muted-80 rounded px-1.5 py-0.5 text-[11px] font-medium"
+                          className="bg-apple-canvas-parchment border-apple-hairline/60 text-apple-ink-muted-80 rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-tight"
                         >
                           {detail}
                         </span>
@@ -197,44 +215,52 @@ export function CartItem({ item, isSheet = false }: CartItemProps) {
                   size="icon-xs"
                   onClick={() => setIsDeleteDialogOpen(true)}
                   disabled={isPending}
-                  className="text-apple-ink-muted-48 shrink-0 cursor-pointer hover:text-rose-500"
+                  title="Удалить товар"
+                  className="text-apple-ink-muted-48 size-7 shrink-0 cursor-pointer rounded-full transition-colors hover:bg-rose-500/10 hover:text-rose-600 active:scale-95"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>
               </div>
 
-              <div className="mt-3 flex items-end justify-between gap-2">
-                {/* Quantity stepper */}
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
+              {/* Bottom row: Pill Stepper & Line Total Price */}
+              <div className="mt-3 flex items-center justify-between gap-2 pt-1">
+                {/* Modern Pill Stepper */}
+                <div className="bg-apple-canvas-parchment border-apple-hairline/80 inline-flex items-center rounded-full border p-0.5 shadow-2xs">
+                  <button
+                    type="button"
                     onClick={handleDecrement}
                     disabled={isPending}
-                    className="rounded-apple-sm border-apple-hairline size-7 cursor-pointer border"
+                    aria-label="Уменьшить количество"
+                    className="bg-apple-canvas text-apple-ink hover:text-apple-primary flex size-6 cursor-pointer items-center justify-center rounded-full shadow-2xs transition-all active:scale-90 disabled:opacity-40"
                   >
-                    <Minus className="size-3" />
-                  </Button>
-                  <span
-                    className={cn(
-                      'text-apple-ink w-6 text-center text-[13px] font-semibold transition-opacity duration-200',
-                    )}
-                  >
+                    <Minus className="size-3" strokeWidth={2.5} />
+                  </button>
+                  <span className="text-apple-ink min-w-[24px] px-1 text-center text-xs font-bold tracking-tight select-none">
                     {localQuantity}
                   </span>
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
+                  <button
+                    type="button"
                     onClick={handleIncrement}
                     disabled={isPending}
-                    className="rounded-apple-sm border-apple-hairline size-7 cursor-pointer border"
+                    aria-label="Увеличить количество"
+                    className="bg-apple-canvas text-apple-ink hover:text-apple-primary flex size-6 cursor-pointer items-center justify-center rounded-full shadow-2xs transition-all active:scale-90 disabled:opacity-40"
                   >
-                    <Plus className="size-3" />
-                  </Button>
+                    <Plus className="size-3" strokeWidth={2.5} />
+                  </button>
                 </div>
 
                 {/* Line total */}
-                <span className="text-apple-ink text-[15px] font-bold">{formatPrice(priceTotal)}</span>
+                <div className="relative text-right">
+                  <span className="text-apple-ink font-heading text-[15px] font-bold tracking-[-0.2px]">
+                    {formatPrice(priceTotal)}
+                  </span>
+
+                  {localQuantity > 1 && (
+                    <p className="text-apple-ink-muted-48 absolute -top-[75%] right-0 w-full text-[11px] font-medium text-nowrap">
+                      {unitPrice} x {localQuantity} =
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -242,18 +268,31 @@ export function CartItem({ item, isSheet = false }: CartItemProps) {
       </Card>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas max-w-[380px] p-6 shadow-xl max-sm:p-5">
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить товар?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Вы действительно хотите удалить <br /> <span className="font-medium">«{title}»</span> из корзины?
+            <AlertDialogTitle className="text-apple-ink font-heading text-lg font-bold tracking-[-0.3px]">
+              Удалить товар?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-apple-ink-muted-48 text-[13px] leading-relaxed">
+              Вы действительно хотите удалить <br />
+              <span className="text-apple-ink font-semibold">«{title}»</span> из корзины?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="p-4">
-            <AlertDialogCancel size="sm" onClick={handleCancelDelete} disabled={isPending}>
+          <AlertDialogFooter className="mt-2 flex-row justify-end gap-2 p-2 max-sm:flex-col">
+            <AlertDialogCancel
+              size="sm"
+              onClick={handleCancelDelete}
+              disabled={isPending}
+              className="border-apple-hairline hover:bg-apple-surface-pearl rounded-full font-semibold max-sm:w-full"
+            >
               Отмена
             </AlertDialogCancel>
-            <AlertDialogAction size="sm" onClick={handleRemove} disabled={isPending} variant="destructive">
+            <AlertDialogAction
+              size="sm"
+              onClick={handleRemove}
+              disabled={isPending}
+              className="rounded-full bg-rose-600 font-semibold text-white hover:bg-rose-700 max-sm:w-full"
+            >
               Удалить
             </AlertDialogAction>
           </AlertDialogFooter>

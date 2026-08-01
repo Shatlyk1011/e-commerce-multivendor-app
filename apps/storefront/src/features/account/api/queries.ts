@@ -101,6 +101,9 @@ export function useCustomerOrders() {
   return useQuery({
     queryKey: accountKeys.orders(),
     queryFn: getCustomerOrders,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
+    refetchInterval: 30 * 1000,
   })
 }
 

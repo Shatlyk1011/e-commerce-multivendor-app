@@ -5,35 +5,22 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 import type { StoreOrder } from '@medusajs/types'
-import { ArrowRight, ChevronRight, Package, Search } from 'lucide-react'
+import { ChevronRight, Package } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { formatPrice } from '@/features/cart/utils'
 import { useMyProductReviews } from '@/features/reviews/api/queries'
 
 import { OrderDetailModal } from './OrderDetailModal'
 import { OrderReviewDialog } from './OrderReviewDialog'
+import { DeliveryStatusBadge, isOrderCancelled, isOrderDelivered } from './order-status'
 
 interface OrdersTabProps {
   orders: StoreOrder[]
 }
 
 type OrderFilter = 'all' | 'processing' | 'delivered' | 'canceled'
-
-function getFulfillmentStatusBadge(status?: string) {
-  switch (status) {
-    case 'fulfilled':
-    case 'shipped':
-    case 'delivered':
-      return <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">Доставлен</Badge>
-    case 'partially_fulfilled':
-      return <Badge className="border-amber-200 bg-amber-50 text-amber-700">В пути</Badge>
-    default:
-      return <Badge className="border-blue-200 bg-blue-50 text-blue-700">В обработке</Badge>
-  }
-}
 
 export function OrdersTab({ orders }: OrdersTabProps) {
   const [filter, setFilter] = useState<OrderFilter>('all')
@@ -53,13 +40,14 @@ export function OrdersTab({ orders }: OrdersTabProps) {
   const { data: myReviews } = useMyProductReviews(completedProductIds)
   const reviewsByProduct = new Map(myReviews?.reviews.map((review) => [review.product_id, review]))
 
-  const filteredOrders = orders.filter((order) => {
-    if (filter === 'processing')
-      return !['fulfilled', 'shipped', 'delivered', 'canceled'].includes(order.fulfillment_status ?? '')
-    if (filter === 'delivered') return ['fulfilled', 'shipped', 'delivered'].includes(order.fulfillment_status ?? '')
-    if (filter === 'canceled') return order.status === 'canceled' || order.payment_status === 'canceled'
-    return true
-  })
+  const filteredOrders = orders
+    .filter((order) => {
+      if (filter === 'processing') return !isOrderDelivered(order) && !isOrderCancelled(order)
+      if (filter === 'delivered') return isOrderDelivered(order)
+      if (filter === 'canceled') return isOrderCancelled(order)
+      return true
+    })
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   return (
     <div className="space-y-6">
@@ -102,7 +90,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
 
       {/* Orders List */}
       {filteredOrders.length === 0 ? (
-        <Card className="rounded-apple-lg border-apple-hairline bg-apple-canvas border p-12 text-center">
+        <Card className="rounded-apple-lg border-apple-hairline bg-apple-canvas gap-0 border p-12 text-center">
           <Package className="mx-auto mb-3 h-12 w-12 text-neutral-300" />
           <h3 className="text-apple-ink text-base font-semibold">Заказы не найдены</h3>
           <p className="text-apple-ink-muted-48 text-apple-caption mt-1 mb-4">
@@ -119,7 +107,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
             return (
               <Card
                 key={order.id}
-                className="rounded-apple-lg border-apple-hairline bg-apple-canvas border p-5 transition-all hover:border-neutral-300"
+                className="rounded-apple-lg border-apple-hairline bg-apple-canvas gap-0 border p-5 transition-all hover:border-neutral-300"
               >
                 <div className="border-apple-divider-soft flex flex-col justify-between gap-4 border-b pb-4 sm:flex-row sm:items-center">
                   <div>
@@ -127,7 +115,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
                       <span className="text-apple-ink text-base font-semibold">
                         Заказ #{order.display_id || order.id.slice(-6)}
                       </span>
-                      {getFulfillmentStatusBadge(order.fulfillment_status)}
+                      <DeliveryStatusBadge order={order} />
                     </div>
                     <p className="text-apple-ink-muted-48 text-apple-caption mt-1">
                       Оформлен {new Date(order.created_at).toLocaleDateString('ru-RU')}
@@ -140,12 +128,8 @@ export function OrdersTab({ orders }: OrdersTabProps) {
                       </span>
                       <p className="text-apple-ink-muted-48 text-xs">{itemCount} товаров</p>
                     </div>
-                    <Button
-                      onClick={() => setSelectedOrder(order)}
-                      variant="outline"
-                      className="border-apple-hairline hover:bg-apple-surface-pearl rounded-full text-xs font-semibold"
-                    >
-                      Детали <ChevronRight className="ml-0.5 h-4 w-4" />
+                    <Button onClick={() => setSelectedOrder(order)} variant="outline" size="xs">
+                      О заказе <ChevronRight className="ml-0.5 h-4 w-4" />
                     </Button>
                   </div>
                 </div>

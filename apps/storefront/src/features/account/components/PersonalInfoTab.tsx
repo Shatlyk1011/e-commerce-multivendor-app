@@ -93,7 +93,7 @@ export function PersonalInfoTab({ customer }: PersonalInfoTabProps) {
             </div>
 
             {/* Company Name */}
-            <div>
+            {/* <div>
               <Label htmlFor="company_name" className="text-apple-caption font-semibold">
                 Компания / Организация
               </Label>
@@ -104,7 +104,7 @@ export function PersonalInfoTab({ customer }: PersonalInfoTabProps) {
                 onChange={(e) => setCompanyName(e.target.value)}
                 className="rounded-apple-sm mt-1.5"
               />
-            </div>
+            </div> */}
 
             {/* Read-Only Verified Phone */}
             <div>
@@ -124,9 +124,6 @@ export function PersonalInfoTab({ customer }: PersonalInfoTabProps) {
                 value={phone || '—'}
                 className="rounded-apple-sm bg-apple-canvas-parchment text-apple-ink-muted-80 mt-1.5 cursor-not-allowed font-mono"
               />
-              <p className="text-apple-fine-print text-apple-ink-muted-48 mt-1">
-                Номер телефона используется для входа в аккаунт и не может быть изменен прямо здесь.
-              </p>
             </div>
 
             {/* Email Field with Not Added State */}

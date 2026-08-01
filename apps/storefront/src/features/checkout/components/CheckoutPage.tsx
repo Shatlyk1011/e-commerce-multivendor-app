@@ -9,11 +9,11 @@ import type { StoreCustomerAddress } from '@medusajs/types'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { LucideIcon } from 'lucide-react'
 import {
+  Banknote,
   CalendarDays,
   Check,
   ChevronLeft,
   Clock3,
-  CreditCard,
   Loader2,
   LockKeyhole,
   LogIn,
@@ -27,6 +27,7 @@ import { toast } from 'sonner'
 import { AuthDialog } from '@/components/layout/AuthDialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 import { useCustomerAddresses } from '@/features/account/api/queries'
 import { AddressModal } from '@/features/account/components/AddressModal'
 import { useAuth } from '@/features/auth/components/AuthProvider'
@@ -129,6 +130,7 @@ export function CheckoutPage() {
   const [selectedPickupPoint, setSelectedPickupPoint] = useState<string | null>(null)
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<DeliveryDate | null>(null)
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null)
+  const [customerNote, setCustomerNote] = useState('')
   const initialAddressAppliedRef = useRef<string | null>(null)
 
   const selectedAddress = useMemo(
@@ -176,7 +178,6 @@ export function CheckoutPage() {
     addressMutation.mutate(selectedAddress)
   }, [addressMutation.isPending, addressMutation.mutate, requiresAddress, selectedAddress])
 
-  console.log('customer?.phone_number', customer?.phone_number)
   const completeMutation = useMutation({
     mutationFn: async () => {
       if (!cart || !selectedDeliveryMethod) throw new Error('Выберите способ доставки')
@@ -189,10 +190,12 @@ export function CheckoutPage() {
         : undefined
       const payload = {
         delivery_method: selectedDeliveryMethod,
+        payment_method: 'cash' as const,
         pickup_point_id: isPickup ? (selectedPickupPoint ?? undefined) : undefined,
         delivery_date: deliveryDate,
         time_slot: isPickup ? undefined : (selectedTimeSlot ?? undefined),
         recipient_phone: selectedAddress?.phone || customer?.phone_number,
+        customer_note: customerNote.trim() || undefined,
       }
 
       return completeVendorOrder(cart.id, payload)
@@ -337,8 +340,8 @@ export function CheckoutPage() {
                 <CardContent className="pt-5">
                   <div className="bg-apple-canvas-parchment rounded-apple-md mb-4 p-4">
                     <p className="text-apple-ink text-sm font-semibold">Как работает самовывоз</p>
-                    <p className="text-apple-ink-muted-48 mt-1 text-[13px] leading-relaxed">
-                      Выберите удобный пункт, дождитесь сообщения о готовности и заберите заказ, оплатив его
+                    <p className="text-apple-ink-muted-48 mt-1 text-[13px] leading-relaxed text-balance">
+                      Выберите удобный пункт, дождитесь сообщения о готовности и заберите заказ, оплатив его{' '}
                       <b>наличными на месте</b>.
                     </p>
                   </div>
@@ -483,6 +486,38 @@ export function CheckoutPage() {
                 </CardContent>
               </Card>
             )}
+
+            <Card className="order-4 gap-0">
+              <CardHeader className="border-apple-divider-soft border-b">
+                <SectionTitle number="4" icon={Banknote}>
+                  Оплата
+                </SectionTitle>
+              </CardHeader>
+              <CardContent className="pt-5">
+                <div className="border-apple-primary bg-apple-primary/5 ring-apple-primary/20 rounded-apple-md flex items-center gap-3 border p-4 ring-1">
+                  <Banknote className="text-apple-primary size-5 shrink-0" aria-hidden="true" />
+                  <div>
+                    <p className="text-apple-ink text-sm font-semibold">Оплата наличными</p>
+                    <p className="text-apple-ink-muted-48 mt-0.5 text-xs">
+                      Оплатите заказ наличными при получении. Банковские карты пока не поддерживаются.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-5">
+                  <label htmlFor="customer-note" className="text-apple-ink mb-2 block text-sm font-semibold">
+                    Комментарий к заказу <span className="text-apple-ink-muted-48 font-normal">(необязательно)</span>
+                  </label>
+                  <Textarea
+                    id="customer-note"
+                    value={customerNote}
+                    onChange={(event) => setCustomerNote(event.target.value.slice(0, 500))}
+                    placeholder="Например, позвоните перед доставкой"
+                    maxLength={500}
+                    rows={3}
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <aside className="sticky top-20">
@@ -519,7 +554,7 @@ export function CheckoutPage() {
                 <Button
                   className="mt-5 w-full"
                   size="lg"
-                  disabled={completeMutation.isPending}
+                  disabled={!canComplete || completeMutation.isPending}
                   onClick={() => completeMutation.mutate()}
                 >
                   {completeMutation.isPending ? (

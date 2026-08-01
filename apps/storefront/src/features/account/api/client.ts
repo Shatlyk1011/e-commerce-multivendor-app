@@ -88,12 +88,14 @@ export async function getCustomerOrders(): Promise<StoreOrder[]> {
       query: {
         fields:
           'id,display_id,status,fulfillment_status,payment_status,created_at,currency_code,total,subtotal,shipping_total,tax_total,discount_total,metadata,items.*,items.variant.product.id,items.variant.product.title,items.variant.product.handle,items.variant.product.thumbnail,shipping_address.*,billing_address.*,shipping_methods.*',
+        order: '-created_at',
       },
     })
-    return (orders ?? []).filter((order) => {
+    const filteredOrders = (orders ?? []).filter((order) => {
       const metadata = order.metadata
       return !(metadata && typeof metadata.parent_order_id === 'string')
     })
+    return filteredOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   } catch {
     return []
   }

@@ -41,7 +41,7 @@ export function AccountLayout({ customer, children }: AccountLayoutProps) {
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-row items-start gap-6 max-md:flex-col lg:gap-8">
           {/* Left Sidebar */}
-          <aside className="w-72 shrink-0 space-y-4 max-md:w-full">
+          <aside className="sticky top-32 w-72 shrink-0 space-y-4 max-md:w-full">
             {/* User Profile Summary Card */}
             <Card className="rounded-apple-lg border-apple-hairline bg-apple-canvas mb-3 border p-5 shadow-xs">
               <CardContent className="p-0">

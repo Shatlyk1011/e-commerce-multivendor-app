@@ -2,21 +2,38 @@ import type { StoreCart } from '@medusajs/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { getCartId, setCartId } from '@/lib/cart-cookies'
+import { getCartId, removeCartId, setCartId } from '@/lib/cart-cookies'
 
-import { addLineItem, createCart, deleteLineItem, getCart, updateLineItem } from './client'
+import { addLineItem, createCart, deleteLineItem, getCart, getOrCreateCartId, updateLineItem } from './client'
 
 export const cartKeys = {
   all: ['cart'] as const,
   detail: (id: string) => [...cartKeys.all, id] as const,
 }
 
-function getCartErrorMessage(error: any, defaultMsg: string): string {
+function isCartNotFoundError(error: any): boolean {
+  const status = error?.status || error?.response?.status
+  if (status === 404) return true
+
+  const rawMessage = error?.response?.data?.message || error?.message || (typeof error === 'string' ? error : '')
+  if (typeof rawMessage === 'string' && rawMessage.length > 0) {
+    const lower = rawMessage.toLowerCase()
+    return lower.includes('not found') || lower.includes('does not exist') || lower.includes('cart with id')
+  }
+  return false
+}
+
+function getCartErrorMessage(error: any, defaultMsg: string): string | null {
   const rawMessage = error?.response?.data?.message || error?.message || (typeof error === 'string' ? error : '')
 
+  console.log('rawMessage', rawMessage)
   if (!rawMessage) return defaultMsg
 
   const lower = rawMessage.toLowerCase()
+
+  if (lower.includes('variant does not have the required inventory')) {
+    return null
+  }
 
   if (
     lower.includes('inventory') ||
@@ -63,22 +80,23 @@ export function useAddLineItem() {
       cartId,
       payload,
     }: {
-      cartId: string
+      cartId?: string
       payload: { variant_id: string; quantity?: number; title?: string; thumbnail?: string }
     }) => {
-      let id = cartId || getCartId()
+      let id = cartId && cartId.trim().length > 0 ? cartId : getCartId()
       if (!id) {
-        const cart = await createCart()
-        setCartId(cart.id)
-        id = cart.id
+        id = await getOrCreateCartId()
       }
       try {
         return await addLineItem(id, payload)
-      } catch (err) {
-        // Fallback: if the cart was expired/deleted on the backend, create a new one
-        const cart = await createCart()
-        setCartId(cart.id)
-        return await addLineItem(cart.id, payload)
+      } catch (err: any) {
+        // Fallback: ONLY if the cart was expired/deleted on the backend (404 Not Found), create a new one
+        if (isCartNotFoundError(err)) {
+          removeCartId()
+          const newCartId = await getOrCreateCartId()
+          return await addLineItem(newCartId, payload)
+        }
+        throw err
       }
     },
     onSuccess: (updatedCart, variables) => {
@@ -88,7 +106,9 @@ export function useAddLineItem() {
     },
     onError: (error: any) => {
       const message = getCartErrorMessage(error, 'Не удалось добавить товар в корзину')
-      toast.error(message)
+      if (message) {
+        toast.error(message)
+      }
     },
   })
 }

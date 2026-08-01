@@ -1,6 +1,6 @@
 import type { StoreCartResponse } from '@medusajs/types'
 
-import { getCartId, removeCartId } from '@/lib/cart-cookies'
+import { getCartId, removeCartId, setCartId } from '@/lib/cart-cookies'
 import { medusa } from '@/lib/medusa'
 
 const DEFAULT_COUNTRY_CODE = 'tm'
@@ -22,11 +22,35 @@ async function getDefaultRegionId(): Promise<string> {
 
 export async function createCart(): Promise<StoreCartResponse['cart']> {
   const regionId = await getDefaultRegionId()
+  console.log('regionId', regionId)
   const { cart } = await medusa.store.cart.create({
     region_id: regionId,
     shipping_address: { country_code: DEFAULT_COUNTRY_CODE },
   })
   return cart
+}
+
+let createCartPromise: Promise<string> | null = null
+
+export async function getOrCreateCartId(): Promise<string> {
+  const existingId = getCartId()
+  if (existingId) return existingId
+
+  if (createCartPromise) {
+    return createCartPromise
+  }
+
+  createCartPromise = (async () => {
+    try {
+      const cart = await createCart()
+      setCartId(cart.id)
+      return cart.id
+    } finally {
+      createCartPromise = null
+    }
+  })()
+
+  return createCartPromise
 }
 
 export async function getCart(cartId?: string): Promise<StoreCartResponse['cart'] | null> {

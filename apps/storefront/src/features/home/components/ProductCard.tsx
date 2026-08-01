@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { useAddLineItem } from '@/features/cart/api/queries'
 import type { ReviewSummary } from '@/features/reviews/api/client'
-import { getCartId } from '@/lib/cart-cookies'
 import { cn } from '@/lib/utils'
 
 export interface ProductCardProps {
@@ -117,33 +116,32 @@ function AddToCartButton({ product }: AddToCartButtonProps) {
 
   const handleAdd = async () => {
     if (!hasVariant) return
-    const cartId = getCartId()
     setState('pending')
 
-    let added = false
-    for (const v of variants) {
-      if (!v.id) continue
-      try {
-        await handleAddItem({
-          cartId: cartId ?? '',
-          payload: {
-            quantity: 1,
-            variant_id: v.id,
-            title: product.title,
-            thumbnail: product.thumbnail ?? product.images?.[0]?.url,
-          },
-        })
-        added = true
-        break
-      } catch {
-        // If adding this variant fails, try the next variant
-      }
+    const targetVariant =
+      variants.find(
+        (v) =>
+          Boolean(v.id) &&
+          (v.inventory_quantity === undefined || v.inventory_quantity === null || v.inventory_quantity > 0),
+      ) || variants.find((v) => Boolean(v.id))
+
+    if (!targetVariant?.id) {
+      setState('idle')
+      return
     }
 
-    if (added) {
+    try {
+      await handleAddItem({
+        payload: {
+          quantity: 1,
+          variant_id: targetVariant.id,
+          title: product.title,
+          thumbnail: product.thumbnail ?? product.images?.[0]?.url,
+        },
+      })
       setState('added')
       setTimeout(() => setState('idle'), 2000)
-    } else {
+    } catch {
       setState('idle')
     }
   }

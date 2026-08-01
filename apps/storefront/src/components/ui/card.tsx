@@ -17,7 +17,7 @@ function Card({
       data-size={size}
       data-variant={variant}
       className={cn(
-        'group/card rounded-apple-lg flex flex-col gap-(--card-spacing) overflow-hidden transition-all duration-200 [--card-spacing:--spacing(6)] data-[size=sm]:[--card-spacing:--spacing(4)]',
+        'group/card rounded-apple-lg flex flex-col overflow-hidden transition-all duration-200 [--card-spacing:--spacing(5)] data-[size=sm]:[--card-spacing:--spacing(3.5)]',
         variant === 'default' && 'border-apple-hairline bg-apple-canvas text-apple-ink border shadow-none',
         variant === 'parchment' && 'border-apple-hairline bg-apple-canvas-parchment text-apple-ink border shadow-none',
         variant === 'dark' &&

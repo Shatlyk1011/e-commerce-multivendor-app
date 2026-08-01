@@ -139,7 +139,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas min-w-xl p-8 pb-5">
+      <DialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas max-w-2xl min-w-xl p-8 pb-5">
         <DialogHeader className="border-apple-divider-soft border-b pb-4">
           <DialogTitle className="text-apple-ink text-xl font-semibold tracking-[-0.28px]">
             {isEditing ? 'Редактировать адрес' : 'Добавить новый адрес'}

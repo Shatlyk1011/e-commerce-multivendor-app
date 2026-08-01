@@ -28,10 +28,10 @@ export default function AccountRootLayout({ children }: { children: React.ReactN
 
   if (isAuthLoading) {
     return (
-      <div className="bg-apple-canvas-parchment min-h-[calc(100vh-52px)] p-6">
-        <div className="mx-auto max-w-6xl space-y-6">
-          <Skeleton className="rounded-apple-lg h-28 w-full" />
-          <Skeleton className="rounded-apple-lg h-64 w-full" />
+      <div className="bg-apple-canvas-parchment flex min-h-[calc(100vh-140px)] items-center justify-center p-6">
+        <div className="w-full max-w-[380px] space-y-4">
+          <Skeleton className="rounded-apple-lg h-12 w-full" />
+          <Skeleton className="rounded-apple-lg h-48 w-full" />
         </div>
       </div>
     )
@@ -39,19 +39,19 @@ export default function AccountRootLayout({ children }: { children: React.ReactN
 
   if (!isAuthenticated || !customer) {
     return (
-      <div className="bg-apple-canvas-parchment flex min-h-[calc(100vh-52px)] items-center justify-center p-4">
-        <Card className="rounded-apple-lg border-apple-hairline bg-apple-canvas w-full max-w-md border p-8 text-center shadow-sm">
-          <div className="bg-apple-primary/10 text-apple-primary mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-            <Lock className="h-8 w-8" />
+      <div className="bg-apple-canvas-parchment flex min-h-[calc(100vh-140px)] items-center justify-center p-4 py-12">
+        <Card className="border-apple-hairline bg-apple-canvas rounded-apple-lg w-full max-w-[380px] border p-6 text-center shadow-xs max-sm:p-5">
+          <div className="bg-apple-primary/10 text-apple-primary mx-auto mb-4 flex size-12 items-center justify-center rounded-full">
+            <Lock className="size-6" />
           </div>
-          <h1 className="text-apple-ink text-2xl font-semibold tracking-[-0.28px]">Войдите в личный кабинет</h1>
-          <p className="text-apple-ink-muted-80 text-apple-caption mt-2 mb-6 leading-relaxed">
+          <h1 className="text-apple-ink font-heading text-xl font-bold tracking-[-0.3px]">Войдите в личный кабинет</h1>
+          <p className="text-apple-ink-muted-48 mt-2 mb-6 text-[13px] leading-relaxed">
             Чтобы просматривать свои заказы, управлять адресами и сохранять избранные товары, войдите по номеру
             телефона.
           </p>
           <Button
             onClick={() => setLoginOpen(true)}
-            className="bg-apple-primary hover:bg-apple-primary-focus w-full rounded-full text-sm font-semibold transition active:scale-95"
+            className="bg-apple-primary hover:bg-apple-primary-focus h-11 w-full rounded-full text-sm font-semibold text-white transition-transform active:scale-[0.98]"
           >
             Войти по номеру телефона
           </Button>

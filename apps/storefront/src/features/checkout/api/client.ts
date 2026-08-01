@@ -23,6 +23,7 @@ export type DeliveryConfiguration = {
 
 export type CompleteVendorOrderInput = {
   delivery_method: DeliveryMethod
+  payment_method: 'cash'
   pickup_point_id?: string
   delivery_date?: string
   time_slot?: string
