@@ -18,6 +18,8 @@ import { otpMiddlewares } from "./store/auth/otp/middlewares";
 import { CreateReviewSchema } from "./store/products/[id]/reviews/middlewares";
 import { AdminCreateProductOptionTemplateSchema } from "./admin/product-option-templates/route";
 import { CompleteVendorOrderSchema } from "./store/carts/[id]/complete-vendor/route";
+import { UpdateOrderOperationsSchema } from "./admin/orders/[id]/operations/route";
+import { UpdateVendorOrderOperationSchema } from "./vendors/orders/[id]/operation/route";
 // import { CategoryTranslationsSchema } from "./admin/product-categories/translations/route";
 import multer from "multer";
 
@@ -183,6 +185,11 @@ export default defineMiddlewares({
         validateAndTransformBody(AdminCreateProductOptionTemplateSchema),
       ],
     },
+    {
+      matcher: "/admin/orders/*/operations",
+      method: ["POST"],
+      middlewares: [validateAndTransformBody(UpdateOrderOperationsSchema)],
+    },
 
     // Vendor-portal facing routes
     {
@@ -208,6 +215,11 @@ export default defineMiddlewares({
       matcher: "/vendors/products",
       method: ["POST"],
       middlewares: [validateAndTransformBody(VendorCreateProductSchema)],
+    },
+    {
+      matcher: "/vendors/orders/*/operation",
+      method: ["POST"],
+      middlewares: [validateAndTransformBody(UpdateVendorOrderOperationSchema)],
     },
     {
       matcher: "/vendors/media",

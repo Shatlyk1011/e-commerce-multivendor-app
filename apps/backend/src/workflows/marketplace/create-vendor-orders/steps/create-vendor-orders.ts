@@ -13,7 +13,10 @@ import {
 import MarketplaceModuleService from "../../../../modules/marketplace/service";
 import { MARKETPLACE_MODULE } from "../../../../modules/marketplace";
 import Vendor from "../../../../modules/marketplace/models/vendor";
-import type { DeliveryDetails } from "../../../../lib/delivery";
+import {
+  getInitialDeliveryStatus,
+  type DeliveryDetails,
+} from "../../../../lib/delivery";
 
 export type VendorOrder = OrderDTO & {
   vendor: InferTypeOf<typeof Vendor>;
@@ -35,6 +38,9 @@ function prepareOrderData(
     metadata: {
       parent_order_id: parentOrder.id,
       delivery,
+      payment_method: "cash",
+      cash_payment_status: "pending",
+      delivery_status: getInitialDeliveryStatus(),
     },
     // use info from parent
     region_id: parentOrder.region_id,

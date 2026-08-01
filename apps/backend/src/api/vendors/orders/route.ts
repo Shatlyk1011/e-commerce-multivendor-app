@@ -9,9 +9,19 @@ import type {
   VendorOrder,
   VendorOrdersResponse,
 } from "@dtc/api-contracts";
+import type { VendorOrderOperationStatus } from "../../../lib/vendor-order-operation";
+import { MARKETPLACE_MODULE } from "../../../modules/marketplace";
+import MarketplaceModuleService from "../../../modules/marketplace/service";
 
 const toIsoString = (value: Date | string) =>
   value instanceof Date ? value.toISOString() : value;
+
+type OrderOperation = {
+  status: VendorOrderOperationStatus;
+  cancellation_reason?: string | null;
+  updated_at?: Date | string;
+  updated_by_vendor_admin_id: string;
+};
 
 const toVendorOrder = (order: {
   id: string;
@@ -26,33 +36,25 @@ const toVendorOrder = (order: {
   shipping_total?: unknown;
   tax_total?: unknown;
   discount_total?: unknown;
-  email?: string | null;
   items?: Array<{
     id: string;
     quantity: number;
     title?: string | null;
     unit_price?: unknown;
     thumbnail?: string | null;
+    product_id?: string | null;
     variant?: {
       title?: string | null;
+      product_id?: string | null;
       product?: {
+        id?: string | null;
         title?: string | null;
+        thumbnail?: string | null;
       } | null;
     } | null;
   }> | null;
   metadata?: Record<string, unknown> | null;
-  shipping_address?: {
-    first_name?: string | null;
-    last_name?: string | null;
-    address_1?: string | null;
-    address_2?: string | null;
-    city?: string | null;
-    province?: string | null;
-    postal_code?: string | null;
-    country_code?: string | null;
-    phone?: string | null;
-  } | null;
-}): VendorOrder => ({
+}, operation?: OrderOperation): VendorOrder => ({
   id: order.id,
   display_id: order.display_id ?? undefined,
   status: order.status ?? undefined,
@@ -67,31 +69,38 @@ const toVendorOrder = (order: {
   tax_total: order.tax_total == null ? undefined : Number(order.tax_total),
   discount_total:
     order.discount_total == null ? undefined : Number(order.discount_total),
-  email: order.email ?? undefined,
-  items: order.items?.map((item) => ({
-    id: item.id,
-    quantity: item.quantity,
-    title: item.title ?? undefined,
-    unit_price: item.unit_price == null ? undefined : Number(item.unit_price),
-    thumbnail: item.thumbnail ?? undefined,
-    variant: item.variant
-      ? {
-          title: item.variant.title ?? undefined,
-          product: item.variant.product
-            ? { title: item.variant.product.title ?? undefined }
-            : undefined,
-        }
-      : undefined,
-  })),
-  shipping_address: order.shipping_address
-    ? Object.fromEntries(
-        Object.entries(order.shipping_address).filter(
-          ([, value]) => value != null,
-        ),
-      )
-    : undefined,
-  delivery: isDeliveryDetails(order.metadata?.delivery)
-    ? order.metadata?.delivery
+  items: order.items?.map((item) => {
+    const productId =
+      item.product_id ?? item.variant?.product_id ?? item.variant?.product?.id ?? undefined;
+    return {
+      id: item.id,
+      quantity: item.quantity,
+      title: item.title ?? undefined,
+      unit_price: item.unit_price == null ? undefined : Number(item.unit_price),
+      thumbnail: item.thumbnail ?? item.variant?.product?.thumbnail ?? undefined,
+      product_id: productId,
+      variant: item.variant
+        ? {
+            title: item.variant.title ?? undefined,
+            product_id: item.variant.product_id ?? productId,
+            product: item.variant.product
+              ? {
+                  id: item.variant.product.id ?? productId,
+                  title: item.variant.product.title ?? undefined,
+                  thumbnail: item.variant.product.thumbnail ?? undefined,
+                }
+              : undefined,
+          }
+        : undefined,
+    };
+  }),
+  vendor_operation: operation
+    ? {
+        status: operation.status,
+        reason: operation.cancellation_reason ?? undefined,
+        updated_at: operation.updated_at ? toIsoString(operation.updated_at) : "",
+        updated_by_vendor_admin_id: operation.updated_by_vendor_admin_id,
+      }
     : undefined,
   metadata:
     typeof order.metadata?.parent_order_id === "string"
@@ -127,6 +136,8 @@ export const GET = async (
     },
   });
 
+  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const offset = Math.max(Number(req.query.offset) || 0, 0);
   const { result } = await getOrdersListWorkflow(req.scope).run({
     input: {
       fields: [
@@ -137,7 +148,6 @@ export const GET = async (
         "payment_status",
         "created_at",
         "updated_at",
-        "email",
         "currency_code",
         "metadata",
         "total",
@@ -145,15 +155,17 @@ export const GET = async (
         "shipping_total",
         "tax_total",
         "items.*",
+        "items.product_id",
         "items.tax_lines",
         "items.adjustments",
         "items.variant",
+        "items.variant.product_id",
         "items.variant.product",
+        "items.variant.product.id",
+        "items.variant.product.thumbnail",
         "items.detail",
         "items.unit_price",
         "items.thumbnail",
-        "shipping_methods",
-        "shipping_address.*",
         "payment_collections",
         "fulfillments.*",
       ],
@@ -161,19 +173,36 @@ export const GET = async (
         filters: {
           id: vendorAdmin.vendor.orders?.map((order) => order?.id),
         },
+        skip: offset,
+        take: limit,
       },
     },
   });
 
+  const orders = Array.isArray(result) ? result : result.rows;
+  const marketplaceModuleService: MarketplaceModuleService = req.scope.resolve(
+    MARKETPLACE_MODULE,
+  );
+  const operations = await marketplaceModuleService.listVendorOrderOperations({
+    order_id: orders.map((order) => order.id),
+  });
+  const operationsByOrderId = new Map(
+    operations.map((operation) => [operation.order_id, operation]),
+  );
+
   const normalized: VendorOrdersResponse = Array.isArray(result)
     ? {
-        orders: result.map(toVendorOrder),
+        orders: result.map((order) =>
+          toVendorOrder(order, operationsByOrderId.get(order.id)),
+        ),
         count: result.length,
         offset: 0,
         limit: result.length,
       }
     : {
-        orders: result.rows.map(toVendorOrder),
+        orders: result.rows.map((order) =>
+          toVendorOrder(order, operationsByOrderId.get(order.id)),
+        ),
         count: result.metadata.count,
         offset: result.metadata.skip,
         limit: result.metadata.take,

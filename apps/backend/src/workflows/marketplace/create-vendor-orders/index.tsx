@@ -18,7 +18,10 @@ import groupVendorItemsStep, {
 import createVendorOrdersStep from "./steps/create-vendor-orders";
 import validateCartDeliveryCityStep from "./steps/validate-cart-delivery-city";
 import vendorOrderLink from "../../../links/vendor-order";
-import type { DeliveryDetails } from "../../../lib/delivery";
+import {
+  getInitialDeliveryStatus,
+  type DeliveryDetails,
+} from "../../../lib/delivery";
 import storeOrderDeliveryDetailsStep from "./steps/store-order-delivery-details";
 
 type WorkflowInput = {
@@ -90,7 +93,12 @@ const createVendorOrdersWorkflow = createWorkflow(
             unit_price: item.unit_price ?? 0,
             is_tax_inclusive: item.is_tax_inclusive ?? false,
           })),
-        metadata: { delivery: data.input.delivery },
+        metadata: {
+          delivery: data.input.delivery,
+          payment_method: "cash",
+          cash_payment_status: "pending",
+          delivery_status: getInitialDeliveryStatus(),
+        },
         region_id: cart.region_id ?? undefined,
         customer_id: cart.customer_id ?? undefined,
         sales_channel_id: cart.sales_channel_id ?? undefined,

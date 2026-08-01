@@ -4,6 +4,28 @@ export const DELIVERY_METHODS = ["courier", "pickup"] as const;
 
 export type DeliveryMethod = (typeof DELIVERY_METHODS)[number];
 
+export const DELIVERY_OPERATIONAL_STATUSES = [
+  "awaiting_confirmation",
+  "preparing",
+  "ready_for_pickup",
+  "out_for_delivery",
+  "picked_up",
+  "delivered",
+  "cancelled",
+] as const;
+
+export type DeliveryOperationalStatus =
+  (typeof DELIVERY_OPERATIONAL_STATUSES)[number];
+
+export const CASH_PAYMENT_STATUSES = [
+  "pending",
+  "collected",
+  "refunded",
+  "cancelled",
+] as const;
+
+export type CashPaymentStatus = (typeof CASH_PAYMENT_STATUSES)[number];
+
 export type DeliveryDetails = {
   method: DeliveryMethod;
   pickup_point?: {
@@ -18,6 +40,12 @@ export type DeliveryDetails = {
   time_slot?: string;
   recipient_phone?: string;
   customer_note?: string;
+};
+
+export type OrderOperationsMetadata = {
+  payment_method: "cash";
+  cash_payment_status: CashPaymentStatus;
+  delivery_status: DeliveryOperationalStatus;
 };
 
 const pickupPoints = [
@@ -72,6 +100,10 @@ export function getDeliveryShippingOptionCode(
 
 export function getPickupPoint(id: string) {
   return pickupPoints.find((point) => point.id === id);
+}
+
+export function getInitialDeliveryStatus(): DeliveryOperationalStatus {
+  return "awaiting_confirmation";
 }
 
 export function buildDeliveryDetails(input: {

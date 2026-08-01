@@ -9,6 +9,8 @@ import {
 import { getOrdersListWorkflow } from "@medusajs/medusa/core-flows";
 import type { VendorOrderResponse } from "@dtc/api-contracts";
 import { toVendorOrder } from "../route";
+import { MARKETPLACE_MODULE } from "../../../../modules/marketplace";
+import MarketplaceModuleService from "../../../../modules/marketplace/service";
 
 export const GET = async (
   req: AuthenticatedMedusaRequest,
@@ -45,7 +47,6 @@ export const GET = async (
         "fulfillment_status",
         "payment_status",
         "created_at",
-        "email",
         "currency_code",
         "metadata",
         "total",
@@ -54,10 +55,13 @@ export const GET = async (
         "tax_total",
         "discount_total",
         "items.*",
+        "items.product_id",
         "items.variant",
+        "items.variant.product_id",
         "items.variant.product",
-        "shipping_address.*",
-        "shipping_methods",
+        "items.variant.product.id",
+        "items.variant.product.thumbnail",
+        "items.thumbnail",
         "fulfillments.*",
       ],
       variables: { filters: { id: req.params.id } },
@@ -69,6 +73,12 @@ export const GET = async (
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found.");
   }
 
-  const response: VendorOrderResponse = { order: toVendorOrder(order) };
+  const marketplaceModuleService: MarketplaceModuleService = req.scope.resolve(
+    MARKETPLACE_MODULE,
+  );
+  const [operation] = await marketplaceModuleService.listVendorOrderOperations({
+    order_id: order.id,
+  });
+  const response: VendorOrderResponse = { order: toVendorOrder(order, operation) };
   res.json(response);
 };

@@ -1,5 +1,7 @@
 {
-  "namespaces": ["public"],
+  "namespaces": [
+    "public"
+  ],
   "name": "public",
   "tables": [
     {
@@ -81,7 +83,10 @@
           "scale": null,
           "default": "'active'",
           "comment": null,
-          "enumItems": ["active", "disabled"],
+          "enumItems": [
+            "active",
+            "disabled"
+          ],
           "mappedType": "enum"
         },
         "status_reason": {
@@ -252,7 +257,9 @@
         },
         {
           "keyName": "vendor_pkey",
-          "columnNames": ["id"],
+          "columnNames": [
+            "id"
+          ],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -442,7 +449,9 @@
         },
         {
           "keyName": "vendor_admin_pkey",
-          "columnNames": ["id"],
+          "columnNames": [
+            "id"
+          ],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -453,9 +462,222 @@
       "foreignKeys": {
         "vendor_admin_vendor_id_foreign": {
           "constraintName": "vendor_admin_vendor_id_foreign",
-          "columnNames": ["vendor_id"],
+          "columnNames": [
+            "vendor_id"
+          ],
           "localTableName": "public.vendor_admin",
-          "referencedColumnNames": ["id"],
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.vendor",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [
+            "new",
+            "courier_handoff",
+            "cancelled"
+          ],
+          "mappedType": "enum"
+        },
+        "cancellation_reason": {
+          "name": "cancellation_reason",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "updated_by_vendor_admin_id": {
+          "name": "updated_by_vendor_admin_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "vendor_id": {
+          "name": "vendor_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "name": "vendor_order_operation",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "IDX_vendor_order_operation_order_id_unique",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"IDX_vendor_order_operation_order_id_unique\" ON \"vendor_order_operation\" (\"order_id\") WHERE deleted_at IS NULL"
+        },
+        {
+          "keyName": "IDX_vendor_order_operation_vendor_id",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX IF NOT EXISTS \"IDX_vendor_order_operation_vendor_id\" ON \"vendor_order_operation\" (\"vendor_id\") WHERE deleted_at IS NULL"
+        },
+        {
+          "keyName": "IDX_vendor_order_operation_deleted_at",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX IF NOT EXISTS \"IDX_vendor_order_operation_deleted_at\" ON \"vendor_order_operation\" (\"deleted_at\") WHERE deleted_at IS NULL"
+        },
+        {
+          "keyName": "vendor_order_operation_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "vendor_order_operation_vendor_id_foreign": {
+          "constraintName": "vendor_order_operation_vendor_id_foreign",
+          "columnNames": [
+            "vendor_id"
+          ],
+          "localTableName": "public.vendor_order_operation",
+          "referencedColumnNames": [
+            "id"
+          ],
           "referencedTableName": "public.vendor",
           "updateRule": "cascade"
         }

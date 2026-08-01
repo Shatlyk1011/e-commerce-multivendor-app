@@ -15,6 +15,7 @@ import { z } from "@medusajs/framework/zod";
 
 export const CompleteVendorOrderSchema = z.strictObject({
   delivery_method: z.enum(DELIVERY_METHODS),
+  payment_method: z.literal("cash"),
   pickup_point_id: z.string().min(1).optional(),
   delivery_date: z
     .string()
