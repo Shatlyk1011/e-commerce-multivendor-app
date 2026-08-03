@@ -9,8 +9,11 @@ import 'leaflet/dist/leaflet.css'
 import { cn } from '@/lib/utils'
 
 import { CITY_CENTER, type PickupPoint, TURKMENABAT_PICKUP_POINTS } from '../data/pickup-points'
+import { useRouteInfo } from '../hooks/useRouteInfo'
+import { useUserLocation } from '../hooks/useUserLocation'
 import { MapPinIcon } from './MapPinIcon'
 import { PickupCard } from './PickupCard'
+import { RouteInfoPanel } from './RouteInfoPanel'
 import { WorkingHoursSection } from './WorkingHoursSection'
 
 // Dynamically import the map with SSR disabled (Leaflet requires window)
@@ -20,6 +23,11 @@ const PickupMap = dynamic(() => import('./PickupMap').then((m) => ({ default: m.
 
 export function PickupPointsClient() {
   const [selectedPoint, setSelectedPoint] = useState<PickupPoint | null>(null)
+  const userLocation = useUserLocation()
+
+  // Route to the selected card, or fall back to the first pickup point
+  const targetPoint = selectedPoint ?? TURKMENABAT_PICKUP_POINTS[0] ?? null
+  const routeInfo = useRouteInfo(userLocation, targetPoint)
 
   const handleSelect = (point: PickupPoint) => {
     setSelectedPoint((prev) => (prev?.id === point.id ? null : point))
@@ -59,6 +67,8 @@ export function PickupPointsClient() {
                 selectedPoint={selectedPoint}
                 onSelectPoint={handleSelect}
                 center={CITY_CENTER}
+                userLocation={userLocation}
+                drivingRoute={routeInfo.driving}
               />
 
               {/* Map overlay: city label */}
@@ -66,6 +76,13 @@ export function PickupPointsClient() {
                 <span className="text-apple-fine-print text-apple-ink font-semibold">Туркменабат,</span>
                 <span className="text-apple-fine-print text-apple-ink-muted-48">Лебап</span>
               </div>
+
+              {/* Route info panel — visible only when user location is known */}
+              {userLocation && (
+                <div className="absolute bottom-5 left-1/2 z-[400] -translate-x-1/2">
+                  <RouteInfoPanel routeInfo={routeInfo} />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -11,11 +11,11 @@ export function WorkingHoursSection() {
   const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <section className="bg-[#272729] py-16 max-md:py-10">
-      <div className="custom-container mx-auto flex max-w-3xl gap-24 px-6">
+    <section className="bg-apple-surface-tile-1 relative py-16 max-md:py-10">
+      <div className="mx-auto flex max-w-4xl gap-20 px-6">
         {/* Working hours table */}
-        <div className="flex-3">
-          <h2 className="text-apple-tagline mb-6 text-white">Часы работы</h2>
+        <div className="flex-1">
+          <h2 className="text-apple-tagline mb-4 text-white">Часы работы</h2>
 
           {/* Current time + open/closed status */}
           <div className="mb-4 flex flex-col gap-1.5">
@@ -61,18 +61,24 @@ export function WorkingHoursSection() {
         </div>
 
         {/* How pickup works */}
-        <div className="flex-4">
-          <h2 className="text-apple-tagline mb-6 text-white">Как получить заказ</h2>
-          <div className="flex flex-col gap-8">
-            {PICKUP_STEPS.map(({ step, title, body }) => (
-              <div key={step} className="flex gap-4">
-                <p className="text-apple-tagline text-apple-primary-on-dark w-8 shrink-0">{step}</p>
-                <div>
-                  <h3 className="text-apple-body-strong mb-1 text-white">{title}</h3>
-                  <p className="text-apple-body text-balance text-[#ccc]!">{body}</p>
+        <div className="flex flex-1 flex-col gap-6 text-white">
+          <div>
+            <h2 className="text-apple-tagline mb-4">Как получить заказ</h2>
+            <div className="flex flex-col gap-5">
+              {PICKUP_STEPS.map(({ step, title, body }) => (
+                <div key={step} className="text-apple-caption-strong flex gap-3">
+                  <p className="text-apple-primary-on-dark w-6 shrink-0">{step}</p>
+                  <div>
+                    <h3 className="mb-0.5 text-white">{title}</h3>
+                    <p className="text-apple-caption text-[#ccc]!">{body}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+          <div className="text-apple-caption-strong rounded-apple-md bg-white/5 px-6 py-4">
+            <h3 className="text-apple-body mb-1.5 font-bold text-white!">Нужна доставка? </h3>
+            <p className="text-[#ccc]!">Доставим в удобное для Вас время!</p>
           </div>
         </div>
       </div>
