@@ -19,7 +19,9 @@ export const POST = async (
   req: AuthenticatedMedusaRequest<UpdateVendorOrderOperationSchema>,
   res: MedusaResponse,
 ) => {
-  const { result: operation } = await updateVendorOrderOperationWorkflow(req.scope).run({
+  const { result: operation } = await updateVendorOrderOperationWorkflow(
+    req.scope,
+  ).run({
     input: {
       order_id: req.params.id,
       vendor_admin_id: req.auth_context.actor_id,

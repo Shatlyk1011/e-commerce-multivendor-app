@@ -73,12 +73,13 @@ export const GET = async (
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found.");
   }
 
-  const marketplaceModuleService: MarketplaceModuleService = req.scope.resolve(
-    MARKETPLACE_MODULE,
-  );
+  const marketplaceModuleService: MarketplaceModuleService =
+    req.scope.resolve(MARKETPLACE_MODULE);
   const [operation] = await marketplaceModuleService.listVendorOrderOperations({
     order_id: order.id,
   });
-  const response: VendorOrderResponse = { order: toVendorOrder(order, operation) };
+  const response: VendorOrderResponse = {
+    order: toVendorOrder(order, operation),
+  };
   res.json(response);
 };

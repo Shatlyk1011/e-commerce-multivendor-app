@@ -23,38 +23,41 @@ type OrderOperation = {
   updated_by_vendor_admin_id: string;
 };
 
-const toVendorOrder = (order: {
-  id: string;
-  display_id?: number | string | null;
-  status?: string | null;
-  fulfillment_status?: string | null;
-  payment_status?: string | null;
-  created_at: Date | string;
-  currency_code: string;
-  total?: unknown;
-  subtotal?: unknown;
-  shipping_total?: unknown;
-  tax_total?: unknown;
-  discount_total?: unknown;
-  items?: Array<{
+const toVendorOrder = (
+  order: {
     id: string;
-    quantity: number;
-    title?: string | null;
-    unit_price?: unknown;
-    thumbnail?: string | null;
-    product_id?: string | null;
-    variant?: {
+    display_id?: number | string | null;
+    status?: string | null;
+    fulfillment_status?: string | null;
+    payment_status?: string | null;
+    created_at: Date | string;
+    currency_code: string;
+    total?: unknown;
+    subtotal?: unknown;
+    shipping_total?: unknown;
+    tax_total?: unknown;
+    discount_total?: unknown;
+    items?: Array<{
+      id: string;
+      quantity: number;
       title?: string | null;
+      unit_price?: unknown;
+      thumbnail?: string | null;
       product_id?: string | null;
-      product?: {
-        id?: string | null;
+      variant?: {
         title?: string | null;
-        thumbnail?: string | null;
+        product_id?: string | null;
+        product?: {
+          id?: string | null;
+          title?: string | null;
+          thumbnail?: string | null;
+        } | null;
       } | null;
-    } | null;
-  }> | null;
-  metadata?: Record<string, unknown> | null;
-}, operation?: OrderOperation): VendorOrder => ({
+    }> | null;
+    metadata?: Record<string, unknown> | null;
+  },
+  operation?: OrderOperation,
+): VendorOrder => ({
   id: order.id,
   display_id: order.display_id ?? undefined,
   status: order.status ?? undefined,
@@ -71,13 +74,17 @@ const toVendorOrder = (order: {
     order.discount_total == null ? undefined : Number(order.discount_total),
   items: order.items?.map((item) => {
     const productId =
-      item.product_id ?? item.variant?.product_id ?? item.variant?.product?.id ?? undefined;
+      item.product_id ??
+      item.variant?.product_id ??
+      item.variant?.product?.id ??
+      undefined;
     return {
       id: item.id,
       quantity: item.quantity,
       title: item.title ?? undefined,
       unit_price: item.unit_price == null ? undefined : Number(item.unit_price),
-      thumbnail: item.thumbnail ?? item.variant?.product?.thumbnail ?? undefined,
+      thumbnail:
+        item.thumbnail ?? item.variant?.product?.thumbnail ?? undefined,
       product_id: productId,
       variant: item.variant
         ? {
@@ -98,7 +105,9 @@ const toVendorOrder = (order: {
     ? {
         status: operation.status,
         reason: operation.cancellation_reason ?? undefined,
-        updated_at: operation.updated_at ? toIsoString(operation.updated_at) : "",
+        updated_at: operation.updated_at
+          ? toIsoString(operation.updated_at)
+          : "",
         updated_by_vendor_admin_id: operation.updated_by_vendor_admin_id,
       }
     : undefined,
@@ -180,9 +189,8 @@ export const GET = async (
   });
 
   const orders = Array.isArray(result) ? result : result.rows;
-  const marketplaceModuleService: MarketplaceModuleService = req.scope.resolve(
-    MARKETPLACE_MODULE,
-  );
+  const marketplaceModuleService: MarketplaceModuleService =
+    req.scope.resolve(MARKETPLACE_MODULE);
   const operations = await marketplaceModuleService.listVendorOrderOperations({
     order_id: orders.map((order) => order.id),
   });

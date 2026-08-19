@@ -9,9 +9,8 @@ export const GET = async (
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse,
 ) => {
-  const marketplaceModuleService: MarketplaceModuleService = req.scope.resolve(
-    MARKETPLACE_MODULE,
-  );
+  const marketplaceModuleService: MarketplaceModuleService =
+    req.scope.resolve(MARKETPLACE_MODULE);
   const [operation] = await marketplaceModuleService.listVendorOrderOperations({
     order_id: req.params.id,
   });

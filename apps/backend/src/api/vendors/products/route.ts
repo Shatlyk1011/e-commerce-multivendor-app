@@ -63,9 +63,9 @@ const toVendorProduct = (product: {
     sku: variant.sku,
     inventory_quantity:
       variant.inventory_quantity ??
-      (typeof variant.metadata?.inventory_quantity === 'number'
+      (typeof variant.metadata?.inventory_quantity === "number"
         ? variant.metadata.inventory_quantity
-        : typeof variant.metadata?.inventory_quantity === 'string'
+        : typeof variant.metadata?.inventory_quantity === "string"
           ? parseInt(variant.metadata.inventory_quantity, 10)
           : null),
     options: variant.options?.map((opt) => ({

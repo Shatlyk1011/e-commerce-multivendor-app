@@ -1,0 +1,12 @@
+# Uzum Market
+
+Uzum Market is an ecommerce marketplace for shoppers in Turkmenistan. Customers can browse products by category, search the catalog, compare product details, and order with local delivery.
+
+## Important pages
+- Home: /
+- Catalog: /category
+- Search: /search
+- Become a seller: /become-seller
+- Pickup points: /pickup-points
+
+Product and category URLs are discoverable through /sitemap.xml. Account and checkout pages are private customer flows and should not be indexed.

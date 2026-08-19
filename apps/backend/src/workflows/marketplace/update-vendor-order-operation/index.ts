@@ -26,7 +26,9 @@ const updateVendorOrderOperationStep = createStep(
   "update-vendor-order-operation",
   async (input: Input, { container }) => {
     const query = container.resolve(ContainerRegistrationKeys.QUERY);
-    const { data: [vendorAdmin] } = await query.graph({
+    const {
+      data: [vendorAdmin],
+    } = await query.graph({
       entity: "vendor_admin",
       fields: ["vendor.orders.id"],
       filters: { id: [input.vendor_admin_id] },
@@ -41,12 +43,12 @@ const updateVendorOrderOperationStep = createStep(
       );
     }
 
-    const marketplaceModuleService: MarketplaceModuleService = container.resolve(
-      MARKETPLACE_MODULE,
-    );
-    const [existingOperation] = await marketplaceModuleService.listVendorOrderOperations({
-      order_id: input.order_id,
-    });
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
+    const [existingOperation] =
+      await marketplaceModuleService.listVendorOrderOperations({
+        order_id: input.order_id,
+      });
     const current = existingOperation?.status ?? "new";
 
     assertVendorOrderOperationTransition(current, input.status, input.reason);
@@ -76,18 +78,20 @@ const updateVendorOrderOperationStep = createStep(
             id: existingOperation.id,
             status: existingOperation.status,
             cancellation_reason: existingOperation.cancellation_reason,
-            updated_by_vendor_admin_id: existingOperation.updated_by_vendor_admin_id,
+            updated_by_vendor_admin_id:
+              existingOperation.updated_by_vendor_admin_id,
           }
         : { id: operation.id },
     });
   },
   async (data, { container }) => {
     if (!data) return;
-    const marketplaceModuleService: MarketplaceModuleService = container.resolve(
-      MARKETPLACE_MODULE,
-    );
+    const marketplaceModuleService: MarketplaceModuleService =
+      container.resolve(MARKETPLACE_MODULE);
     if (data.created) {
-      await marketplaceModuleService.deleteVendorOrderOperations(data.operation.id);
+      await marketplaceModuleService.deleteVendorOrderOperations(
+        data.operation.id,
+      );
       return;
     }
     await marketplaceModuleService.updateVendorOrderOperations(data.operation);

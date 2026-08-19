@@ -15,10 +15,7 @@ type DeliveryStatus =
   | "delivered"
   | "cancelled";
 type CashPaymentStatus = "pending" | "collected" | "refunded" | "cancelled";
-type VendorOrderOperationalStatus =
-  | "new"
-  | "courier_handoff"
-  | "cancelled";
+type VendorOrderOperationalStatus = "new" | "courier_handoff" | "cancelled";
 
 type DeliveryDetails = {
   method: DeliveryMethod;
@@ -145,19 +142,19 @@ const OrderDeliveryWidget = ({ data }: OrderWidgetProps) => {
   const statusOptions: DeliveryStatus[] =
     delivery.method === "pickup"
       ? [
-        "awaiting_confirmation",
-        "preparing",
-        "ready_for_pickup",
-        "picked_up",
-        "cancelled",
-      ]
+          "awaiting_confirmation",
+          "preparing",
+          "ready_for_pickup",
+          "picked_up",
+          "cancelled",
+        ]
       : [
-        "awaiting_confirmation",
-        "preparing",
-        "out_for_delivery",
-        "delivered",
-        "cancelled",
-      ];
+          "awaiting_confirmation",
+          "preparing",
+          "out_for_delivery",
+          "delivered",
+          "cancelled",
+        ];
 
   return (
     <Container className="divide-y p-0">
@@ -166,7 +163,10 @@ const OrderDeliveryWidget = ({ data }: OrderWidgetProps) => {
           <Text size="small" leading="compact" weight="plus">
             Статус продавца
           </Text>
-          <Badge size="2xsmall" color={vendorOperation.status === "cancelled" ? "red" : "blue"}>
+          <Badge
+            size="2xsmall"
+            color={vendorOperation.status === "cancelled" ? "red" : "blue"}
+          >
             {vendorStatusLabels[vendorOperation.status]}
           </Badge>
           {vendorOperation.cancellation_reason && (
@@ -176,7 +176,8 @@ const OrderDeliveryWidget = ({ data }: OrderWidgetProps) => {
           )}
           {vendorOperation.updated_at && (
             <Text size="xsmall" leading="compact" className="text-ui-fg-muted">
-              Обновлено: {new Date(vendorOperation.updated_at).toLocaleString("ru-RU")}
+              Обновлено:{" "}
+              {new Date(vendorOperation.updated_at).toLocaleString("ru-RU")}
             </Text>
           )}
         </div>
@@ -185,11 +186,7 @@ const OrderDeliveryWidget = ({ data }: OrderWidgetProps) => {
         <Text size="small" leading="compact" weight="plus">
           Доставка и оплата
         </Text>
-        <Badge
-          size="small"
-          className="mt-1 "
-          color="blue"
-        >
+        <Badge size="small" className="mt-1 " color="blue">
           {delivery.method === "pickup" ? "Самовывоз" : "Курьерская доставка"}
         </Badge>
       </div>
