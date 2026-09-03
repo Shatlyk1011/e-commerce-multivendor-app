@@ -2,25 +2,45 @@
 
 import { useState } from 'react'
 
+import { toast } from 'sonner'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { medusa } from '@/lib/medusa'
 
-const initialForm = { name: '', brandName: '', businessType: '', phone: '', address: '' }
+const initialForm = { name: '', brand_name: '', business_type: '', phone: '', address: '' }
 
 export function SellerForm() {
   const [form, setForm] = useState(initialForm)
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   const updateField = (field: keyof typeof initialForm, value: string) => {
     setSubmitted(false)
+    setError('')
     setForm((current) => ({ ...current, [field]: value }))
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setSubmitted(true)
+    setIsSubmitting(true)
+    setError('')
+    try {
+      await medusa.client.fetch('/store/seller-requests', {
+        method: 'POST',
+        body: form,
+      })
+      setSubmitted(true)
+      setForm(initialForm)
+      toast.success('Успешно! Мы свяжемся с вами в ближайшее время')
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Не удалось отправить заявку')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -44,8 +64,8 @@ export function SellerForm() {
           <Input
             id="brand-name"
             required
-            value={form.brandName}
-            onChange={(event) => updateField('brandName', event.target.value)}
+            value={form.brand_name}
+            onChange={(event) => updateField('brand_name', event.target.value)}
             placeholder="Название магазина или бренда"
           />
         </div>
@@ -56,15 +76,15 @@ export function SellerForm() {
         <select
           id="business-type"
           required
-          value={form.businessType}
-          onChange={(event) => updateField('businessType', event.target.value)}
+          value={form.business_type}
+          onChange={(event) => updateField('business_type', event.target.value)}
           className="border-apple-hairline text-apple-ink focus-visible:border-apple-primary focus-visible:ring-apple-primary/20 rounded-apple-sm h-11 w-full border bg-transparent px-3.5 text-[14px] outline-none focus-visible:ring-2"
         >
           <option value="" disabled>
             Выберите вариант
           </option>
           <option value="registered">Есть ИП</option>
-          <option value="in-progress">В процессе оформления</option>
+          <option value="in_progress">В процессе оформления</option>
           <option value="none">ИП нет</option>
         </select>
       </div>
@@ -75,9 +95,10 @@ export function SellerForm() {
           id="seller-phone"
           required
           type="tel"
+          maxLength={8}
           value={form.phone}
           onChange={(event) => updateField('phone', event.target.value)}
-          placeholder="+993 6X XX XX XX"
+          placeholder="6x xx xx xx"
         />
       </div>
 
@@ -93,11 +114,16 @@ export function SellerForm() {
         />
       </div>
 
-      <Button type="submit" size="lg" className="w-full">
-        Отправить заявку
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? 'Отправка…' : 'Отправить заявку'}
       </Button>
+      {error && (
+        <p role="alert" className="text-destructive text-center text-[13px]">
+          {error}
+        </p>
+      )}
       {submitted && (
-        <p role="status" className="text-apple-primary text-center text-[13px]">
+        <p role="status" className="text-center text-sm font-medium tracking-tight text-green-700">
           Спасибо! Мы свяжемся с вами в ближайшее время.
         </p>
       )}
