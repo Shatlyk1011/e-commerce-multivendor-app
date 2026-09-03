@@ -9,6 +9,12 @@ import { Check, Heart, Loader, ShoppingBag, Star } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import {
+  useCreateCustomerFavorite,
+  useCustomerFavorites,
+  useDeleteCustomerFavorite,
+} from '@/features/account/api/queries'
+import { useAuth } from '@/features/auth/components/AuthProvider'
 import { useAddLineItem } from '@/features/cart/api/queries'
 import type { ReviewSummary } from '@/features/reviews/api/client'
 import { cn } from '@/lib/utils'
@@ -23,7 +29,13 @@ function formatPrice(amount: number) {
 }
 
 export function ProductCard({ product, reviewSummary }: ProductCardProps) {
-  const [isFavorite, setIsFavorite] = React.useState(false)
+  const { isAuthenticated } = useAuth()
+  const { data: favorites = [] } = useCustomerFavorites(isAuthenticated)
+  const createFavorite = useCreateCustomerFavorite()
+  const deleteFavorite = useDeleteCustomerFavorite()
+  const favorite = favorites.find((item) => item.product.id === product.id)
+  const isFavorite = Boolean(favorite)
+  const isFavoritePending = createFavorite.isPending || deleteFavorite.isPending
 
   // Extract variables from Medusa API product object
   const title = product.title ?? ''
@@ -55,8 +67,17 @@ export function ProductCard({ product, reviewSummary }: ProductCardProps) {
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              setIsFavorite(!isFavorite)
+              if (isFavorite && favorite) {
+                deleteFavorite.mutate(favorite.id)
+              } else {
+                createFavorite.mutate(product.id)
+              }
             }}
+            type="button"
+            disabled={isFavoritePending}
+            aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
+            aria-pressed={isFavorite}
+            title={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
             className="rounded-apple-full bg-apple-canvas/80 hover:bg-apple-canvas border-apple-divider-soft absolute top-2.5 right-2.5 z-10 flex size-6 cursor-pointer items-center justify-center border shadow-xs transition-all active:scale-95"
           >
             <Heart

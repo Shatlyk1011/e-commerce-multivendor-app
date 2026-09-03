@@ -1,4 +1,4 @@
-import type { StoreCustomer, StoreCustomerAddress, StoreOrder } from '@medusajs/types'
+import type { StoreCustomer, StoreCustomerAddress, StoreOrder, StoreProduct } from '@medusajs/types'
 
 import { medusa } from '@/lib/medusa'
 
@@ -25,6 +25,28 @@ export type CreateAddressInput = {
 }
 
 export type UpdateAddressInput = Partial<CreateAddressInput>
+
+export type CustomerFavorite = {
+  id: string
+  product: StoreProduct
+}
+
+export async function getCustomerFavorites(): Promise<CustomerFavorite[]> {
+  const response = await medusa.client.fetch<{ favorites?: CustomerFavorite[] }>('/store/favorites')
+  return response.favorites ?? []
+}
+
+export async function deleteCustomerFavorite(favoriteId: string): Promise<void> {
+  await medusa.client.fetch(`/store/favorites/${favoriteId}`, { method: 'DELETE' })
+}
+
+export async function createCustomerFavorite(productId: string): Promise<CustomerFavorite> {
+  const response = await medusa.client.fetch<{ favorite: CustomerFavorite }>('/store/favorites', {
+    method: 'POST',
+    body: { product_id: productId },
+  })
+  return response.favorite
+}
 
 export async function getCustomerProfile(): Promise<StoreCustomer | null> {
   try {

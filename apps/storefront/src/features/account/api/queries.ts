@@ -4,8 +4,11 @@ import { toast } from 'sonner'
 import type { CreateAddressInput, UpdateAddressInput, UpdateCustomerInput } from './client'
 import {
   createCustomerAddress,
+  createCustomerFavorite,
   deleteCustomerAddress,
+  deleteCustomerFavorite,
   getCustomerAddresses,
+  getCustomerFavorites,
   getCustomerOrder,
   getCustomerOrders,
   getCustomerProfile,
@@ -17,6 +20,7 @@ export const accountKeys = {
   all: ['account'] as const,
   profile: () => [...accountKeys.all, 'profile'] as const,
   addresses: () => [...accountKeys.all, 'addresses'] as const,
+  favorites: () => [...accountKeys.all, 'favorites'] as const,
   orders: () => [...accountKeys.all, 'orders'] as const,
   orderDetail: (id: string) => [...accountKeys.orders(), id] as const,
 }
@@ -48,6 +52,45 @@ export function useCustomerAddresses() {
   return useQuery({
     queryKey: accountKeys.addresses(),
     queryFn: getCustomerAddresses,
+  })
+}
+
+export function useCustomerFavorites(enabled = true) {
+  return useQuery({
+    queryKey: accountKeys.favorites(),
+    queryFn: getCustomerFavorites,
+    enabled,
+    refetchOnMount: 'always',
+  })
+}
+
+export function useDeleteCustomerFavorite() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteCustomerFavorite,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: accountKeys.favorites() })
+      toast.success('Товар удален из избранного')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Не удалось удалить товар из избранного')
+    },
+  })
+}
+
+export function useCreateCustomerFavorite() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: createCustomerFavorite,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: accountKeys.favorites() })
+      toast.success('Товар добавлен в избранное')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Не удалось добавить товар в избранное')
+    },
   })
 }
 
