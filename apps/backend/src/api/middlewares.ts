@@ -22,6 +22,7 @@ import { UpdateOrderOperationsSchema } from "./admin/orders/[id]/operations/rout
 import { UpdateVendorOrderOperationSchema } from "./vendors/orders/[id]/operation/route";
 // import { CategoryTranslationsSchema } from "./admin/product-categories/translations/route";
 import multer from "multer";
+import { favoriteMiddlewares } from "./store/favorites/middlewares";
 
 export const VendorCreateProductSchema = CreateProduct.omit({
   description: true,
@@ -117,7 +118,7 @@ const checkVendorStatusMiddleware = async (
 };
 
 export default defineMiddlewares({
-  routes: [
+  routes: [...favoriteMiddlewares,
     ...otpMiddlewares,
     {
       matcher: "/store/auth/me",
