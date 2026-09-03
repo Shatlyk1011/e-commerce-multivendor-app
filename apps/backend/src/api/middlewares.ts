@@ -23,6 +23,8 @@ import { UpdateVendorOrderOperationSchema } from "./vendors/orders/[id]/operatio
 // import { CategoryTranslationsSchema } from "./admin/product-categories/translations/route";
 import multer from "multer";
 import { favoriteMiddlewares } from "./store/favorites/middlewares";
+import { CreateSellerRequestSchema } from "./store/seller-requests/route";
+import { UpdateSellerRequestSchema } from "./admin/seller-requests/route";
 
 export const VendorCreateProductSchema = CreateProduct.omit({
   description: true,
@@ -119,6 +121,8 @@ const checkVendorStatusMiddleware = async (
 
 export default defineMiddlewares({
   routes: [...favoriteMiddlewares,
+    { matcher: "/store/seller-requests", method: ["POST"], middlewares: [validateAndTransformBody(CreateSellerRequestSchema)] },
+    { matcher: "/admin/seller-requests/*", method: ["PATCH"], middlewares: [validateAndTransformBody(UpdateSellerRequestSchema)] },
     ...otpMiddlewares,
     {
       matcher: "/store/auth/me",
