@@ -114,10 +114,12 @@ export function Header() {
     router.push(`/search?q=${encodeURIComponent(query)}`)
   }
 
+  const hiddenHeader = pathname === '/become-seller'
+
   return (
     <header className="bg-apple-canvas border-apple-divider-soft sticky top-0 z-40 w-full border-b select-none">
       {/* ROW 1: TOP BAR */}
-      <div className="bg-apple-canvas-parchment text-apple-ink-muted-80 w-full px-4 py-1.5 text-[13px]">
+      <div className={cn('bg-apple-canvas-parchment text-apple-ink-muted-80 w-full px-4 py-1.5 text-[13px]')}>
         <div className="custom-container mx-auto flex items-center justify-between">
           {/* Top Bar Left: Location & Pick-up points */}
           <div className="flex items-center gap-6">
@@ -235,7 +237,7 @@ export function Header() {
       </div>
 
       {/* ROW 2: MAIN HEADER */}
-      <div className="bg-apple-canvas w-full p-4">
+      <div className={cn('bg-apple-canvas w-full p-4', hiddenHeader && 'hidden')}>
         <div className="custom-container mx-auto flex items-center gap-6">
           {/* Logo Brand */}
           <Link href="/" className="group flex shrink-0 items-center gap-2 select-none">
