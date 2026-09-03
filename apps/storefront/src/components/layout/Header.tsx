@@ -117,7 +117,12 @@ export function Header() {
   const hiddenHeader = pathname === '/become-seller'
 
   return (
-    <header className="bg-apple-canvas border-apple-divider-soft sticky top-0 z-40 w-full border-b select-none">
+    <header
+      className={cn(
+        'bg-apple-canvas border-apple-divider-soft sticky top-0 z-40 w-full border-b select-none',
+        hiddenHeader && 'hidden',
+      )}
+    >
       {/* ROW 1: TOP BAR */}
       <div className={cn('bg-apple-canvas-parchment text-apple-ink-muted-80 w-full px-4 py-1.5 text-[13px]')}>
         <div className="custom-container mx-auto flex items-center justify-between">

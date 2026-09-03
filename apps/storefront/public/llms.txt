@@ -1,6 +1,6 @@
-# Edil-Ozi
+# Bugday
 
-Edil-Ozi is an ecommerce marketplace for shoppers in Turkmenistan. Customers can browse products by category, search the catalog, compare product details, and order with local delivery.
+Bugday is an ecommerce marketplace for shoppers in Turkmenistan. Customers can browse products by category, search the catalog, compare product details, and order with local delivery.
 
 ## Important pages
 - Home: /

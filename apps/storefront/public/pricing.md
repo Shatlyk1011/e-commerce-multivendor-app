@@ -1,3 +1,3 @@
-# Pricing — Edil-Ozi
+# Pricing — Bugday
 
-Edil-Ozi has product-level pricing rather than fixed marketplace plans. Each public product page lists its current price, currency, variant, availability, and seller. Prices and stock can change; use the product page as the source of truth.
+Bugday has product-level pricing rather than fixed marketplace plans. Each public product page lists its current price, currency, variant, availability, and seller. Prices and stock can change; use the product page as the source of truth.
