@@ -20,7 +20,15 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   const { data: products } = records.length
     ? await query.graph({
         entity: 'product',
-        fields: ['id', 'title', 'handle', 'thumbnail', 'categories.*', 'variants.*'],
+        fields: [
+          'id',
+          'title',
+          'handle',
+          'thumbnail',
+          'categories.*',
+          'variants.*',
+          'variants.calculated_price.*',
+        ],
         filters: { id: records.map((record) => record.product_id) },
       })
     : { data: [] }

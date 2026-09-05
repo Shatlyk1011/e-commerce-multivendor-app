@@ -9,6 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useCustomerFavorites, useDeleteCustomerFavorite } from '@/features/account/api/queries'
 
+function formatPrice(amount: number) {
+  return new Intl.NumberFormat('ru-RU').format(amount)
+}
+
 export function FavoritesTab() {
   const { data: favorites = [], isLoading, isError } = useCustomerFavorites()
   const removeFavorite = useDeleteCustomerFavorite()
@@ -48,9 +52,16 @@ export function FavoritesTab() {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {favorites.map(({ id, product }) => {
-            const variant = product.variants?.[0]
-            const price = variant?.calculated_price?.calculated_amount ?? variant?.calculated_price?.original_amount
-            const currency = variant?.calculated_price?.currency_code?.toUpperCase() ?? ''
+            const variant =
+              product.variants?.find((item) => item.calculated_price?.calculated_amount != null) ??
+              product.variants?.[0]
+            const amount = variant?.calculated_price?.calculated_amount
+            const originalAmount = variant?.calculated_price?.original_amount
+            const price = typeof amount === 'number' ? `${formatPrice(amount)} тмт` : 'Цена уточняется'
+            const originalPrice =
+              typeof amount === 'number' && typeof originalAmount === 'number' && originalAmount > amount
+                ? `${formatPrice(originalAmount)} тмт`
+                : null
             const inStock = variant ? variant.manage_inventory === false || (variant.inventory_quantity ?? 0) > 0 : true
             const category = product.categories?.[0]?.name
 
@@ -95,9 +106,14 @@ export function FavoritesTab() {
                     </h3>
                   </div>
                   <div className="border-apple-divider-soft flex items-center justify-between border-t pt-2">
-                    <span className="text-apple-ink text-base font-bold">
-                      {price != null ? `${price} ${currency}` : 'Цена уточняется'}
-                    </span>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-apple-ink font-sans text-[16px] font-bold">{price}</span>
+                      {originalPrice && (
+                        <span className="text-apple-ink-muted-48 font-sans text-[13px] line-through">
+                          {originalPrice}
+                        </span>
+                      )}
+                    </div>
                     {inStock ? (
                       <Badge className="border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700">В наличии</Badge>
                     ) : (
