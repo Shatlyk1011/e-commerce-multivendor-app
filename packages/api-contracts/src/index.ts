@@ -1,4 +1,12 @@
 export type {
+  StoreReview,
+  StoreReviewInput,
+  StoreReviewsResponse,
+  OrderStore,
+  OrderStoresResponse,
+} from "./store-reviews.js"
+
+export type {
   UploadedVendorMedia,
   Vendor,
   VendorAdmin,
