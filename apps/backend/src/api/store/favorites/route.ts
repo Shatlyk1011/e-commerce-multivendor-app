@@ -1,5 +1,5 @@
 import type { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework/http'
-import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
+import { ContainerRegistrationKeys, Modules, QueryContext } from '@medusajs/framework/utils'
 import type { CreateFavoriteInput } from './middlewares'
 
 type FavoriteRecord = { id: string; product_id: string }
@@ -30,6 +30,11 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
           'variants.calculated_price.*',
         ],
         filters: { id: records.map((record) => record.product_id) },
+        context: {
+          variants: {
+            calculated_price: QueryContext({ currency_code: 'tmt' }),
+          },
+        },
       })
     : { data: [] }
   const productsById = new Map(products.map((product) => [product.id, product]))
