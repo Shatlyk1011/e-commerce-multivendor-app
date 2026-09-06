@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatPrice } from '@/features/cart/utils'
 import { useMyProductReviews } from '@/features/reviews/api/queries'
+import { OrderStores } from '@/features/store-reviews/components/OrderStores'
 
 import { OrderDetailModal } from './OrderDetailModal'
 import { OrderReviewDialog } from './OrderReviewDialog'
@@ -167,6 +168,8 @@ export function OrdersTab({ orders }: OrdersTabProps) {
                     </Button>
                   </div>
                 </div>
+
+                <OrderStores orderId={order.id} />
 
                 {/* Line Items Table */}
                 {order.items && order.items.length > 0 ? (
