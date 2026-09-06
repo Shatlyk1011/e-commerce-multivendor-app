@@ -40,6 +40,7 @@ export const POST = async (
       "metadata",
       "items.id",
       "items.quantity",
+      "items.detail.quantity",
       "items.product_id",
       "shipping_methods.shipping_option_id",
     ],
@@ -57,7 +58,12 @@ export const POST = async (
       order_id: order.id,
       items: (order.items ?? [])
         .filter((item): item is NonNullable<typeof item> => Boolean(item))
-        .map((item) => ({ id: item.id, quantity: item.quantity })),
+        .map((item) => ({
+          id: item.id,
+          quantity: Number(
+            item.quantity ?? (item as { detail?: { quantity?: number } }).detail?.quantity ?? 1,
+          ),
+        })),
       location_id: vendorAdmin.vendor?.stock_location_id,
       shipping_option_id:
         order.shipping_methods?.[0]?.shipping_option_id ?? undefined,
@@ -82,6 +88,7 @@ export const POST = async (
         "id",
         "items.id",
         "items.quantity",
+        "items.detail.quantity",
         "items.product_id",
         "shipping_methods.shipping_option_id",
       ],
@@ -97,7 +104,12 @@ export const POST = async (
         (item): item is NonNullable<typeof item> =>
           Boolean(item) && childProductIds.has(item?.product_id ?? ""),
       )
-      .map((item) => ({ id: item.id, quantity: item.quantity }));
+      .map((item) => ({
+        id: item.id,
+        quantity: Number(
+          item.quantity ?? (item as { detail?: { quantity?: number } }).detail?.quantity ?? 1,
+        ),
+      }));
 
     if (parentOrder && parentItems.length > 0) {
       await createOrderFulfillmentWorkflow(req.scope).run({
