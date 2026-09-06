@@ -25,6 +25,7 @@ import multer from "multer";
 import { favoriteMiddlewares } from "./store/favorites/middlewares";
 import { CreateSellerRequestSchema } from "./store/seller-requests/route";
 import { UpdateSellerRequestSchema } from "./admin/seller-requests/route";
+import { storeReviewMiddlewares } from "./store/store-reviews/middlewares";
 
 export const VendorCreateProductSchema = CreateProduct.omit({
   description: true,
@@ -120,7 +121,7 @@ const checkVendorStatusMiddleware = async (
 };
 
 export default defineMiddlewares({
-  routes: [...favoriteMiddlewares,
+  routes: [...favoriteMiddlewares, ...storeReviewMiddlewares,
     { matcher: "/store/seller-requests", method: ["POST"], middlewares: [validateAndTransformBody(CreateSellerRequestSchema)] },
     { matcher: "/admin/seller-requests/*", method: ["PATCH"], middlewares: [validateAndTransformBody(UpdateSellerRequestSchema)] },
     ...otpMiddlewares,
