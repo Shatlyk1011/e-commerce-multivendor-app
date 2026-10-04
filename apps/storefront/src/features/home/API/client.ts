@@ -5,12 +5,15 @@ import { medusa } from '@/lib/medusa'
 export type { HttpTypes }
 
 export const HOME_PRODUCT_CARD_FIELDS = [
+  '*variants.calculated_price',
   'id',
   'title',
   'handle',
   'thumbnail',
-  // 'variants.id',
-  // 'variants.calculated_price',
+  'variants.id',
+  'variants.manage_inventory',
+  'variants.allow_backorder',
+  '+variants.inventory_quantity',
 ].join(',')
 
 export async function fetchProducts(params?: {

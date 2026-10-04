@@ -128,28 +128,24 @@ interface AddToCartButtonProps {
   product: HttpTypes.StoreProduct
 }
 
+function isVariantAvailable(variant: HttpTypes.StoreProductVariant) {
+  return (
+    Boolean(variant.id) &&
+    (variant.manage_inventory === false || variant.allow_backorder === true || (variant.inventory_quantity ?? 0) > 0)
+  )
+}
+
 function AddToCartButton({ product }: AddToCartButtonProps) {
   const [state, setState] = React.useState<'idle' | 'pending' | 'added'>('idle')
   const { mutateAsync: handleAddItem, isPending } = useAddLineItem()
 
   const variants = product.variants ?? []
-  const hasVariant = variants.some((v) => Boolean(v.id))
+  const targetVariant = variants.find(isVariantAvailable)
+  const isAvailable = Boolean(targetVariant?.id)
 
   const handleAdd = async () => {
-    if (!hasVariant) return
+    if (!targetVariant?.id) return
     setState('pending')
-
-    const targetVariant =
-      variants.find(
-        (v) =>
-          Boolean(v.id) &&
-          (v.inventory_quantity === undefined || v.inventory_quantity === null || v.inventory_quantity > 0),
-      ) || variants.find((v) => Boolean(v.id))
-
-    if (!targetVariant?.id) {
-      setState('idle')
-      return
-    }
 
     try {
       await handleAddItem({
@@ -172,8 +168,8 @@ function AddToCartButton({ product }: AddToCartButtonProps) {
       variant="default"
       size="sm"
       onClick={handleAdd}
-      disabled={isPending || !hasVariant || state === 'pending'}
-      className="w-full cursor-pointer font-semibold disabled:opacity-60"
+      disabled={isPending || !isAvailable || state === 'pending'}
+      className="w-full cursor-pointer font-semibold disabled:cursor-not-allowed disabled:opacity-60"
     >
       {state === 'pending' && (
         <>
@@ -190,7 +186,7 @@ function AddToCartButton({ product }: AddToCartButtonProps) {
       {state === 'idle' && (
         <>
           <ShoppingBag className="size-4" />
-          <span>Завтра</span>
+          <span>{isAvailable ? 'Завтра' : 'Нет в наличии'}</span>
         </>
       )}
     </Button>

@@ -32,7 +32,7 @@ function getCartErrorMessage(error: any, defaultMsg: string): string | null {
   const lower = rawMessage.toLowerCase()
 
   if (lower.includes('variant does not have the required inventory')) {
-    return null
+    return 'Товар только что закончился и не был добавлен в корзину'
   }
 
   if (
