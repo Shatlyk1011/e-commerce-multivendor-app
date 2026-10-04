@@ -7,7 +7,7 @@ const FOOTER_COLUMNS = [
   {
     title: 'О нас',
     links: [
-      { label: 'Пункты выдачи', href: '#' },
+      { label: 'Пункты выдачи', href: '/pickup-points' },
       { label: 'Вакансии', href: '#' },
     ],
   },
@@ -15,13 +15,13 @@ const FOOTER_COLUMNS = [
     title: 'Пользователям',
     links: [
       { label: 'Связаться с нами', href: '#' },
-      { label: 'Вопрос - Ответ', href: '#' },
+      { label: 'Вопросы и ответы', href: '/faq' },
     ],
   },
   {
     title: 'Для предпринимателей',
     links: [
-      { label: 'Продавайте с нами', href: '#' },
+      { label: 'Продавайте с нами', href: '/become-seller' },
       { label: 'Вход для продавцов', href: '#' },
       { label: 'Открыть пункт выдачи', href: '#' },
     ],

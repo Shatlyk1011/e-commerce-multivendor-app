@@ -183,12 +183,12 @@ export function Header() {
             >
               Стать продавцом
             </Link>
-            <Link
+            {/* <Link
               href="/open-pickup"
               className="text-apple-primary hover:text-apple-primary-focus font-semibold transition-colors"
             >
               Открыть пункт выдачи
-            </Link>
+            </Link> */}
             <Link href="/faq" className="text-apple-ink-muted-80 hover:text-apple-primary transition-colors">
               Вопрос-ответ
             </Link>

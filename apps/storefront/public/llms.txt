@@ -6,6 +6,7 @@ Bugday is an ecommerce marketplace for shoppers in Turkmenistan. Customers can b
 - Home: /
 - Catalog: /category
 - Search: /search
+- Questions and answers: /faq
 - Become a seller: /become-seller
 - Pickup points: /pickup-points
 
