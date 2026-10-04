@@ -1,84 +1,54 @@
-'use client'
+import { BellRing, PackageCheck, SearchCheck, ShoppingBag } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
+import { PICKUP_STEPS } from '../data/working-hours'
 
-import { PICKUP_STEPS, WORKING_HOURS } from '../data/working-hours'
-import { getTodayStatus, useNow } from '../lib/working-hours'
+const stepIcons = [ShoppingBag, BellRing, PackageCheck]
 
 export function WorkingHoursSection() {
-  const now = useNow()
-  const { statusText, isOpen, todayIndex } = getTodayStatus(now)
-  const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-
   return (
-    <section className="bg-apple-surface-tile-1 relative py-16 max-md:py-10">
-      <div className="mx-auto flex max-w-4xl gap-20 px-6">
-        {/* Working hours table */}
-        <div className="flex-1">
-          <h2 className="text-apple-tagline mb-4 text-white">Часы работы</h2>
-
-          {/* Current time + open/closed status */}
-          <div className="mb-4 flex flex-col gap-1.5">
-            <div className="flex items-center gap-2">
-              <span className="text-apple-body-strong text-white tabular-nums">{timeString}</span>
-              <span
-                className={cn(
-                  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
-                  isOpen ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400',
-                )}
-              >
-                <span className={cn('h-1.5 w-1.5 rounded-full', isOpen ? 'bg-green-400' : 'bg-red-400')} />
-                {isOpen ? 'Открыто' : 'Закрыто'}
-              </span>
-            </div>
-            {statusText && <p className="text-[12px] text-[#8a8a8e]">{statusText}</p>}
+    <section className="bg-apple-surface-tile-1 text-apple-on-dark px-4 py-16 sm:py-20 lg:py-24">
+      <div className="mx-auto max-w-[1120px]">
+        <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
+          <div>
+            <p className="text-apple-primary-on-dark text-[13px] font-semibold tracking-wide uppercase">
+              Получение заказа
+            </p>
+            <h2 className="font-heading mt-3 max-w-md text-[32px] leading-tight font-semibold tracking-[-0.6px] sm:text-[40px]">
+              Три шага — и заказ у вас
+            </h2>
+            <p className="text-apple-body-muted mt-4 max-w-md text-[17px] leading-[1.55] tracking-[-0.374px]">
+              Часы работы отличаются в каждом пункте. Проверьте их в карточке перед поездкой.
+            </p>
           </div>
 
-          <div className="flex flex-col divide-y divide-white/10">
-            {WORKING_HOURS.map(({ day, hours, open }, idx) => {
-              const isToday = idx === todayIndex
+          <ol className="rounded-apple-lg grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-3">
+            {PICKUP_STEPS.map(({ step, title, body }, index) => {
+              const Icon = stepIcons[index] ?? PackageCheck
+
               return (
-                <div key={day} className={cn('flex items-center justify-between py-1.5', isToday && 'relative')}>
-                  {/* Today indicator bar */}
-                  {isToday && (
-                    <span className="bg-apple-primary-on-dark absolute top-1/2 -left-2 h-4 w-0.5 -translate-y-1/2 rounded-full" />
-                  )}
-                  <span className={cn('text-apple-caption', isToday ? 'font-semibold text-white' : 'text-[#ccc]!')}>
-                    {day}
-                  </span>
-                  <span
-                    className={cn(
-                      'text-apple-caption-strong tabular-nums',
-                      open ? (isToday ? 'text-white' : 'text-[#ccc]!') : 'text-apple-ink-muted-48',
-                    )}
-                  >
-                    {hours}
-                  </span>
-                </div>
+                <li key={step} className="bg-apple-surface-tile-1 p-5 sm:min-h-[230px] sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-apple-primary-on-dark text-[12px] font-semibold">{step}</span>
+                    <Icon className="text-apple-body-muted size-5" aria-hidden="true" />
+                  </div>
+                  <h3 className="mt-12 text-[17px] font-semibold tracking-tight sm:mt-16">{title}</h3>
+                  <p className="text-apple-body-muted mt-2 text-[14px] leading-relaxed">{body}</p>
+                </li>
               )
             })}
-          </div>
+          </ol>
         </div>
 
-        {/* How pickup works */}
-        <div className="flex flex-1 flex-col gap-6 text-white">
-          <div>
-            <h2 className="text-apple-tagline mb-4">Как получить заказ</h2>
-            <div className="flex flex-col gap-5">
-              {PICKUP_STEPS.map(({ step, title, body }) => (
-                <div key={step} className="text-apple-caption-strong flex gap-3">
-                  <p className="text-apple-primary-on-dark w-6 shrink-0">{step}</p>
-                  <div>
-                    <h3 className="mb-0.5 text-white">{title}</h3>
-                    <p className="text-apple-caption text-[#ccc]!">{body}</p>
-                  </div>
-                </div>
-              ))}
+        <div className="mt-10 flex flex-col gap-4 border-t border-white/15 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <SearchCheck className="text-apple-primary-on-dark mt-0.5 size-5 shrink-0" aria-hidden="true" />
+            <div>
+              <h3 className="text-[15px] font-semibold">Проверьте товар до выхода из пункта</h3>
+              <p className="text-apple-body-muted mt-1 max-w-2xl text-[13px] leading-relaxed">
+                Осмотрите товар и комплектацию на месте. Если заметили проблему, сразу сообщите сотруднику пункта
+                выдачи.
+              </p>
             </div>
-          </div>
-          <div className="text-apple-caption-strong rounded-apple-md bg-white/5 px-6 py-4">
-            <h3 className="text-apple-body mb-1.5 font-bold text-white!">Нужна доставка? </h3>
-            <p className="text-[#ccc]!">Доставим в удобное для Вас время!</p>
           </div>
         </div>
       </div>
