@@ -157,7 +157,7 @@ const OrderDeliveryWidget = ({ data }: OrderWidgetProps) => {
         ];
 
   return (
-    <Container className="divide-y p-0">
+    <Container className="order-first divide-y p-0">
       {vendorOperation && (
         <div className="flex flex-col gap-y-2 px-6 py-4">
           <Text size="small" leading="compact" weight="plus">
@@ -292,7 +292,7 @@ const OrderDeliveryWidget = ({ data }: OrderWidgetProps) => {
 };
 
 export const config = defineWidgetConfig({
-  zone: "order.details.side.after",
+  zone: "order.details.before",
 });
 
 export default OrderDeliveryWidget;
