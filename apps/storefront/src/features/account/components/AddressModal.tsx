@@ -58,6 +58,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
 
   useEffect(() => {
     if (address) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         address_name: address.address_name ?? '',
         first_name: address.first_name ?? '',
@@ -127,19 +128,23 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
     }
 
     setErrors({})
-    if (isEditing && address) {
-      await updateMutation.mutateAsync({ addressId: address.id, data: formData })
-    } else {
-      await createMutation.mutateAsync(formData)
+    try {
+      if (isEditing && address) {
+        await updateMutation.mutateAsync({ addressId: address.id, data: formData })
+      } else {
+        await createMutation.mutateAsync(formData)
+      }
+      onOpenChange(false)
+    } catch {
+      // The mutation displays a user-facing error toast and the form stays open.
     }
-    onOpenChange(false)
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas max-w-2xl min-w-xl p-8 pb-5">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-2xl overflow-y-auto p-5 pb-4 sm:p-8 sm:pb-5">
         <DialogHeader className="border-apple-divider-soft border-b pb-4">
           <DialogTitle className="text-apple-ink text-xl font-semibold tracking-[-0.28px]">
             {isEditing ? 'Редактировать адрес' : 'Добавить новый адрес'}
@@ -157,6 +162,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
             </Label>
             <Input
               id="province"
+              autoComplete="address-level2"
               placeholder="Например: Bahar, Za most"
               value={formData.province}
               aria-invalid={!!errors.province}
@@ -178,6 +184,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
             </Label>
             <Input
               id="address_1"
+              autoComplete="street-address"
               placeholder="Улица, ориентир, название здания"
               value={formData.address_1}
               aria-invalid={!!errors.address_1}
@@ -193,7 +200,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
           </div>
 
           {/* Home number + Floor */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label
                 htmlFor="address_2"
@@ -225,6 +232,7 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
               </Label>
               <Input
                 id="postal_code"
+                inputMode="numeric"
                 placeholder="Например: 3"
                 value={formData.postal_code ?? ''}
                 onChange={(e) => setFormData((prev) => ({ ...prev, postal_code: e.target.value }))}
@@ -251,22 +259,11 @@ export function AddressModal({ address, open, onOpenChange }: AddressModalProps)
           </div>
 
           {/* Actions */}
-          <div className="border-apple-divider-soft flex justify-end gap-3 border-t pt-5">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="border-apple-hairline text-apple-ink hover:bg-apple-canvas-parchment rounded-full font-semibold"
-            >
+          <div className="border-apple-divider-soft flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end sm:gap-3">
+            <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="min-h-11">
               Отмена
             </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={isPending}
-              className="bg-apple-primary hover:bg-apple-primary-focus rounded-full font-semibold text-white disabled:opacity-40"
-            >
+            <Button type="submit" size="sm" disabled={isPending} className="min-h-11 disabled:opacity-40">
               {isPending ? 'Сохранение…' : isEditing ? 'Сохранить' : 'Добавить адрес'}
             </Button>
           </div>

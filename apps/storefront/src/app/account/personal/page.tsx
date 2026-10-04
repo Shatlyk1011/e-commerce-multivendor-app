@@ -1,12 +1,16 @@
 'use client'
 
 import { useCustomerProfile } from '@/features/account/api/queries'
+import { AccountPageError, AccountPageSkeleton } from '@/features/account/components/AccountPageState'
 import { PersonalInfoTab } from '@/features/account/components/PersonalInfoTab'
 import { useAuth } from '@/features/auth/components/AuthProvider'
 
 export default function AccountPersonalPage() {
   const { customer } = useAuth()
-  const { data: storeCustomer } = useCustomerProfile()
+  const { data: storeCustomer, isLoading, isError, refetch } = useCustomerProfile()
+
+  if (isLoading) return <AccountPageSkeleton cards={2} />
+  if (isError) return <AccountPageError onRetry={() => refetch()} />
 
   const displayCustomer = {
     first_name: storeCustomer?.first_name || customer?.first_name,
