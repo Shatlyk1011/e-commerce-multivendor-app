@@ -142,6 +142,43 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global 404: the brand blue spreads in from each corner without competing with the page content. */
+.not-found-gradient {
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      color-mix(in srgb, var(--color-apple-primary) 24%, transparent) 0%,
+      transparent 31%
+    ),
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--color-apple-primary-focus) 18%, transparent) 0%,
+      transparent 29%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      color-mix(in srgb, var(--color-apple-primary) 16%, transparent) 0%,
+      transparent 33%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      color-mix(in srgb, var(--color-apple-primary-focus) 13%, transparent) 0%,
+      transparent 30%
+    );
+}
+
+.not-found-number {
+  color: transparent;
+  background: linear-gradient(
+    135deg,
+    var(--color-apple-primary) 0%,
+    var(--color-apple-primary-focus) 45%,
+    var(--color-apple-primary) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
 /* Typographic utility classes mapping the Apple Design System hierarchy */
 
 /* Usage: Main hero title at the very top of product landing pages (e.g. "iPhone 17 Pro") */
