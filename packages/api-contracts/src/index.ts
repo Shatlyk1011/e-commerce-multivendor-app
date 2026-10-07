@@ -22,6 +22,7 @@ export type {
   OrderDeliveryDetails,
   VendorProduct,
   VendorProductCreateResponse,
+  VendorProductResponse,
   ProductOptionTemplate,
   VendorProductOptionTemplatesResponse,
   VendorProductsResponse,

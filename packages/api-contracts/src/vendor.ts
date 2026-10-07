@@ -136,7 +136,7 @@ export type VendorProduct = {
   // Tags / search keywords stored in metadata
   metadata?: { keywords?: string[] } | null
   // Gallery images
-  images?: Array<{ url: string }>
+  images?: Array<{ id: string; url: string }>
   // Logistics & dimensions
   weight?: number | null
   length?: number | null
@@ -144,14 +144,21 @@ export type VendorProduct = {
   height?: number | null
   origin_country?: string | null
   material?: string | null
+  options?: Array<{
+    id: string
+    title: string
+    values: Array<{ id: string; value: string }>
+  }>
   // Variants with full details
   variants?: Array<{
     id: string
     title: string
     sku?: string | null
+    barcode?: string | null
     inventory_quantity?: number | null
     options?: Array<{ value: string; option?: { title: string } }>
     prices?: Array<{
+      id: string
       amount: number
       currency_code: string
     }>
@@ -163,6 +170,10 @@ export type VendorProductsResponse = {
 }
 
 export type VendorProductCreateResponse = {
+  product: VendorProduct
+}
+
+export type VendorProductResponse = {
   product: VendorProduct
 }
 
