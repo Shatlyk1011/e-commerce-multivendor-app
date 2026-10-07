@@ -1,158 +1,166 @@
-<p align="center">
-  <a href="https://www.medusajs.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/59018053/229103275-b5e482bb-4601-46e6-8142-244f531cebdb.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    <img alt="Medusa logo" src="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    </picture>
-  </a>
-</p>
-<h1 align="center">
-  Medusa DTC Starter
-</h1>
+# Medusa Marketplace
 
-<h4 align="center">
-  <a href="https://docs.medusajs.com">Documentation</a> |
-  <a href="https://www.medusajs.com">Website</a>
-</h4>
+An early-stage, self-hosted multivendor marketplace built on Medusa. It includes a buyer-facing storefront, a seller portal, and custom Medusa Admin extensions for marketplace operations.
 
-<p align="center">
-  Building blocks for digital commerce
-</p>
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/develop/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Medusa is released under the MIT license." />
-  </a>
-  <a href="https://circleci.com/gh/medusajs/medusa">
-    <img src="https://circleci.com/gh/medusajs/medusa.svg?style=shield" alt="Current CircleCI build status." />
-  </a>
-  <a href="https://github.com/medusajs/medusa/blob/develop/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-    <a href="https://www.producthunt.com/posts/medusa"><img src="https://img.shields.io/badge/Product%20Hunt-%231%20Product%20of%20the%20Day-%23DA552E" alt="Product Hunt"></a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
+> **Project status:** engineering MVP / development environment. The local Docker stack is useful for development and demos. It is **not yet safe to expose directly on a public VDS**; see [VDS deployment](#vds-deployment) before deploying it.
 
-# Medusa DTC Starter
+## What is included
 
-A production-ready monorepo starter for direct-to-consumer ecommerce stores powered by Medusa and Next.js. Includes a fully featured storefront with product browsing, cart, checkout, customer accounts, and order management.
+- **Buyer storefront** — catalogue browsing, product variants, cart and checkout, phone-based customer sign-in, delivery or pickup, favourites, orders, and product/store reviews.
+- **Seller portal** — seller sign-in, product creation with media uploads and option templates, inventory-aware catalogue management, and order fulfilment/status updates.
+- **Marketplace backend** — Medusa API and Admin dashboard, seller applications and vendor administration, vendor/product and vendor/order links, vendor order workflows, reviews, and custom delivery data.
+- **Local platform services** — PostgreSQL, Redis, MinIO-compatible file storage, Meilisearch, and Mailpit for local email inspection.
 
-## Features
+## Applications and services
 
-- All of [Medusa's commerce features](https://docs.medusajs.com/resources/commerce-modules)
-- Multi-region support with automatic country detection
-- Product catalog with variant selection
-- Cart with promotion codes
-- Multi-step checkout with shipping and payment
-- Customer accounts with order history and address management
-- Order transfer between accounts
+| Component            | Path / image           | Local address                                     | Purpose                                    |
+| -------------------- | ---------------------- | ------------------------------------------------- | ------------------------------------------ |
+| Storefront           | `apps/storefront`      | http://localhost:3000                             | Buyer experience                           |
+| Seller portal        | `apps/vendor-portal`   | http://localhost:3001                             | Seller dashboard                           |
+| Medusa API and Admin | `apps/backend`         | http://localhost:9000 / http://localhost:9000/app | Marketplace API and operations dashboard   |
+| PostgreSQL 15        | `postgres:15-alpine`   | `localhost:5433`                                  | Primary database                           |
+| Redis 7              | `redis:7-alpine`       | `localhost:6379`                                  | Cache and event infrastructure             |
+| MinIO                | `minio/minio`          | http://localhost:9010 / http://localhost:9001     | Product and seller media / storage console |
+| Meilisearch          | `getmeili/meilisearch` | http://localhost:7700                             | Search service provisioned for the stack   |
+| Mailpit              | `axllent/mailpit`      | http://localhost:8025                             | Development SMTP inbox                     |
 
-## Getting Started
+## Technology
 
-### Deploy with Medusa Cloud
+- **Commerce:** Medusa v2.17 and custom TypeScript modules/workflows
+- **Web apps:** Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4
+- **Client state/data:** TanStack Query and Zustand
+- **Platform:** Node.js 20, pnpm 10, Turborepo, Docker Compose
+- **Data services:** PostgreSQL, Redis, MinIO, Meilisearch, Mailpit
 
-The fastest way to get started is deploying with [Medusa Cloud](https://cloud.medusajs.com):
+The repo is a pnpm workspace. Shared API types live in `packages/api-contracts`.
 
-1. [Create a Medusa Cloud account](https://cloud.medusajs.com)
-2. Deploy this starter directly from your dashboard
+## Quick start with Docker
 
-### Local Installation
+### Prerequisites
 
-> **Prerequisites:
->
-> - [Node.js](https://nodejs.org/) v20+
-> - [PostgreSQL](https://www.postgresql.org/) v15+
-> - [pnpm](https://pnpm.io/) v10+
+- Docker Engine / Docker Desktop with Docker Compose v2
+- At least 8 GB of available memory for a comfortable local build
+- Ports `3000`, `3001`, `5433`, `6379`, `7700`, `8025`, `9000`, `9001`, and `9010` available on the host
 
-1. Clone the repository and install dependencies:
+### First run
 
 ```bash
-git clone https://github.com/medusajs/dtc-starter.git
-cd dtc-starter
+git clone <your-fork-url> medusa-e-commerce
+cd medusa-e-commerce
+
+# Keep local configuration out of Git. Change every placeholder before a real deployment.
+cp .env.example .env
+
+# Build and start the full local stack.
+docker compose up -d --build
+
+# Follow startup progress if needed.
+docker compose logs -f medusa
+```
+
+On the first run, apply database migrations (including the repository's migration scripts) and create an administrator:
+
+```bash
+docker compose exec medusa pnpm --filter @dtc/backend exec medusa db:migrate --execute-safe-links
+
+# Replace the email and password before running this command.
+docker compose exec medusa pnpm --filter @dtc/backend exec medusa user \
+  -e admin@example.test -p 'REPLACE_WITH_A_LONG_UNIQUE_PASSWORD'
+```
+
+The migration command runs migration scripts by default. Do **not** run the legacy `db:migrate:scripts` command a second time unless you understand that a script is idempotent; the initial catalogue/setup script is not designed as a repeatable demo reset.
+
+Open the storefront at http://localhost:3000 and sign in to Admin at http://localhost:9000/app. Create seller accounts from the Admin dashboard, then use those credentials at http://localhost:3001.
+
+### Useful Docker commands
+
+```bash
+# Container status and logs
+docker compose ps
+docker compose logs -f
+
+# Stop the stack while preserving data
+docker compose stop
+
+# Stop and remove containers and network while preserving volumes
+docker compose down
+
+# Delete all local database, search, cache, and media data (irreversible)
+docker compose down -v
+```
+
+The `minio-init` container creates the `medusa-media` bucket and allows public download access for media URLs. This is convenient locally; restrict storage access and publish only the necessary bucket paths in production.
+
+## Credentials and development defaults
+
+| Area                                               | Current behavior                                                                                                                 | What to do before production                                                                                               |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Customer sign-in                                   | The development OTP service accepts code `1234`; it does not send an SMS. This is **not** an email/password login.               | Replace `apps/backend/src/services/otp.ts` with a real OTP delivery and verification provider.                             |
+| Medusa Admin                                       | No account is seeded. The email and password are the values supplied to `medusa user` above.                                     | Create a unique, strong account and protect `/app`.                                                                        |
+| Seller portal                                      | No seller account is seeded. An administrator creates sellers and chooses their password; the UI requires at least 8 characters. | Use a proper invitation/reset flow and strong, unique passwords.                                                           |
+| PostgreSQL, MinIO, Meilisearch, JWT/cookie secrets | The committed Compose file currently contains development values, and several service ports are published to the host.           | Move every secret to uncommitted environment/secret storage, rotate existing values, and remove public data-service ports. |
+
+Never publish the development OTP code, example password, or current Compose credentials as production access details. If this repository has already been shared outside a trusted team, rotate every committed secret before making it public.
+
+## Run from source
+
+Docker is the recommended way to bring up dependencies locally. To run the three apps in watch mode instead:
+
+```bash
+corepack enable
 pnpm install
-```
 
-2. Set up environment variables for the backend:
-
-```bash
+# Configure a local backend database, Redis, MinIO, and CORS values first.
 cp apps/backend/.env.template apps/backend/.env
+
+pnpm backend:dev       # Medusa on :9000
+pnpm storefront:dev    # Storefront on :3000
+pnpm --filter @dtc/vendor-portal dev  # Seller portal on :3001
 ```
 
-3. Set the database URL in `apps/backend.env`:
+Common workspace commands:
 
 ```bash
-# Replace with actual database URL, make sure the database exists.
-DATABASE_URL=postgres://postgres:@localhost:5432/medusa-dtc-starter
+pnpm build
+pnpm lint
+pnpm --filter @dtc/backend test:unit
 ```
 
-4. Run migrations:
+## VDS deployment
 
-```bash
-cd apps/backend
-pnpm medusa db:migrate
-```
+### Recommended server baseline
 
-5. Add admin user:
+For a small production deployment, start with Ubuntu 22.04 LTS, Docker 24+ and Docker Compose v2:
 
-```bash
-cd apps/backend
-pnpm medusa user -e admin@test.com -p supersecret
-```
+| Resource | Minimum | Recommended |
+| -------- | ------: | ----------: |
+| CPU      |  4 vCPU |      8 vCPU |
+| Memory   |    8 GB |       16 GB |
+| SSD      |   80 GB |      200 GB |
 
-6. Start Medusa backend:
+The extra disk capacity matters because MinIO stores catalogue and seller media.
 
-```bash
-cd apps/backend
-pnpm dev
-```
+### Important: the committed Compose file is development-only
 
-7. Open the admin dashboard at `localhost:9000/app` and log in. Retrieve your publishable API key at Settings > Publishable API key.
+`docker-compose.yml` currently publishes PostgreSQL, Redis, MinIO, Meilisearch, Mailpit, and application ports directly to the host. It also uses development secrets in the file and contains no reverse proxy/TLS configuration. **Do not run it unchanged on an Internet-facing VDS.**
 
-8. Set up environment variables for the storefront:
+Before a production VDS rollout, create and review a production Compose configuration that:
 
-```bash
-cp apps/storefront/.env.template apps/storefront/.env.local
-```
+1. Uses uncommitted secret storage for database, MinIO, Meilisearch, JWT, and cookie credentials; rotate the values that have appeared in Git.
+2. Removes `ports` from PostgreSQL, Redis, Meilisearch, and Mailpit so they are reachable only on the Docker network.
+3. Adds a reverse proxy such as Caddy or Nginx that is the only public entry point (ports 80/443), terminates TLS, and routes distinct hostnames to the storefront, seller portal, API/Admin, and public media as appropriate.
+4. Sets production CORS origins and public backend/media URLs, restricts MinIO bucket permissions, and uses a real SMS/OTP provider.
+5. Sets up backups for the PostgreSQL and MinIO volumes, monitoring/log rotation, firewall rules, and a tested migration/rollback procedure.
 
-9. Update `apps/storefront/.env.local` with your Medusa publishable API key:
+`DOMAIN`, Stripe, and Caddy-related placeholders in `.env.example` describe an intended deployment shape, but the currently committed Compose file does not yet implement that production configuration. Treat a production deployment as a separate hardening task rather than following those placeholders as a working VDS guide.
 
-```bash
-NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_6c3...
-```
+## Known MVP gaps
 
-10.  Start storefront:
+- Customer authentication uses a fixed development OTP rather than real SMS delivery.
+- The checkout uses Medusa's system/default payment provider; no live payment gateway is wired.
+- Meilisearch is included in Docker but the backend configuration does not yet register a Medusa search/indexing integration.
+- Production reverse proxy, TLS, secret management, backups, monitoring, and private networking are not committed.
 
-```bash
-cd apps/storefront
-pnpm dev
-```
+## License
 
-The storefront runs on `http://localhost:8000`.
-
-You can slo run the following command from the root to start both backend and storefront:
-
-```bash
-pnpm dev
-```
-
-## Configuration
-
-The storefront is configured via environment variables in `apps/storefront/.env.local`:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` | Publishable API key from your Medusa backend | — |
-| `NEXT_PUBLIC_MEDUSA_BACKEND_URL` | URL of your Medusa backend | `http://localhost:9000` |
-| `NEXT_PUBLIC_DEFAULT_REGION` | Default region country code | `dk` |
-| `NEXT_PUBLIC_BASE_URL` | Base URL of the storefront | `https://localhost:8000` |
-| `NEXT_PUBLIC_STRIPE_KEY` | Stripe publishable key (optional) | — |
-
-## Resources
-
-- [Medusa Documentation](https://docs.medusajs.com)
-- [Medusa Cloud](https://cloud.medusajs.com)
+This repository is licensed under the [MIT License](LICENSE).

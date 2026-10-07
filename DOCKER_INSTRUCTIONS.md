@@ -1,93 +1,15 @@
-# Running the Medusa E-Commerce Marketplace with Docker
+# Docker instructions
 
-This guide details how to build, run, configure, and manage the entire multivendor marketplace application stack using Docker Compose.
+The authoritative Docker setup and VDS hardening guidance is in the root [README](README.md#quick-start-with-docker).
 
----
+The commands below are the local development lifecycle:
 
-## 1. Services & Credentials
-
-Below are the secure, auto-generated credentials configured in your [docker-compose.yml](file:///Users/shatlyk1011/Documents/GitHub/medusa-e-commerce/docker-compose.yml):
-
-| Service | Container Port (Internal) | Host Port (External) | Credentials / Settings |
-| :--- | :--- | :--- | :--- |
-| **PostgreSQL** | `5432` | `5433` | **Database:** `medusa_db`<br>**User:** `medusa`<br>**Password:** `pg_pass_secure_dtc_839` |
-| **Redis** | `6379` | `6379` | *Internal networking, no password* |
-| **MinIO API** | `9000` | `9010` | **Access Key:** `medusa_admin`<br>**Secret Key:** `minio_secret_pass_7291` |
-| **MinIO Console** | `9001` | `9001` | **Access Key:** `minio_admin`<br>**Secret Key:** `change_me_strong_password` |
-| **Meilisearch** | `7700` | `7700` | **Master Key:** `meili_master_key_secure_92018374` |
-| **Mailpit SMTP** | `1025` | `1025` | *Internal SMTP, no authentication* |
-| **Mailpit Web UI** | `8025` | `8025` | *Web inbox access* |
-| **Medusa API** | `9000` | `9000` | **Admin Dashboard:** `http://localhost:9000/app` |
-| **Storefront** | `3000` | `3000` | **Next.js Buyer Front** |
-| **Vendor Portal** | `3001` | `3001` | **Next.js Seller Front** |
-
----
-
-## 2. Getting Started Instructions
-
-### Prerequisites
-Make sure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running on your machine.
-
-### Step 1: Start all containers
-Run the following command from the project root to build the Next.js and Medusa images, then start all services in detached mode:
 ```bash
 docker compose up -d --build
+docker compose ps
+docker compose logs -f
+docker compose stop
+docker compose down
 ```
 
-### Step 2: Initialize the Medusa Database (First-time run only)
-Once the containers are running, execute database migrations and seed the initial store setup:
-```bash
-# 1. Run migrations and sync database links
-docker compose exec medusa npx medusa db:migrate
-
-# 2. Run the migration and data seed scripts
-docker compose exec medusa npx medusa db:migrate:scripts
-```
-
-### Step 3: Create an Admin User (First-time run only)
-Create a super admin account to access the Medusa Admin panel:
-```bash
-docker compose exec medusa npx medusa user -e admin@test.com -p supersecret
-```
-*You can now log in at [http://localhost:9000/app](http://localhost:9000/app) with `admin@test.com` and `supersecret`.*
-
-### Step 4: MinIO media bucket
-The `minio-init` container automatically creates `medusa-media` and grants anonymous download access. Vendor image uploads are stored under a URL-safe shop-name folder, for example:
-
-```text
-medusa-media/ak-yayla/product-front-<uuid>.webp
-medusa-media/ak-yayla/product-side-<uuid>.webp
-```
-
-For a production deployment, set `MINIO_PUBLIC_URL` in `.env` to the public bucket URL (for example, `https://files.example.com/medusa-media`).
-
----
-
-## 3. URLs to Access the Applications
-
-*   **Buyer Storefront:** [http://localhost:3000](http://localhost:3000)
-*   **Vendor / Seller Portal:** [http://localhost:3001](http://localhost:3001)
-*   **Medusa Admin Dashboard:** [http://localhost:9000/app](http://localhost:9000/app)
-*   **MinIO Storage Console:** [http://localhost:9001](http://localhost:9001)
-*   **Mailpit SMTP Inbox:** [http://localhost:8025](http://localhost:8025)
-
----
-
-## 4. Maintenance & Stop Commands
-
-*   **View live application logs:**
-    ```bash
-    docker compose logs -f
-    ```
-*   **Stop the application stack:**
-    ```bash
-    docker compose stop
-    ```
-*   **Stop and remove containers, networks, and configurations:**
-    ```bash
-    docker compose down
-    ```
-*   **Clean volumes / wipe databases to start completely fresh:**
-    ```bash
-    docker compose down -v
-    ```
+For a first run, apply migrations and create an Admin account as described in the README. Do not use this Compose file unchanged on a public VDS: it currently exposes data services on host ports and includes development credentials.
