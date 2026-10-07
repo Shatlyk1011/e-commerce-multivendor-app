@@ -26,6 +26,7 @@ import { favoriteMiddlewares } from "./store/favorites/middlewares";
 import { CreateSellerRequestSchema } from "./store/seller-requests/route";
 import { UpdateSellerRequestSchema } from "./admin/seller-requests/route";
 import { storeReviewMiddlewares } from "./store/store-reviews/middlewares";
+import { VendorUpdateProductSchema } from "./vendors/products/[id]/route";
 
 export const VendorCreateProductSchema = CreateProduct.omit({
   description: true,
@@ -221,6 +222,11 @@ export default defineMiddlewares({
       matcher: "/vendors/products",
       method: ["POST"],
       middlewares: [validateAndTransformBody(VendorCreateProductSchema)],
+    },
+    {
+      matcher: "/vendors/products/*",
+      method: ["POST"],
+      middlewares: [validateAndTransformBody(VendorUpdateProductSchema)],
     },
     {
       matcher: "/vendors/orders/*/operation",
