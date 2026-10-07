@@ -51,7 +51,7 @@ export default function CreateProductPage() {
   const [thumbnail, setThumbnail] = useState<string>('')
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [images, setImages] = useState<string[]>([])
-  const [galleryFiles, setGalleryFiles] = useState<File[]>([])
+  const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([])
   const [isUploadingMedia, setIsUploadingMedia] = useState(false)
 
   // 3. Dimensions & Logistics (Step 3)
@@ -340,8 +340,9 @@ export default function CreateProductPage() {
         const [uploadedFile] = await uploadVendorMedia([thumbnailFile])
         uploadedThumbnailUrl = uploadedFile.url
       }
-      if (galleryFiles.length > 0) {
-        const uploadedFiles = await uploadVendorMedia(galleryFiles)
+      const pendingGalleryFiles = galleryFiles.filter((file): file is File => file !== null)
+      if (pendingGalleryFiles.length > 0) {
+        const uploadedFiles = await uploadVendorMedia(pendingGalleryFiles)
         uploadedImageUrls = uploadedFiles.map((file) => file.url)
       }
     } catch (error) {

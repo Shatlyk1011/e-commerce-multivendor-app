@@ -21,16 +21,19 @@ export const STEPS_INFO = [
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ProductOption {
+  id?: string
   title: string
   values: string[]
 }
 
 export interface ProductVariant {
+  id?: string
   title: string
   options: Record<string, string>
   sku: string
   barcode: string
   price: string // in TMT (decimal)
+  priceId?: string
   inventory: string // in units (integer)
 }
 
@@ -49,6 +52,7 @@ const productVariantSchema = z.object({
   title: z.string().trim().min(1, 'Укажите название варианта.'),
   options: z.record(z.string(), z.string()),
   sku: z.string().trim().max(255, 'SKU не может быть длиннее 255 символов.'),
+  barcode: z.string().trim().max(255, 'Штрихкод не может быть длиннее 255 символов.'),
   price: z
     .string()
     .trim()
@@ -104,7 +108,7 @@ export const stepThreeSchema = z
   })
 
 export const stepFourSchema = z.object({
-  variants: z.array(productVariantSchema),
+  variants: z.array(productVariantSchema).min(1, 'Добавьте хотя бы один вариант товара.'),
 })
 
 // ─── Utility Functions ────────────────────────────────────────────────────────

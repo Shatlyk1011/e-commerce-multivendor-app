@@ -18,9 +18,9 @@ interface StepTwoMediaProps {
   thumbnail: string // local object URL or empty
   images: string[] // local object URLs
   onThumbnailChange: (url: string, file: File | null) => void
-  onImagesChange: (urls: string[], files: File[]) => void
+  onImagesChange: (urls: string[], files: Array<File | null>) => void
   thumbnailFile: File | null
-  galleryFiles: File[]
+  galleryFiles: Array<File | null>
   fieldErrors: FieldErrors
 }
 
@@ -118,7 +118,7 @@ export function StepTwoMedia({
         <h2 className="text-apple-ink text-[17px] font-semibold">Шаг 2: Изображения товара</h2>
         <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
           Добавьте обязательное главное изображение и дополнительные снимки галереи. Загрузка в хранилище произойдет при
-          создании товара.
+          сохранении товара.
         </p>
       </div>
 

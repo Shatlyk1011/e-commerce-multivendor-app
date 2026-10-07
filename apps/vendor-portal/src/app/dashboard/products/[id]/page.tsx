@@ -1,142 +1,339 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
-import type { VendorProduct, VendorProductsResponse } from '@dtc/api-contracts'
-import {
-  ArrowLeft,
-  Boxes,
-  Check,
-  Clipboard,
-  Globe,
-  ImageOff,
-  Info,
-  Layers,
-  Loader2,
-  PackageSearch,
-  Ruler,
-  Tag,
-  Weight,
-} from 'lucide-react'
+import type {
+  ProductOptionTemplate,
+  VendorMediaResponse,
+  VendorProduct,
+  VendorProductOptionTemplatesResponse,
+  VendorProductResponse,
+} from '@dtc/api-contracts'
+import { ArrowLeft, Loader2, PackageSearch, Save } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { getProductPriceLabel } from '@/features/products/components/ProductItem'
-import { copyToClipboard } from '@/lib/clipboard'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { StepFourVariantsMatrix } from '@/features/products-create/components/StepFourVariantsMatrix'
+import { StepOneGeneral } from '@/features/products-create/components/StepOneGeneral'
+import { StepThreeVariants } from '@/features/products-create/components/StepThreeVariants'
+import { StepTwoMedia } from '@/features/products-create/components/StepTwoMedia'
+import {
+  generateVariantSku,
+  getFieldErrors,
+  stepFourSchema,
+  stepOneSchema,
+  stepThreeSchema,
+  stepTwoSchema,
+} from '@/features/products-create/utils'
+import type { FieldErrors, ProductOption, ProductVariant } from '@/features/products-create/utils'
 import { productStatus } from '@/lib/constants'
 import { medusa } from '@/lib/medusa'
 
-// Same country map used during product creation
-const COUNTRY_NAMES: Record<string, string> = {
-  TM: 'Туркменистан',
-  TR: 'Турция',
-  UZ: 'Узбекистан',
-  CN: 'Китай',
-  DE: 'Германия',
-  US: 'США',
-}
-
-function formatPrice(amount: number, currencyCode: string) {
-  return `${amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currencyCode.toUpperCase()}`
-}
-
-// ─── Small reusable components ───────────────────────────────────────────────
-
-function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`bg-apple-canvas border-apple-hairline rounded-apple-lg border p-5 sm:p-6 ${className}`}>
-      {children}
-    </div>
+function getVariantOptions(variant: NonNullable<VendorProduct['variants']>[number]) {
+  return Object.fromEntries(
+    (variant.options ?? [])
+      .filter((option) => option.option?.title)
+      .map((option) => [option.option!.title, option.value]),
   )
 }
 
-function SectionHeader({
-  icon: Icon,
-  title,
-  extra,
-}: {
-  icon: React.ElementType
-  title: string
-  extra?: React.ReactNode
-}) {
-  return (
-    <div className="border-apple-divider-soft mb-4 flex items-center justify-between border-b pb-3">
-      <div className="flex items-center gap-2">
-        <Icon className="text-apple-primary size-4 shrink-0" aria-hidden="true" />
-        <h2 className="text-apple-ink text-[15px] font-semibold tracking-tight">{title}</h2>
-      </div>
-      {extra}
-    </div>
-  )
+function sameOptions(left: Record<string, string>, right: Record<string, string>) {
+  const leftEntries = Object.entries(left).sort(([a], [b]) => a.localeCompare(b))
+  const rightEntries = Object.entries(right).sort(([a], [b]) => a.localeCompare(b))
+  return JSON.stringify(leftEntries) === JSON.stringify(rightEntries)
 }
 
-function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div>
-      <dt className="text-apple-fine-print font-heading text-apple-ink-muted-48 mb-1 tracking-wide uppercase">
-        {label}
-      </dt>
-      <dd className="text-apple-ink text-sm font-semibold">{value}</dd>
-    </div>
-  )
-}
-
-function EmptyValue() {
-  return <span className="text-apple-ink-muted-48 italic">Не указано</span>
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-export default function ProductDetailsPage() {
+export default function ProductEditPage() {
   const { id } = useParams<{ id: string }>()
   const [product, setProduct] = useState<VendorProduct | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [hasLoadError, setHasLoadError] = useState(false)
-  const [idCopied, setIdCopied] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
 
-  const handleCopyId = async (productId: string) => {
-    try {
-      await copyToClipboard(productId)
-      setIdCopied(true)
-      setTimeout(() => setIdCopied(false), 2000)
-    } catch {
-      toast.error('Не удалось скопировать ID')
-    }
-  }
+  const [title, setTitle] = useState('')
+  const [handle, setHandle] = useState('')
+  const [category, setCategory] = useState('')
+  const [tagsInput, setTagsInput] = useState('')
+  const [tags, setTags] = useState<string[]>([])
+  const [thumbnail, setThumbnail] = useState('')
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
+  const [images, setImages] = useState<string[]>([])
+  const [galleryFiles, setGalleryFiles] = useState<Array<File | null>>([])
+  const [weight, setWeight] = useState('')
+  const [length, setLength] = useState('')
+  const [width, setWidth] = useState('')
+  const [height, setHeight] = useState('')
+  const [originCountry, setOriginCountry] = useState('TM')
+  const [material, setMaterial] = useState('')
+  const [options, setOptions] = useState<ProductOption[]>([])
+  const [variants, setVariants] = useState<ProductVariant[]>([])
+  const [optionTemplates, setOptionTemplates] = useState<ProductOptionTemplate[]>([])
+  const [isLoadingOptionTemplates, setIsLoadingOptionTemplates] = useState(true)
+  const skuSuffix = useRef(id.replace(/^prod_/, '').slice(-6) || crypto.randomUUID().slice(0, 6))
+
+  const hydrateForm = useCallback((nextProduct: VendorProduct) => {
+    setProduct(nextProduct)
+    setTitle(nextProduct.title)
+    setHandle(nextProduct.handle)
+    setCategory(nextProduct.categories?.[0]?.id ?? '')
+    setTags(nextProduct.metadata?.keywords ?? [])
+    setThumbnail(nextProduct.thumbnail ?? '')
+    setThumbnailFile(null)
+    setImages((nextProduct.images ?? []).map((image) => image.url))
+    setGalleryFiles((nextProduct.images ?? []).map(() => null))
+    setWeight(nextProduct.weight == null ? '' : String(nextProduct.weight))
+    setLength(nextProduct.length == null ? '' : String(nextProduct.length))
+    setWidth(nextProduct.width == null ? '' : String(nextProduct.width))
+    setHeight(nextProduct.height == null ? '' : String(nextProduct.height))
+    setOriginCountry(nextProduct.origin_country ?? 'TM')
+    setMaterial(nextProduct.material ?? '')
+    setOptions(
+      (nextProduct.options ?? []).map((option) => ({
+        id: option.id,
+        title: option.title,
+        values: option.values.map((value) => value.value),
+      })),
+    )
+    setVariants(
+      (nextProduct.variants ?? []).map((variant) => {
+        const tmtPrice = variant.prices?.find((price) => price.currency_code.toLowerCase() === 'tmt')
+        return {
+          id: variant.id,
+          title: variant.title,
+          options: getVariantOptions(variant),
+          sku: variant.sku ?? '',
+          barcode: variant.barcode ?? '',
+          price: String(tmtPrice?.amount ?? ''),
+          priceId: tmtPrice?.id,
+          inventory: String(variant.inventory_quantity ?? 0),
+        }
+      }),
+    )
+  }, [])
 
   useEffect(() => {
     let isActive = true
-
-    async function loadProduct() {
+    async function loadPage() {
       try {
-        const response = await medusa.client.fetch<VendorProductsResponse>('/vendors/products')
-        if (isActive) {
-          setProduct(response.products.find((item) => item.id === id) ?? null)
-        }
+        const [productResponse, templatesResponse] = await Promise.all([
+          medusa.client.fetch<VendorProductResponse>(`/vendors/products/${id}`),
+          medusa.client.fetch<VendorProductOptionTemplatesResponse>('/vendors/product-option-templates'),
+        ])
+        if (!isActive) return
+        hydrateForm(productResponse.product)
+        setOptionTemplates(templatesResponse.product_option_templates)
       } catch (error) {
-        if (isActive) {
-          setHasLoadError(true)
-          toast.error('Ошибка загрузки товара', {
-            description: error instanceof Error ? error.message : 'Не удалось получить данные товара.',
-          })
-        }
+        if (!isActive) return
+        setHasLoadError(true)
+        toast.error('Ошибка загрузки товара', {
+          description: error instanceof Error ? error.message : 'Не удалось получить данные товара.',
+        })
       } finally {
         if (isActive) {
           setIsLoading(false)
+          setIsLoadingOptionTemplates(false)
         }
       }
     }
-
-    loadProduct()
-
+    void loadPage()
     return () => {
       isActive = false
     }
-  }, [id])
+  }, [hydrateForm, id])
+
+  const uploadVendorMedia = async (files: File[]) => {
+    const body = new FormData()
+    files.forEach((file) => body.append('files', file))
+    const response = await medusa.client.fetch<VendorMediaResponse>('/vendors/media', {
+      method: 'POST',
+      body,
+      headers: { 'content-type': null },
+    })
+    return response.files
+  }
+
+  const handleAddTag = () => {
+    const value = tagsInput.trim()
+    if (value && !tags.includes(value)) {
+      setTags((current) => [...current, value])
+      setTagsInput('')
+    }
+  }
+
+  const addOption = () => setOptions((current) => [...current, { title: '', values: [] }])
+  const removeOption = (index: number) => setOptions((current) => current.filter((_, itemIndex) => itemIndex !== index))
+  const updateOptionTitle = (index: number, optionTitle: string) => {
+    setOptions((current) =>
+      current.map((option, itemIndex) => (itemIndex === index ? { title: optionTitle, values: [] } : option)),
+    )
+  }
+  const toggleOptionValue = (index: number, value: string) => {
+    setOptions((current) =>
+      current.map((option, itemIndex) =>
+        itemIndex !== index
+          ? option
+          : {
+              ...option,
+              values: option.values.includes(value)
+                ? option.values.filter((candidate) => candidate !== value)
+                : [...option.values, value],
+            },
+      ),
+    )
+  }
+
+  const regenerateVariants = () => {
+    const validOptions = options.filter((option) => option.title.trim() && option.values.length > 0)
+    if (validOptions.length === 0) {
+      const existing = variants.find((variant) => Object.keys(variant.options).length === 0) ?? variants[0]
+      setVariants([
+        existing ?? {
+          title: 'Стандартный',
+          options: {},
+          sku: generateVariantSku(title, ['default'], skuSuffix.current),
+          barcode: '',
+          price: '150',
+          inventory: '0',
+        },
+      ])
+      return
+    }
+
+    const combinations = validOptions
+      .map((option) => option.values)
+      .reduce<
+        string[][]
+      >((current, values) => current.flatMap((combination) => values.map((value) => [...combination, value])), [[]])
+    setVariants(
+      combinations.map((combination, index) => {
+        const variantOptions = Object.fromEntries(
+          validOptions.map((option, optionIndex) => [option.title, combination[optionIndex]]),
+        )
+        const existing = variants.find((variant) => sameOptions(variant.options, variantOptions))
+        return (
+          existing ?? {
+            title: combination.join(' / '),
+            options: variantOptions,
+            sku: generateVariantSku(title, combination, `${skuSuffix.current}-${index + 1}`),
+            barcode: '',
+            price: '150',
+            inventory: '0',
+          }
+        )
+      }),
+    )
+  }
+
+  const updateVariant = <K extends keyof ProductVariant>(index: number, key: K, value: ProductVariant[K]) => {
+    setVariants((current) =>
+      current.map((variant, itemIndex) => (itemIndex === index ? { ...variant, [key]: value } : variant)),
+    )
+  }
+
+  const validateForm = () => {
+    const validations = [
+      stepOneSchema.safeParse({ title, category, tags }),
+      stepTwoSchema.safeParse({ thumbnail, images }),
+      stepThreeSchema.safeParse({ options, weight, length, width, height }),
+      stepFourSchema.safeParse({ variants }),
+    ]
+    const failed = validations.find((result) => !result.success)
+    if (failed && !failed.success) {
+      const errors = getFieldErrors(failed.error)
+      setFieldErrors(errors)
+      toast.error(Object.values(errors)[0])
+      return false
+    }
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(handle)) {
+      setFieldErrors({ handle: 'URL должен содержать только латинские буквы, цифры и дефисы.' })
+      toast.error('Проверьте URL товара.')
+      return false
+    }
+    const validOptions = new Map(options.map((option) => [option.title, new Set(option.values)]))
+    const invalidVariant = variants.find((variant) =>
+      Object.entries(variant.options).some(([optionTitle, value]) => !validOptions.get(optionTitle)?.has(value)),
+    )
+    if (invalidVariant) {
+      setFieldErrors({ variants: 'Синхронизируйте варианты после изменения свойств товара.' })
+      toast.error('Синхронизируйте варианты перед сохранением.')
+      return false
+    }
+    setFieldErrors({})
+    return true
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!product || !validateForm()) return
+    setIsSubmitting(true)
+    try {
+      let nextThumbnail = thumbnail
+      if (thumbnailFile) {
+        const [uploadedThumbnail] = await uploadVendorMedia([thumbnailFile])
+        nextThumbnail = uploadedThumbnail.url
+      }
+
+      const pendingGalleryFiles = galleryFiles.filter((file): file is File => file !== null)
+      const uploadedGalleryFiles = pendingGalleryFiles.length > 0 ? await uploadVendorMedia(pendingGalleryFiles) : []
+      let uploadedIndex = 0
+      const nextImages = images.map((url, index) => {
+        if (galleryFiles[index]) {
+          const uploaded = uploadedGalleryFiles[uploadedIndex++]
+          return { url: uploaded.url }
+        }
+        const existingImage = product.images?.find((image) => image.url === url)
+        return existingImage ? { id: existingImage.id, url } : { url }
+      })
+
+      const response = await medusa.client.fetch<VendorProductResponse>(`/vendors/products/${id}`, {
+        method: 'POST',
+        body: {
+          title: title.trim(),
+          handle: handle.trim(),
+          thumbnail: nextThumbnail || null,
+          images: nextImages,
+          categories: [{ id: category }],
+          metadata: { keywords: tags },
+          weight: weight ? Number(weight) : null,
+          length: length ? Number(length) : null,
+          width: width ? Number(width) : null,
+          height: height ? Number(height) : null,
+          origin_country: originCountry || null,
+          material: material.trim() || null,
+          options: options.map((option) => ({
+            id: option.id,
+            title: option.title.trim(),
+            values: option.values,
+          })),
+          variants: variants.map((variant) => ({
+            id: variant.id,
+            title: variant.title.trim(),
+            sku: variant.sku.trim() || null,
+            barcode: variant.barcode.trim() || null,
+            options: variant.options,
+            price: Number(variant.price),
+            price_id: variant.priceId,
+            inventory: Number(variant.inventory),
+          })),
+        },
+      })
+      hydrateForm(response.product)
+      toast.success('Изменения сохранены')
+    } catch (error) {
+      toast.error('Не удалось обновить товар', {
+        description: error instanceof Error ? error.message : 'Попробуйте ещё раз.',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -151,14 +348,10 @@ export default function ProductDetailsPage() {
     return (
       <div className="bg-apple-canvas-parchment flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4">
         <div className="bg-apple-canvas border-apple-hairline rounded-apple-lg max-w-md border p-8 text-center">
-          <PackageSearch className="text-apple-ink-muted-48 mx-auto size-10" aria-hidden="true" />
-          <h1 className="text-apple-tagline text-apple-ink mt-5">
-            {hasLoadError ? 'Не удалось загрузить товар' : 'Товар не найден'}
-          </h1>
+          <PackageSearch className="text-apple-ink-muted-48 mx-auto size-10" />
+          <h1 className="text-apple-tagline text-apple-ink mt-5">Не удалось открыть товар</h1>
           <p className="text-apple-caption text-apple-ink-muted-48 mt-2">
-            {hasLoadError
-              ? 'Проверьте подключение и попробуйте открыть страницу ещё раз.'
-              : 'Возможно, товар был удалён или у вас больше нет к нему доступа.'}
+            Товар не найден, был удалён или больше не принадлежит вашему магазину.
           </p>
           <Button asChild variant="outline" className="mt-6">
             <Link href="/dashboard/products">
@@ -174,362 +367,115 @@ export default function ProductDetailsPage() {
     label: product.status,
     className: 'border-amber-200 bg-amber-50 text-amber-700',
   }
-  const variants = product.variants ?? []
-  const images = product.images ?? []
-  const categories = product.categories ?? []
-  const keywords: string[] = product.metadata?.keywords ?? []
-
-  // Total inventory across all variants
-  const totalInventory = variants.reduce((sum, v) => sum + (v.inventory_quantity ?? 0), 0)
-
-  // Collect unique product options from variant option values
-  const optionMap = new Map<string, Set<string>>()
-  variants.forEach((v) => {
-    v.options?.forEach((opt) => {
-      if (opt.option?.title) {
-        if (!optionMap.has(opt.option.title)) {
-          optionMap.set(opt.option.title, new Set())
-        }
-        optionMap.get(opt.option.title)!.add(opt.value)
-      }
-    })
-  })
-
-  const hasLogistics =
-    product.weight || product.length || product.width || product.height || product.origin_country || product.material
 
   return (
-    <div className="bg-apple-canvas-parchment min-h-[calc(100vh-3.5rem)] p-6 max-md:p-4">
-      <div className="mx-auto max-w-5xl space-y-5">
-        {/* Back link */}
-        <Link
-          href="/dashboard/products"
-          className="text-apple-caption text-apple-primary inline-flex items-center gap-1.5 font-semibold hover:underline"
-        >
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Все товары
-        </Link>
-
-        {/* ── HERO CARD: thumbnail + core info (Compact fit layout) ── */}
-        <SectionCard className="overflow-hidden !p-0">
-          <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr]">
-            {/* Left — Thumbnail */}
-            <div className="bg-apple-canvas-parchment border-apple-hairline flex items-center justify-center border-b p-5 lg:border-r lg:border-b-0">
-              {product.thumbnail ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={product.thumbnail}
-                  alt={product.title}
-                  className="rounded-apple-md max-h-48 w-full object-contain"
-                />
-              ) : (
-                <div className="text-apple-ink-muted-48 flex flex-col items-center gap-2 py-6 text-center">
-                  <ImageOff className="size-10" aria-hidden="true" />
-                  <p className="text-apple-fine-print">Без фото</p>
-                </div>
-              )}
+    <form onSubmit={handleSubmit} className="bg-apple-canvas-parchment min-h-[calc(100vh-3.5rem)] p-8 max-md:p-4">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <div className="border-apple-hairline flex items-start justify-between gap-6 border-b pb-6 max-sm:flex-col">
+          <div>
+            <Link
+              href="/dashboard/products"
+              className="text-apple-primary text-apple-button-utility inline-flex items-center font-medium hover:underline"
+            >
+              <ArrowLeft className="mr-1.5 size-4" />
+              Все товары
+            </Link>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <h1 className="text-apple-display-md text-apple-ink font-semibold tracking-tight">
+                Редактирование товара
+              </h1>
+              <Badge className={status.className}>{status.label}</Badge>
             </div>
-
-            {/* Right — Core product info */}
-            <div className="flex flex-col justify-between space-y-4 p-5 sm:p-6">
-              <div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-apple-fine-print text-apple-ink-muted-48 truncate text-[11px] tracking-wider uppercase">
-                    {product.handle}
-                  </p>
-                  <Badge className={`shrink-0 ${status.className}`}>{status.label}</Badge>
-                </div>
-
-                <h1 className="text-apple-ink mt-2 text-xl leading-tight font-semibold tracking-tight sm:text-2xl">
-                  {product.title}
-                </h1>
-
-                {/* ID + copy button */}
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-apple-fine-print text-apple-ink-muted-48 uppercase">ID:</span>
-                  <span className="text-apple-caption text-apple-ink truncate font-mono text-[12px]" title={product.id}>
-                    {product.id}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopyId(product.id)}
-                    title={idCopied ? 'Скопировано' : 'Скопировать ID'}
-                    className="text-apple-ink-muted-48 hover:text-apple-primary shrink-0 rounded p-0.5 transition-colors"
-                    aria-label="Скопировать ID товара"
-                  >
-                    {idCopied ? <Check className="size-3.5 text-green-500" /> : <Clipboard className="size-3.5" />}
-                  </button>
-                  {idCopied && (
-                    <span className="animate-fade-in text-[11px] font-medium text-green-600">Скопирован</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Core metrics summary bar */}
-              <div className="border-apple-divider-soft flex flex-wrap items-center justify-between gap-4 border-t pt-3">
-                <div>
-                  <p className="text-apple-fine-print text-apple-ink-muted-48 text-[11px] tracking-wide uppercase">
-                    Стоимость
-                  </p>
-                  <p className="text-apple-ink mt-0.5 text-lg font-semibold">{getProductPriceLabel(product)}</p>
-                </div>
-
-                <div className="bg-apple-canvas-parchment border-apple-hairline rounded-apple-md flex items-center gap-2 border px-3 py-1.5">
-                  <Boxes className="text-apple-primary size-4 shrink-0" />
-                  <div>
-                    <p className="text-apple-fine-print text-apple-ink-muted-48 text-[10px] uppercase">Общий остаток</p>
-                    <p className="text-apple-ink text-[13px] leading-tight font-semibold">
-                      {totalInventory > 0 ? (
-                        <span className="font-medium text-green-700">{totalInventory} шт. в наличии</span>
-                      ) : (
-                        <span className="font-medium text-red-600">Нет в наличии</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p className="text-apple-caption text-apple-ink-muted-48 mt-1">
+              Измените данные, изображения, свойства, варианты, цены и остатки товара.
+            </p>
           </div>
-        </SectionCard>
-
-        {/* ── 2-COLUMN SECTION GRID ── */}
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          {/* ── SECTION 1: General info ── */}
-          <SectionCard>
-            <SectionHeader icon={Info} title="Общая информация" />
-            <dl className="space-y-4">
-              {/* Category */}
-              <FieldRow
-                label="Категория"
-                value={
-                  categories.length ? (
-                    <div className="mt-0.5 flex flex-wrap gap-1.5">
-                      {categories.map((cat) => (
-                        <span
-                          key={cat.id}
-                          className="bg-apple-canvas-parchment text-apple-ink border-apple-hairline rounded-apple-pill inline-flex items-center border px-2.5 py-0.5 text-[13px]"
-                        >
-                          {cat.name}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <EmptyValue />
-                  )
-                }
-              />
-
-              {/* Tags / Keywords */}
-              <FieldRow
-                label="Теги / Поисковые слова"
-                value={
-                  keywords.length ? (
-                    <div className="mt-0.5 flex flex-wrap gap-1.5">
-                      {keywords.map((kw) => (
-                        <span
-                          key={kw}
-                          className="bg-apple-primary/8 text-apple-primary border-apple-primary/20 rounded-apple-pill inline-flex items-center gap-1 border px-2.5 py-0.5 text-[13px]"
-                        >
-                          <Tag className="size-3 opacity-70" />
-                          {kw}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <EmptyValue />
-                  )
-                }
-              />
-            </dl>
-          </SectionCard>
-
-          {/* ── SECTION 2: Gallery images ── */}
-          <SectionCard>
-            <SectionHeader
-              icon={ImageOff}
-              title="Галерея изображений"
-              extra={
-                images.length > 0 ? (
-                  <span className="text-apple-ink-muted-48 text-[12px]">{images.length} фото</span>
-                ) : undefined
-              }
-            />
-            {images.length > 0 ? (
-              <div className="grid grid-cols-4 gap-2.5 max-sm:grid-cols-3">
-                {images.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className="border-apple-hairline rounded-apple-sm bg-apple-canvas-parchment overflow-hidden border p-1"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.url} alt={`Изображение ${idx + 1}`} className="aspect-square w-full object-contain" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-apple-caption text-apple-ink-muted-48 italic">Дополнительные фото не загружены</p>
-            )}
-          </SectionCard>
+          <Button type="submit" disabled={isSubmitting} className="min-w-36 shadow-xs">
+            {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            {isSubmitting ? 'Сохранение...' : 'Сохранить'}
+          </Button>
         </div>
 
-        {/* ── SECTION 3: Logistics, dimensions & product options ── */}
-        {(hasLogistics || optionMap.size > 0) && (
-          <SectionCard>
-            <SectionHeader icon={Ruler} title="Характеристики и Габариты" />
-            <div className="space-y-4">
-              {/* Dimensions row */}
-              {(product.weight || product.length || product.width || product.height) && (
-                <dl className="grid grid-cols-4 gap-4 max-sm:grid-cols-2">
-                  <FieldRow
-                    label="Вес (г)"
-                    value={
-                      product.weight != null ? (
-                        <span className="flex items-center gap-1.5">
-                          <Weight className="text-apple-ink-muted-48 size-3.5" />
-                          {product.weight} г
-                        </span>
-                      ) : (
-                        <EmptyValue />
-                      )
-                    }
-                  />
-                  <FieldRow
-                    label="Длина (см)"
-                    value={product.length != null ? `${product.length} см` : <EmptyValue />}
-                  />
-                  <FieldRow
-                    label="Ширина (см)"
-                    value={product.width != null ? `${product.width} см` : <EmptyValue />}
-                  />
-                  <FieldRow
-                    label="Высота (см)"
-                    value={product.height != null ? `${product.height} см` : <EmptyValue />}
-                  />
-                </dl>
-              )}
+        <StepOneGeneral
+          title={title}
+          onTitleChange={setTitle}
+          category={category}
+          onCategoryChange={setCategory}
+          tagsInput={tagsInput}
+          onTagsInputChange={setTagsInput}
+          tags={tags}
+          onAddTag={handleAddTag}
+          onRemoveTag={(tag) => setTags((current) => current.filter((item) => item !== tag))}
+          fieldErrors={fieldErrors}
+        />
 
-              {/* Origin country + Material */}
-              {(product.origin_country || product.material) && (
-                <dl
-                  className={`grid grid-cols-2 gap-4 max-sm:grid-cols-1${
-                    product.weight || product.length || product.width || product.height
-                      ? 'border-apple-divider-soft border-t pt-4'
-                      : ''
-                  }`}
-                >
-                  <FieldRow
-                    label="Страна происхождения"
-                    value={
-                      product.origin_country ? (
-                        <span className="flex items-center gap-1.5">
-                          <Globe className="text-apple-ink-muted-48 size-3.5" />
-                          {COUNTRY_NAMES[product.origin_country] ?? product.origin_country}
-                        </span>
-                      ) : (
-                        <EmptyValue />
-                      )
-                    }
-                  />
-                  <FieldRow label="Материал" value={product.material || <EmptyValue />} />
-                </dl>
-              )}
+        <div className="bg-apple-canvas border-apple-hairline rounded-apple-lg border p-8 shadow-xs max-md:p-5">
+          <div className="grid gap-2">
+            <Label htmlFor="handle">URL товара</Label>
+            <Input id="handle" value={handle} onChange={(event) => setHandle(event.target.value.toLowerCase())} />
+            <p className="text-apple-ink-muted-48 text-[12px]">Используется в ссылке на карточку товара.</p>
+            {fieldErrors.handle && <p className="text-xs text-red-600">{fieldErrors.handle}</p>}
+          </div>
+        </div>
 
-              {/* Product options (e.g. Размер: S, M, L) */}
-              {optionMap.size > 0 && (
-                <dl
-                  className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3${
-                    hasLogistics ? 'border-apple-divider-soft border-t pt-4' : ''
-                  }`}
-                >
-                  {Array.from(optionMap.entries()).map(([optionTitle, values]) => (
-                    <FieldRow
-                      key={optionTitle}
-                      label={optionTitle}
-                      value={
-                        <div className="mt-1 flex flex-wrap gap-1.5">
-                          {Array.from(values).map((val) => (
-                            <span
-                              key={val}
-                              className="bg-apple-canvas-parchment text-apple-ink border-apple-hairline rounded-apple-pill border px-2.5 py-0.5 text-[13px]"
-                            >
-                              {val}
-                            </span>
-                          ))}
-                        </div>
-                      }
-                    />
-                  ))}
-                </dl>
-              )}
-            </div>
-          </SectionCard>
-        )}
+        <StepTwoMedia
+          thumbnail={thumbnail}
+          images={images}
+          onThumbnailChange={(url, file) => {
+            setThumbnail(url)
+            setThumbnailFile(file)
+          }}
+          onImagesChange={(urls, files) => {
+            setImages(urls)
+            setGalleryFiles(files)
+          }}
+          thumbnailFile={thumbnailFile}
+          galleryFiles={galleryFiles}
+          fieldErrors={fieldErrors}
+        />
 
-        {/* ── SECTION 4: Variants table ── */}
-        <SectionCard>
-          <SectionHeader icon={Layers} title={`Варианты товара${variants.length ? ` (${variants.length})` : ''}`} />
+        <StepThreeVariants
+          weight={weight}
+          onWeightChange={setWeight}
+          length={length}
+          onLengthChange={setLength}
+          width={width}
+          onWidthChange={setWidth}
+          height={height}
+          onHeightChange={setHeight}
+          originCountry={originCountry}
+          onOriginCountryChange={setOriginCountry}
+          material={material}
+          onMaterialChange={setMaterial}
+          options={options}
+          optionTemplates={optionTemplates}
+          isLoadingOptionTemplates={isLoadingOptionTemplates}
+          onAddOption={addOption}
+          onRemoveOption={removeOption}
+          onUpdateOptionTitle={updateOptionTitle}
+          onToggleOptionValue={toggleOptionValue}
+          fieldErrors={fieldErrors}
+        />
 
-          {variants.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr className="border-apple-hairline text-apple-ink-muted-48 border-b text-[11px] font-semibold tracking-wider uppercase">
-                    <th className="px-3 py-2.5">Вариант</th>
-                    <th className="px-3 py-2.5">Количество (Остаток)</th>
-                    <th className="px-3 py-2.5">Цена</th>
-                    <th className="px-3 py-2.5">Артикул (SKU)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-apple-divider-soft divide-y text-[13px]">
-                  {variants.map((variant) => {
-                    const price = variant.prices?.[0]
-                    const qty = variant.inventory_quantity ?? 0
-                    return (
-                      <tr key={variant.id} className="hover:bg-apple-canvas-parchment/50 transition-colors">
-                        <td className="text-apple-ink px-3 py-3 font-semibold">{variant.title}</td>
-                        <td className="px-3 py-3 whitespace-nowrap">
-                          {qty > 0 ? (
-                            <span className="rounded-apple-pill inline-flex items-center gap-1 border border-green-200 bg-green-50 px-2.5 py-0.5 text-[12px] font-medium text-green-700">
-                              <span className="size-1.5 rounded-full bg-green-500" />
-                              {qty} шт.
-                            </span>
-                          ) : (
-                            <span className="rounded-apple-pill inline-flex items-center gap-1 border border-red-200 bg-red-50 px-2.5 py-0.5 text-[12px] font-medium text-red-600">
-                              <span className="size-1.5 rounded-full bg-red-500" />0 шт. (Нет в наличии)
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-3 whitespace-nowrap">
-                          {price ? (
-                            <span className="text-apple-ink font-medium">
-                              {formatPrice(price.amount, price.currency_code)}
-                            </span>
-                          ) : (
-                            <EmptyValue />
-                          )}
-                        </td>
-                        <td className="px-3 py-3">
-                          {variant.sku ? (
-                            <code className="bg-apple-canvas-parchment text-apple-ink-muted-80 rounded px-1.5 py-0.5 font-mono text-[12px]">
-                              {variant.sku}
-                            </code>
-                          ) : (
-                            <EmptyValue />
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="bg-apple-canvas-parchment border-apple-hairline rounded-apple-md flex min-h-24 items-center justify-center border p-4 text-center">
-              <p className="text-apple-caption text-apple-ink-muted-48">Варианты для этого товара ещё не добавлены.</p>
-            </div>
-          )}
-        </SectionCard>
+        <StepFourVariantsMatrix
+          variants={variants}
+          onUpdateVariant={updateVariant}
+          hasOptionsConfigured={options.some((option) => option.title && option.values.length > 0)}
+          fieldErrors={fieldErrors}
+          onRegenerateVariants={regenerateVariants}
+          onRemoveVariant={(index) => setVariants((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+        />
+
+        <div className="border-apple-hairline flex justify-end gap-3 border-t pt-6">
+          <Button asChild type="button" variant="outline">
+            <Link href="/dashboard/products">Отмена</Link>
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="min-w-36">
+            {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            {isSubmitting ? 'Сохранение...' : 'Сохранить'}
+          </Button>
+        </div>
       </div>
-    </div>
+    </form>
   )
 }
