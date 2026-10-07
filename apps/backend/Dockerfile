@@ -8,12 +8,15 @@ RUN npm install -g pnpm@10.33.3
 
 # Copy monorepo settings and package configs
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY patches ./patches
+COPY packages/api-contracts/package.json ./packages/api-contracts/
 COPY apps/backend/package.json ./apps/backend/
 
 # Install all dependencies (development + production)
 RUN pnpm install --frozen-lockfile
 
-# Copy backend source code
+# Copy workspace and backend source code
+COPY packages/api-contracts ./packages/api-contracts
 COPY apps/backend ./apps/backend
 
 # Build the Medusa application
@@ -27,6 +30,8 @@ WORKDIR /app
 RUN npm install -g pnpm@10.33.3
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY patches ./patches
+COPY packages/api-contracts/package.json ./packages/api-contracts/
 COPY apps/backend/package.json ./apps/backend/
 
 # Install only production dependencies

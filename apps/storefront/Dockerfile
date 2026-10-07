@@ -8,11 +8,14 @@ RUN npm install -g pnpm@10.33.3
 
 # Copy monorepo settings and package configs
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY patches ./patches
+COPY packages/api-contracts/package.json ./packages/api-contracts/
 COPY apps/storefront/package.json ./apps/storefront/
 
 RUN pnpm install --frozen-lockfile
 
-# Copy storefront source code
+# Copy workspace and storefront source code
+COPY packages/api-contracts ./packages/api-contracts
 COPY apps/storefront ./apps/storefront
 
 # Build Next.js storefront
@@ -30,6 +33,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY patches ./patches
+COPY packages/api-contracts/package.json ./packages/api-contracts/
 COPY apps/storefront/package.json ./apps/storefront/
 
 RUN pnpm install --prod --frozen-lockfile

@@ -8,11 +8,14 @@ RUN npm install -g pnpm@10.33.3
 
 # Copy monorepo settings and package configs
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY patches ./patches
+COPY packages/api-contracts/package.json ./packages/api-contracts/
 COPY apps/vendor-portal/package.json ./apps/vendor-portal/
 
 RUN pnpm install --frozen-lockfile
 
-# Copy vendor-portal source code
+# Copy workspace and vendor-portal source code
+COPY packages/api-contracts ./packages/api-contracts
 COPY apps/vendor-portal ./apps/vendor-portal
 
 # Build Next.js vendor-portal
@@ -30,6 +33,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY patches ./patches
+COPY packages/api-contracts/package.json ./packages/api-contracts/
 COPY apps/vendor-portal/package.json ./apps/vendor-portal/
 
 RUN pnpm install --prod --frozen-lockfile

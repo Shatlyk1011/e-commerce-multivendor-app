@@ -26,10 +26,9 @@ docker compose up -d --build
 
 echo -e "\n${GREEN}Services successfully started!${NC}"
 echo -e "${YELLOW}If this is your first run, make sure to execute the setup commands:${NC}"
-echo -e "  1. Run migrations: ${CYAN}docker compose exec medusa npx medusa db:migrate${NC}"
-echo -e "  2. Seed data:       ${CYAN}docker compose exec medusa npx medusa db:migrate:scripts${NC}"
-echo -e "  3. Create Admin:    ${CYAN}docker compose exec medusa npx medusa user -e admin@test.com -p supersecret${NC}"
-echo -e "  4. Setup MinIO:     ${CYAN}docker compose exec minio mc alias set local http://localhost:9000 medusa_admin minio_secret_pass_7291 && docker compose exec minio mc mb local/medusa-media && docker compose exec minio mc anonymous set public local/medusa-media${NC}"
+echo -e "  1. Run migrations: ${CYAN}docker compose exec medusa pnpm --filter @dtc/backend exec medusa db:migrate --execute-safe-links${NC}"
+echo -e "  2. Create Admin:    ${CYAN}docker compose exec medusa pnpm --filter @dtc/backend exec medusa user -e admin@example.test -p 'REPLACE_WITH_A_LONG_UNIQUE_PASSWORD'${NC}"
+echo -e "  3. MinIO bucket:    ${CYAN}created automatically by the minio-init container${NC}"
 
 echo -e "\n${YELLOW}Access URLs:${NC}"
 echo -e "  - Buyer Storefront:       ${CYAN}http://localhost:3000${NC}"
