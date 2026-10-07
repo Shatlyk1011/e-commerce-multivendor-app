@@ -112,7 +112,7 @@ function CartFooter({ close }: { close: () => void }) {
         <span className="text-apple-ink font-sans text-[16px] font-bold">{formatPrice(subtotal)}</span>
       </div>
       {count ? (
-        <Button variant="default" onClick={close} className="w-full cursor-pointer font-semibold">
+        <Button variant="default" asChild onClick={close} className="w-full cursor-pointer font-semibold">
           <Link href="/checkout">Перейти к оформлению</Link>
         </Button>
       ) : (

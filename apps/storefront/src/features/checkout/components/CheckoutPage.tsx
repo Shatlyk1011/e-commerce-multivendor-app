@@ -133,15 +133,12 @@ export function CheckoutPage() {
   const [customerNote, setCustomerNote] = useState('')
   const initialAddressAppliedRef = useRef<string | null>(null)
 
-  const selectedAddress = useMemo(
-    () => addresses.find((address) => address.id === selectedAddressId) ?? null,
-    [addresses, selectedAddressId],
-  )
+  const selectedAddress = useMemo(() => {
+    if (selectedAddressId) {
+      return addresses.find((address) => address.id === selectedAddressId) ?? null
+    }
 
-  useEffect(() => {
-    if (selectedAddressId || addresses.length === 0) return
-    const defaultAddress = addresses.find((address) => address.is_default_shipping) ?? addresses[0]
-    setSelectedAddressId(defaultAddress.id)
+    return addresses.find((address) => address.is_default_shipping) ?? addresses[0] ?? null
   }, [addresses, selectedAddressId])
 
   const addressMutation = useMutation({
@@ -159,24 +156,25 @@ export function CheckoutPage() {
     onError: () => toast.error('Не удалось сохранить адрес доставки. Попробуйте ещё раз.'),
   })
 
+  const { isPending: isAddressMutationPending, mutate: mutateAddress } = addressMutation
   const isPickup = selectedDeliveryMethod === 'pickup'
   const requiresAddress = selectedDeliveryMethod === 'courier'
-  const deliveryDates = useMemo(getDeliveryDates, [])
+  const deliveryDates = useMemo(() => getDeliveryDates(), [])
   const timeSlots = selectedDeliveryDate === 1 ? tomorrowTimeSlots : laterTimeSlots
 
   useEffect(() => {
     if (
       !requiresAddress ||
       !selectedAddress ||
-      addressMutation.isPending ||
+      isAddressMutationPending ||
       initialAddressAppliedRef.current === selectedAddress.id
     ) {
       return
     }
 
     initialAddressAppliedRef.current = selectedAddress.id
-    addressMutation.mutate(selectedAddress)
-  }, [addressMutation.isPending, addressMutation.mutate, requiresAddress, selectedAddress])
+    mutateAddress(selectedAddress)
+  }, [isAddressMutationPending, mutateAddress, requiresAddress, selectedAddress])
 
   const completeMutation = useMutation({
     mutationFn: async () => {
@@ -387,7 +385,7 @@ export function CheckoutPage() {
                   {addresses.length > 0 ? (
                     <div className="grid grid-cols-2 gap-3">
                       {addresses.map((address) => {
-                        const isSelected = selectedAddressId === address.id
+                        const isSelected = selectedAddress?.id === address.id
                         return (
                           <button
                             key={address.id}
