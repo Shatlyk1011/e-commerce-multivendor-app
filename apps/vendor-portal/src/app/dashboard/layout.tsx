@@ -28,6 +28,7 @@ interface VendorContextType {
   vendorAdmin: VendorAdmin | null
   vendor: Vendor | null
   isLoading: boolean
+  updateVendorAdmin: (admin: Partial<VendorAdmin>) => void
   logout: () => Promise<void>
 }
 
@@ -147,7 +148,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   console.log('vendor', vendor)
 
   return (
-    <VendorContext.Provider value={{ vendorAdmin, vendor, isLoading, logout }}>
+    <VendorContext.Provider
+      value={{
+        vendorAdmin,
+        vendor,
+        isLoading,
+        updateVendorAdmin: (admin) => setVendorAdmin((current) => (current ? { ...current, ...admin } : current)),
+        logout,
+      }}
+    >
       <div className="bg-apple-canvas text-apple-ink flex min-h-screen">
         {/* Sidebar */}
         <aside

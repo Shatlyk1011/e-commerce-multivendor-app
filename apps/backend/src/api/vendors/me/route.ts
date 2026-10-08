@@ -6,6 +6,17 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import { MARKETPLACE_MODULE } from "../../../modules/marketplace";
 import MarketplaceModuleService from "../../../modules/marketplace/service";
 import type { Vendor, VendorMeResponse } from "@dtc/api-contracts";
+import { z } from "@medusajs/framework/zod";
+import { updateVendorProfileWorkflow } from "../../../workflows/marketplace/update-vendor-profile";
+
+export const UpdateVendorProfileSchema = z.object({
+  first_name: z.string().trim().min(1).max(100),
+  last_name: z.string().trim().max(100),
+});
+
+export type UpdateVendorProfileSchema = z.infer<
+  typeof UpdateVendorProfileSchema
+>;
 
 const toIsoString = (value: Date | string | null | undefined) =>
   value instanceof Date ? value.toISOString() : value;
@@ -84,4 +95,25 @@ export const GET = async (
   };
 
   res.json(response);
+};
+
+export const POST = async (
+  req: AuthenticatedMedusaRequest<UpdateVendorProfileSchema>,
+  res: MedusaResponse,
+) => {
+  const { result } = await updateVendorProfileWorkflow(req.scope).run({
+    input: {
+      vendorAdminId: req.auth_context.actor_id,
+      ...req.validatedBody,
+    },
+  });
+
+  res.json({
+    vendor_admin: {
+      id: result.vendorAdmin.id,
+      email: result.vendorAdmin.email,
+      first_name: result.vendorAdmin.first_name,
+      last_name: result.vendorAdmin.last_name,
+    },
+  });
 };

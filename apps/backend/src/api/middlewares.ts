@@ -27,6 +27,7 @@ import { CreateSellerRequestSchema } from "./store/seller-requests/route";
 import { UpdateSellerRequestSchema } from "./admin/seller-requests/route";
 import { storeReviewMiddlewares } from "./store/store-reviews/middlewares";
 import { VendorUpdateProductSchema } from "./vendors/products/[id]/route";
+import { UpdateVendorProfileSchema } from "./vendors/me/route";
 
 export const VendorCreateProductSchema = CreateProduct.omit({
   description: true,
@@ -122,9 +123,19 @@ const checkVendorStatusMiddleware = async (
 };
 
 export default defineMiddlewares({
-  routes: [...favoriteMiddlewares, ...storeReviewMiddlewares,
-    { matcher: "/store/seller-requests", method: ["POST"], middlewares: [validateAndTransformBody(CreateSellerRequestSchema)] },
-    { matcher: "/admin/seller-requests/*", method: ["PATCH"], middlewares: [validateAndTransformBody(UpdateSellerRequestSchema)] },
+  routes: [
+    ...favoriteMiddlewares,
+    ...storeReviewMiddlewares,
+    {
+      matcher: "/store/seller-requests",
+      method: ["POST"],
+      middlewares: [validateAndTransformBody(CreateSellerRequestSchema)],
+    },
+    {
+      matcher: "/admin/seller-requests/*",
+      method: ["PATCH"],
+      middlewares: [validateAndTransformBody(UpdateSellerRequestSchema)],
+    },
     ...otpMiddlewares,
     {
       matcher: "/store/auth/me",
@@ -222,6 +233,11 @@ export default defineMiddlewares({
       matcher: "/vendors/products",
       method: ["POST"],
       middlewares: [validateAndTransformBody(VendorCreateProductSchema)],
+    },
+    {
+      matcher: "/vendors/me",
+      method: ["POST"],
+      middlewares: [validateAndTransformBody(UpdateVendorProfileSchema)],
     },
     {
       matcher: "/vendors/products/*",

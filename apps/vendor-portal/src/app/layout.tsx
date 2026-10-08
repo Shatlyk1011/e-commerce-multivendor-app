@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { medusa } from '@/lib/medusa'
 
 import '../../public/fonts.css'
@@ -62,11 +63,20 @@ export default function RootLayout({
   })
 
   return (
-    <html lang="en" className="font-sans">
+    <html lang="ru" className="font-sans" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('vendor-portal-theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.classList.toggle('dark',d)}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="antialiased">
         <QueryClientProvider client={queryClient}>
-          <Toaster position="top-center" />
-          {children}
+          <ThemeProvider>
+            <Toaster position="top-center" />
+            {children}
+          </ThemeProvider>
         </QueryClientProvider>
       </body>
     </html>

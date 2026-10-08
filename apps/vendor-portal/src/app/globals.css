@@ -3,6 +3,19 @@
 @import 'shadcn/tailwind.css';
 
 :root {
+  color-scheme: light;
+  --portal-primary: #0066cc;
+  --portal-primary-focus: #0071e3;
+  --portal-ink: #1d1d1f;
+  --portal-ink-muted-80: #333333;
+  --portal-ink-muted-48: #7a7a7a;
+  --portal-divider-soft: #f0f0f0;
+  --portal-hairline: #e0e0e0;
+  --portal-canvas: #ffffff;
+  --portal-canvas-parchment: #f5f5f7;
+  --portal-surface-pearl: #fafafc;
+  --portal-surface-chip: rgba(210, 210, 215, 0.64);
+  --portal-on-primary: #ffffff;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -37,32 +50,55 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --portal-primary: #6aafff;
+  --portal-primary-focus: #8ac0ff;
+  --portal-ink: #f5f5f7;
+  --portal-ink-muted-80: #d3d3d8;
+  --portal-ink-muted-48: #a4a4ad;
+  --portal-divider-soft: #303035;
+  --portal-hairline: #3a3a40;
+  --portal-canvas: #171719;
+  --portal-canvas-parchment: #202023;
+  --portal-surface-pearl: #29292d;
+  --portal-surface-chip: rgba(100, 100, 110, 0.64);
+  --portal-on-primary: #101114;
+  --destructive: #ff7069;
+  --sidebar: #202023;
+  --sidebar-foreground: #f5f5f7;
+  --sidebar-accent: #29292d;
+  --sidebar-accent-foreground: #f5f5f7;
+  --sidebar-border: #3a3a40;
+  --sidebar-ring: #6aafff;
+}
+
 @theme inline {
   /* Fonts */
   --font-heading: 'Geist', system-ui, -apple-system, sans-serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
   /* Colors */
-  --color-apple-primary: #0066cc;
-  --color-apple-primary-focus: #0071e3;
+  --color-apple-primary: var(--portal-primary);
+  --color-apple-primary-focus: var(--portal-primary-focus);
   --color-apple-primary-on-dark: #2997ff;
-  --color-apple-ink: #1d1d1f;
-  --color-apple-body: #1d1d1f;
+  --color-apple-ink: var(--portal-ink);
+  --color-apple-body: var(--portal-ink);
   --color-apple-body-on-dark: #ffffff;
   --color-apple-body-muted: #cccccc;
-  --color-apple-ink-muted-80: #333333;
-  --color-apple-ink-muted-48: #7a7a7a;
-  --color-apple-divider-soft: #f0f0f0;
-  --color-apple-hairline: #e0e0e0;
-  --color-apple-canvas: #ffffff;
-  --color-apple-canvas-parchment: #f5f5f7;
-  --color-apple-surface-pearl: #fafafc;
+  --color-apple-ink-muted-80: var(--portal-ink-muted-80);
+  --color-apple-ink-muted-48: var(--portal-ink-muted-48);
+  --color-apple-divider-soft: var(--portal-divider-soft);
+  --color-apple-hairline: var(--portal-hairline);
+  --color-apple-canvas: var(--portal-canvas);
+  --color-apple-canvas-parchment: var(--portal-canvas-parchment);
+  --color-apple-surface-pearl: var(--portal-surface-pearl);
   --color-apple-surface-tile-1: #272729;
   --color-apple-surface-tile-2: #2a2a2c;
   --color-apple-surface-tile-3: #252527;
   --color-apple-surface-black: #000000;
-  --color-apple-surface-chip-translucent: rgba(210, 210, 215, 0.64);
-  --color-apple-on-primary: #ffffff;
+  --color-apple-surface-chip-translucent: var(--portal-surface-chip);
+  --color-apple-on-primary: var(--portal-on-primary);
   --color-apple-on-dark: #ffffff;
 
   /* Spacings */
