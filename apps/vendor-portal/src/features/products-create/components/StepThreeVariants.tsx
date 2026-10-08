@@ -4,6 +4,7 @@ import type { ProductOptionTemplate } from '@dtc/api-contracts'
 import { Check, Plus, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -35,6 +36,7 @@ interface StepThreeVariantsProps {
   onUpdateOptionTitle: (index: number, title: string) => void
   onToggleOptionValue: (index: number, value: string) => void
   fieldErrors: FieldErrors
+  mode?: 'create' | 'edit'
 }
 
 export function StepThreeVariants({
@@ -57,21 +59,32 @@ export function StepThreeVariants({
   onRemoveOption,
   onUpdateOptionTitle,
   onToggleOptionValue,
-  fieldErrors,
+  mode = 'create',
 }: StepThreeVariantsProps) {
   return (
-    <div className="animate-fade-in space-y-6">
+    <div
+      className={
+        mode === 'edit' ? 'animate-fade-in grid items-start gap-4 xl:grid-cols-2' : 'animate-fade-in space-y-6'
+      }
+    >
       {/* Optional Dimensions & Logistics Card */}
-      <div className="bg-apple-canvas border-apple-hairline rounded-apple-lg space-y-6 border p-8 shadow-xs max-md:p-5">
-        <div className="border-apple-divider-soft border-b pb-4">
-          <h2 className="text-apple-ink text-[17px] font-semibold">Шаг 3: Характеристики и Габариты</h2>
+      <Card
+        size={mode === 'edit' ? 'sm' : 'default'}
+        className={mode === 'edit' ? 'gap-0 space-y-4 p-5 max-md:p-4' : 'gap-0 space-y-6 p-8 shadow-xs max-md:p-5'}
+      >
+        <div className={`border-apple-divider-soft border-b ${mode === 'edit' ? 'pb-3' : 'pb-4'}`}>
+          <h2 className="text-apple-ink text-[17px] font-semibold">
+            {mode === 'edit' ? 'Характеристики и габариты' : 'Шаг 3: Характеристики и Габариты'}
+          </h2>
           <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
-            Укажите габариты упаковки и логистические параметры (опционально).
+            {mode === 'edit'
+              ? 'Вес и размеры упаковки, страна производства и материал.'
+              : 'Укажите габариты упаковки и логистические параметры (опционально).'}
           </p>
         </div>
 
         {/* Dimensions Grid */}
-        <div className="grid grid-cols-4 gap-4 max-sm:grid-cols-2">
+        <div className="grid grid-cols-4 gap-3 max-sm:grid-cols-2">
           <div className="grid gap-2">
             <div className="flex items-center">
               <Label htmlFor="weight">Вес (грамм)</Label>
@@ -134,7 +147,7 @@ export function StepThreeVariants({
         </div>
 
         {/* Origin Country and Material */}
-        <div className="border-apple-divider-soft grid grid-cols-2 gap-4 border-t pt-6 max-sm:grid-cols-1">
+        <div className="border-apple-divider-soft grid grid-cols-2 gap-3 border-t pt-4 max-sm:grid-cols-1">
           <div className="grid gap-2">
             <div className="flex items-center">
               <Label htmlFor="country">Страна происхождения</Label>
@@ -167,15 +180,22 @@ export function StepThreeVariants({
             />
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Options Configurator (Optional) */}
-      <div className="bg-apple-canvas border-apple-hairline rounded-apple-lg space-y-6 border p-8 shadow-xs max-md:p-5">
-        <div className="border-apple-divider-soft flex items-center justify-between border-b pb-4 max-sm:flex-col max-sm:items-start max-sm:gap-2">
+      <Card
+        size={mode === 'edit' ? 'sm' : 'default'}
+        className={mode === 'edit' ? 'gap-0 space-y-4 p-5 max-md:p-4' : 'gap-0 space-y-6 p-8 shadow-xs max-md:p-5'}
+      >
+        <div className="border-apple-divider-soft flex items-center justify-between border-b pb-3 max-sm:flex-col max-sm:items-start max-sm:gap-2">
           <div>
-            <h2 className="text-apple-ink text-[17px] font-semibold">Варианты товара (размер, цвет и т.д.)</h2>
+            <h2 className="text-apple-ink text-[17px] font-semibold">
+              {mode === 'edit' ? 'Свойства товара' : 'Варианты товара (размер, цвет и т.д.)'}
+            </h2>
             <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
-              Выберите свойства и их значения, утверждённые администратором.
+              {mode === 'edit'
+                ? 'Размер, цвет и другие значения для вариантов товара.'
+                : 'Выберите свойства и их значения, утверждённые администратором.'}
             </p>
           </div>
           <Button
@@ -201,17 +221,18 @@ export function StepThreeVariants({
             Свойства не заданы. Товар будет создан в единственном стандартном варианте.
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-3">
             {options.map((opt, optIdx) => (
               <div
                 key={optIdx}
-                className="bg-apple-canvas-parchment border-apple-hairline rounded-apple-md relative border p-5"
+                className="bg-apple-canvas-parchment border-apple-hairline rounded-apple-md relative border p-4"
               >
                 <button
                   type="button"
                   onClick={() => onRemoveOption(optIdx)}
                   className="text-apple-ink-muted-48 absolute top-4 right-4 transition-colors hover:text-red-600"
                   title="Удалить свойство"
+                  aria-label={`Удалить свойство ${opt.title || optIdx + 1}`}
                 >
                   <Trash2 className="size-4" />
                 </button>
@@ -273,7 +294,7 @@ export function StepThreeVariants({
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }

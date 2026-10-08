@@ -12,13 +12,12 @@ import type {
   VendorProductOptionTemplatesResponse,
   VendorProductResponse,
 } from '@dtc/api-contracts'
-import { ArrowLeft, Loader2, PackageSearch, Save } from 'lucide-react'
+import { ArrowLeft, Images, Loader2, PackageSearch, Save, SlidersHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Card } from '@/components/ui/card'
 import { StepFourVariantsMatrix } from '@/features/products-create/components/StepFourVariantsMatrix'
 import { StepOneGeneral } from '@/features/products-create/components/StepOneGeneral'
 import { StepThreeVariants } from '@/features/products-create/components/StepThreeVariants'
@@ -369,110 +368,162 @@ export default function ProductEditPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-apple-canvas-parchment min-h-[calc(100vh-3.5rem)] p-8 max-md:p-4">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div className="border-apple-hairline flex items-start justify-between gap-6 border-b pb-6 max-sm:flex-col">
-          <div>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-apple-canvas-parchment min-h-[calc(100vh-3.5rem)] px-6 py-6 max-md:px-4 max-md:py-4"
+    >
+      <div className="mx-auto max-w-7xl space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
             <Link
               href="/dashboard/products"
-              className="text-apple-primary text-apple-button-utility inline-flex items-center font-medium hover:underline"
+              className="text-apple-ink-muted-80 hover:text-apple-primary focus-visible:outline-apple-primary inline-flex items-center gap-1.5 text-sm font-medium transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-              <ArrowLeft className="mr-1.5 size-4" />
-              Все товары
+              <ArrowLeft className="size-4" />
+              Товары
             </Link>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <h1 className="text-apple-display-md text-apple-ink font-semibold tracking-tight">
-                Редактирование товара
-              </h1>
-              <Badge className={status.className}>{status.label}</Badge>
-            </div>
-            <p className="text-apple-caption text-apple-ink-muted-48 mt-1">
-              Измените данные, изображения, свойства, варианты, цены и остатки товара.
-            </p>
           </div>
-          <Button type="submit" disabled={isSubmitting} className="min-w-36 shadow-xs">
+          <Button type="submit" disabled={isSubmitting} className="min-w-32">
             {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-            {isSubmitting ? 'Сохранение...' : 'Сохранить'}
+            {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
           </Button>
         </div>
 
-        <StepOneGeneral
-          title={title}
-          onTitleChange={setTitle}
-          category={category}
-          onCategoryChange={setCategory}
-          tagsInput={tagsInput}
-          onTagsInputChange={setTagsInput}
-          tags={tags}
-          onAddTag={handleAddTag}
-          onRemoveTag={(tag) => setTags((current) => current.filter((item) => item !== tag))}
-          fieldErrors={fieldErrors}
-        />
-
-        <div className="bg-apple-canvas border-apple-hairline rounded-apple-lg border p-8 shadow-xs max-md:p-5">
-          <div className="grid gap-2">
-            <Label htmlFor="handle">URL товара</Label>
-            <Input id="handle" value={handle} onChange={(event) => setHandle(event.target.value.toLowerCase())} />
-            <p className="text-apple-ink-muted-48 text-[12px]">Используется в ссылке на карточку товара.</p>
-            {fieldErrors.handle && <p className="text-xs text-red-600">{fieldErrors.handle}</p>}
+        <Card size="sm" className="gap-0 p-4 max-sm:p-3">
+          <div className="flex items-center gap-4 max-sm:items-start">
+            <div className="border-apple-hairline bg-apple-surface-pearl rounded-apple-md flex size-16 shrink-0 items-center justify-center overflow-hidden border max-sm:size-14">
+              {thumbnail ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={thumbnail} alt="" className="size-full object-contain" />
+              ) : (
+                <PackageSearch className="text-apple-ink-muted-48 size-6" aria-hidden="true" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-apple-ink-muted-48 text-[11px] font-semibold tracking-wide uppercase">
+                Редактирование товара
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <h1 className="text-apple-ink min-w-0 truncate text-xl leading-tight font-semibold tracking-tight max-sm:text-lg">
+                  {title || product.title}
+                </h1>
+                <Badge className={status.className}>{status.label}</Badge>
+              </div>
+              <div className="text-apple-ink-muted-48 mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                <span className="inline-flex items-center gap-1.5">
+                  <SlidersHorizontal className="size-3.5" aria-hidden="true" />
+                  Вариантов: {variants.length}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Images className="size-3.5" aria-hidden="true" />
+                  Изображений: {images.length + (thumbnail ? 1 : 0)}
+                </span>
+              </div>
+            </div>
           </div>
+        </Card>
+
+        <nav aria-label="Разделы товара" className="flex flex-wrap gap-2 pb-1">
+          {[
+            ['#product-basics', 'Основное'],
+            ['#product-media', 'Изображения'],
+            ['#product-specs', 'Характеристики'],
+            ['#product-pricing', 'Цены и остатки'],
+          ].map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              className="border-apple-hairline bg-apple-canvas text-apple-ink-muted-80 hover:border-apple-primary/40 hover:text-apple-primary rounded-apple-pill focus-visible:outline-apple-primary border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="grid items-start gap-4 xl:grid-cols-2">
+          <section id="product-basics" className="scroll-mt-20" aria-label="Основная информация">
+            <StepOneGeneral
+              mode="edit"
+              handle={handle}
+              onHandleChange={setHandle}
+              title={title}
+              onTitleChange={setTitle}
+              category={category}
+              onCategoryChange={setCategory}
+              tagsInput={tagsInput}
+              onTagsInputChange={setTagsInput}
+              tags={tags}
+              onAddTag={handleAddTag}
+              onRemoveTag={(tag) => setTags((current) => current.filter((item) => item !== tag))}
+              fieldErrors={fieldErrors}
+            />
+          </section>
+
+          <section id="product-media" className="scroll-mt-20" aria-label="Изображения">
+            <StepTwoMedia
+              mode="edit"
+              thumbnail={thumbnail}
+              images={images}
+              onThumbnailChange={(url, file) => {
+                setThumbnail(url)
+                setThumbnailFile(file)
+              }}
+              onImagesChange={(urls, files) => {
+                setImages(urls)
+                setGalleryFiles(files)
+              }}
+              thumbnailFile={thumbnailFile}
+              galleryFiles={galleryFiles}
+              fieldErrors={fieldErrors}
+            />
+          </section>
         </div>
 
-        <StepTwoMedia
-          thumbnail={thumbnail}
-          images={images}
-          onThumbnailChange={(url, file) => {
-            setThumbnail(url)
-            setThumbnailFile(file)
-          }}
-          onImagesChange={(urls, files) => {
-            setImages(urls)
-            setGalleryFiles(files)
-          }}
-          thumbnailFile={thumbnailFile}
-          galleryFiles={galleryFiles}
-          fieldErrors={fieldErrors}
-        />
+        <section id="product-specs" className="scroll-mt-20" aria-label="Характеристики и свойства">
+          <StepThreeVariants
+            mode="edit"
+            weight={weight}
+            onWeightChange={setWeight}
+            length={length}
+            onLengthChange={setLength}
+            width={width}
+            onWidthChange={setWidth}
+            height={height}
+            onHeightChange={setHeight}
+            originCountry={originCountry}
+            onOriginCountryChange={setOriginCountry}
+            material={material}
+            onMaterialChange={setMaterial}
+            options={options}
+            optionTemplates={optionTemplates}
+            isLoadingOptionTemplates={isLoadingOptionTemplates}
+            onAddOption={addOption}
+            onRemoveOption={removeOption}
+            onUpdateOptionTitle={updateOptionTitle}
+            onToggleOptionValue={toggleOptionValue}
+            fieldErrors={fieldErrors}
+          />
+        </section>
 
-        <StepThreeVariants
-          weight={weight}
-          onWeightChange={setWeight}
-          length={length}
-          onLengthChange={setLength}
-          width={width}
-          onWidthChange={setWidth}
-          height={height}
-          onHeightChange={setHeight}
-          originCountry={originCountry}
-          onOriginCountryChange={setOriginCountry}
-          material={material}
-          onMaterialChange={setMaterial}
-          options={options}
-          optionTemplates={optionTemplates}
-          isLoadingOptionTemplates={isLoadingOptionTemplates}
-          onAddOption={addOption}
-          onRemoveOption={removeOption}
-          onUpdateOptionTitle={updateOptionTitle}
-          onToggleOptionValue={toggleOptionValue}
-          fieldErrors={fieldErrors}
-        />
+        <section id="product-pricing" className="scroll-mt-20" aria-label="Цены и остатки">
+          <StepFourVariantsMatrix
+            mode="edit"
+            variants={variants}
+            onUpdateVariant={updateVariant}
+            hasOptionsConfigured={options.some((option) => option.title && option.values.length > 0)}
+            fieldErrors={fieldErrors}
+            onRegenerateVariants={regenerateVariants}
+            onRemoveVariant={(index) => setVariants((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+          />
+        </section>
 
-        <StepFourVariantsMatrix
-          variants={variants}
-          onUpdateVariant={updateVariant}
-          hasOptionsConfigured={options.some((option) => option.title && option.values.length > 0)}
-          fieldErrors={fieldErrors}
-          onRegenerateVariants={regenerateVariants}
-          onRemoveVariant={(index) => setVariants((current) => current.filter((_, itemIndex) => itemIndex !== index))}
-        />
-
-        <div className="border-apple-hairline flex justify-end gap-3 border-t pt-6">
+        <div className="border-apple-hairline flex justify-end gap-3 border-t pt-4">
           <Button asChild type="button" variant="outline">
             <Link href="/dashboard/products">Отмена</Link>
           </Button>
           <Button type="submit" disabled={isSubmitting} className="min-w-36">
             {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-            {isSubmitting ? 'Сохранение...' : 'Сохранить'}
+            {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
           </Button>
         </div>
       </div>

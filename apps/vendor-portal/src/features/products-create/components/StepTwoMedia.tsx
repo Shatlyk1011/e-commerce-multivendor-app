@@ -9,6 +9,7 @@ import Zoom from 'react-medium-image-zoom'
 import 'react-medium-image-zoom/dist/styles.css'
 import { toast } from 'sonner'
 
+import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Tooltip } from '@/components/ui/tooltip'
 
@@ -22,6 +23,7 @@ interface StepTwoMediaProps {
   thumbnailFile: File | null
   galleryFiles: Array<File | null>
   fieldErrors: FieldErrors
+  mode?: 'create' | 'edit'
 }
 
 export function StepTwoMedia({
@@ -29,9 +31,9 @@ export function StepTwoMedia({
   images,
   onThumbnailChange,
   onImagesChange,
-  thumbnailFile,
   galleryFiles,
   fieldErrors,
+  mode = 'create',
 }: StepTwoMediaProps) {
   // Main Image (Thumbnail) Dropzone
   const onDropThumbnail = useCallback(
@@ -113,12 +115,22 @@ export function StepTwoMedia({
   }
 
   return (
-    <div className="bg-apple-canvas border-apple-hairline rounded-apple-lg animate-fade-in space-y-6 border p-8 shadow-xs max-md:p-5">
-      <div className="border-apple-divider-soft border-b pb-4">
-        <h2 className="text-apple-ink text-[17px] font-semibold">Шаг 2: Изображения товара</h2>
+    <Card
+      size={mode === 'edit' ? 'sm' : 'default'}
+      className={
+        mode === 'edit'
+          ? 'animate-fade-in gap-0 space-y-4 p-5 max-md:p-4'
+          : 'animate-fade-in gap-0 space-y-6 p-8 shadow-xs max-md:p-5'
+      }
+    >
+      <div className={`border-apple-divider-soft border-b ${mode === 'edit' ? 'pb-3' : 'pb-4'}`}>
+        <h2 className="text-apple-ink text-[17px] font-semibold">
+          {mode === 'edit' ? 'Изображения' : 'Шаг 2: Изображения товара'}
+        </h2>
         <p className="text-apple-ink-muted-48 mt-0.5 text-[12px]">
-          Добавьте обязательное главное изображение и дополнительные снимки галереи. Загрузка в хранилище произойдет при
-          сохранении товара.
+          {mode === 'edit'
+            ? 'Главное изображение показывается в каталоге. Дополнительные снимки появятся в галерее.'
+            : 'Добавьте обязательное главное изображение и дополнительные снимки галереи. Загрузка в хранилище произойдет при сохранении товара.'}
         </p>
       </div>
 
@@ -145,7 +157,8 @@ export function StepTwoMedia({
               <button
                 type="button"
                 onClick={removeThumbnail}
-                className="absolute -top-1.5 -right-1.5 z-10 rounded-full bg-red-500 p-1 text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                aria-label="Удалить главное изображение"
+                className="focus-visible:outline-apple-primary absolute -top-1.5 -right-1.5 z-10 rounded-full bg-red-500 p-1 text-white shadow-md transition-opacity hover:bg-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100"
               >
                 <Trash2 className="size-3" />
               </button>
@@ -154,7 +167,7 @@ export function StepTwoMedia({
         ) : (
           <div
             {...getThumbRootProps()}
-            className={`border-apple-hairline rounded-apple-sm bg-apple-surface-pearl flex cursor-pointer flex-col items-center justify-center border-2 border-dashed p-6 text-center transition-all ${
+            className={`border-apple-hairline rounded-apple-sm bg-apple-surface-pearl flex cursor-pointer flex-col items-center justify-center border-2 border-dashed p-4 text-center transition-all ${
               isThumbDragActive
                 ? 'border-apple-primary bg-apple-primary/5 scale-[0.99]'
                 : 'hover:border-apple-primary/45 hover:bg-apple-surface-pearl/70'
@@ -174,7 +187,7 @@ export function StepTwoMedia({
       </div>
 
       {/* Gallery Images Area */}
-      <div className="border-apple-divider-soft space-y-4 border-t pt-6">
+      <div className="border-apple-divider-soft space-y-3 border-t pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Label>Галерея дополнительных изображений (Опционально)</Label>
@@ -186,7 +199,7 @@ export function StepTwoMedia({
         {images.length < 10 && (
           <div
             {...getGalleryRootProps()}
-            className={`border-apple-hairline rounded-apple-sm bg-apple-surface-pearl flex cursor-pointer flex-col items-center justify-center border-2 border-dashed p-6 text-center transition-all ${
+            className={`border-apple-hairline rounded-apple-sm bg-apple-surface-pearl flex cursor-pointer flex-col items-center justify-center border-2 border-dashed p-4 text-center transition-all ${
               isGalleryDragActive
                 ? 'border-apple-primary bg-apple-primary/5 scale-[0.99]'
                 : 'hover:border-apple-primary/45 hover:bg-apple-surface-pearl/70'
@@ -204,7 +217,7 @@ export function StepTwoMedia({
         )}
 
         {images.length > 0 && (
-          <div className="mt-4 grid grid-cols-5 gap-4 max-md:grid-cols-4 max-sm:grid-cols-2">
+          <div className="grid grid-cols-5 gap-2.5 max-md:grid-cols-4 max-sm:grid-cols-2">
             {images.map((img, idx) => (
               <div
                 key={idx}
@@ -221,7 +234,8 @@ export function StepTwoMedia({
                 <button
                   type="button"
                   onClick={(e) => removeGalleryImage(idx, e)}
-                  className="absolute -top-1.5 -right-1.5 z-10 rounded-full bg-red-500 p-1 text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                  aria-label={`Удалить изображение ${idx + 1}`}
+                  className="focus-visible:outline-apple-primary absolute -top-1.5 -right-1.5 z-10 rounded-full bg-red-500 p-1 text-white shadow-md transition-opacity hover:bg-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100"
                 >
                   <Trash2 className="size-2.5" />
                 </button>
@@ -230,6 +244,6 @@ export function StepTwoMedia({
           </div>
         )}
       </div>
-    </div>
+    </Card>
   )
 }
