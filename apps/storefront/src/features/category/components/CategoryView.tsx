@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 
 import { ChevronRight } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { ProductCard } from '@/features/home/components/ProductCard'
 import { useProductReviewSummaries } from '@/features/reviews/api/queries'
 
@@ -21,6 +22,7 @@ interface CategoryViewProps {
 }
 
 export function CategoryView({ categoryId }: CategoryViewProps) {
+  const { locale } = useI18n()
   const router = useRouter()
   const [page, setPage] = useState(0)
 
@@ -130,8 +132,8 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
 
             {/* Total Count */}
             {!productsLoading && products.length > 0 && (
-              <p className="text-apple-ink-muted-48 mt-1 mb-4 text-[13px] select-none">
-                {formatPrice(totalCount)} {getProductWord(totalCount)}
+              <p className="text-apple-ink-muted-48 mt-1 mb-4 text-[13px]">
+                {formatPrice(totalCount, locale)} {getProductWord(totalCount)}
               </p>
             )}
 
@@ -152,7 +154,7 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
 
             {/* Sort Dropdown */}
             {!productsLoading && products.length > 0 && (
-              <div className="text-apple-ink-muted-80 mb-6 flex items-center gap-1.5 text-[13px] font-normal select-none">
+              <div className="text-apple-ink-muted-80 mb-6 flex items-center gap-1.5 text-[13px] font-normal">
                 <span>Сначала показывать:</span>
                 <button className="text-apple-ink hover:text-apple-primary flex cursor-pointer items-center gap-0.5 font-semibold transition-colors focus:outline-none">
                   Популярные

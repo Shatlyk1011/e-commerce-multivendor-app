@@ -4,16 +4,19 @@ import Link from 'next/link'
 
 import { Heart, ShoppingBag, Trash2 } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useCustomerFavorites, useDeleteCustomerFavorite } from '@/features/account/api/queries'
+import { type Locale, intlLocale } from '@/lib/i18n'
 
-function formatPrice(amount: number) {
-  return new Intl.NumberFormat('ru-RU').format(amount)
+function formatPrice(amount: number, locale: Locale) {
+  return new Intl.NumberFormat(intlLocale(locale)).format(amount)
 }
 
 export function FavoritesTab() {
+  const { locale } = useI18n()
   const { data: favorites = [], isLoading, isError } = useCustomerFavorites()
   const removeFavorite = useDeleteCustomerFavorite()
 
@@ -57,10 +60,10 @@ export function FavoritesTab() {
               product.variants?.[0]
             const amount = variant?.calculated_price?.calculated_amount
             const originalAmount = variant?.calculated_price?.original_amount
-            const price = typeof amount === 'number' ? `${formatPrice(amount)} тмт` : 'Цена уточняется'
+            const price = typeof amount === 'number' ? `${formatPrice(amount, locale)} тмт` : 'Цена уточняется'
             const originalPrice =
               typeof amount === 'number' && typeof originalAmount === 'number' && originalAmount > amount
-                ? `${formatPrice(originalAmount)} тмт`
+                ? `${formatPrice(originalAmount, locale)} тмт`
                 : null
             const inStock = variant ? variant.manage_inventory === false || (variant.inventory_quantity ?? 0) > 0 : true
             const category = product.categories?.[0]?.name

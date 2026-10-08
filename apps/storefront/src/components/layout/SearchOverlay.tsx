@@ -4,8 +4,10 @@ import Link from 'next/link'
 
 import { Clock, TrendingUp, X } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Spinner } from '@/components/ui/spinner'
 import { useProducts } from '@/features/home/API'
+import { type Locale, intlLocale } from '@/lib/i18n'
 import { useSearchStore } from '@/store/use-search-store'
 
 interface SearchOverlayProps {
@@ -13,11 +15,12 @@ interface SearchOverlayProps {
   onClose: () => void
 }
 
-function formatPrice(amount: number) {
-  return new Intl.NumberFormat('ru-RU').format(amount)
+function formatPrice(amount: number, locale: Locale) {
+  return new Intl.NumberFormat(intlLocale(locale)).format(amount)
 }
 
 export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayProps) {
+  const { locale } = useI18n()
   const history = useSearchStore((state) => state.history)
   const clearHistory = useSearchStore((state) => state.clearHistory)
   const removeHistoryItem = useSearchStore((state) => state.removeHistoryItem)
@@ -31,11 +34,11 @@ export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayP
 
   return (
     <div
-      className="bg-apple-canvas rounded-apple-lg border-apple-hairline divide-apple-divider-soft animate-in fade-in slide-in-from-top-2 absolute top-full left-1/2 z-50 mt-2 flex h-[400px] w-[720px] -translate-x-1/2 divide-x overflow-hidden border shadow-xl duration-150"
+      className="bg-apple-canvas rounded-apple-lg border-apple-hairline divide-apple-divider-soft animate-in fade-in slide-in-from-top-2 absolute top-full left-0 z-50 mt-2 flex h-[min(70dvh,520px)] w-full flex-col divide-y overflow-hidden border shadow-xl duration-150 lg:left-1/2 lg:h-[400px] lg:w-[720px] lg:-translate-x-1/2 lg:flex-row lg:divide-x lg:divide-y-0"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Left Panel: Search History */}
-      <div className="bg-apple-canvas-parchment/30 flex h-full w-[260px] shrink-0 flex-col p-5">
+      <div className="bg-apple-canvas-parchment/30 flex max-h-40 w-full shrink-0 flex-col p-4 lg:h-full lg:max-h-none lg:w-[260px] lg:p-5">
         <div className="mb-3.5 flex items-center justify-between">
           <span className="font-heading text-apple-ink text-[15px] font-semibold">История</span>
           {history.length > 0 && (
@@ -83,7 +86,7 @@ export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayP
       </div>
 
       {/* Right Panel: Popular Products */}
-      <div className="bg-apple-canvas flex h-full flex-1 flex-col p-5">
+      <div className="bg-apple-canvas flex min-h-0 flex-1 flex-col p-4 lg:h-full lg:p-5">
         <div className="mb-3.5 flex items-center gap-1.5">
           <TrendingUp className="text-apple-primary size-4" />
           <span className="font-heading text-apple-ink text-[15px] font-semibold">Популярные товары</span>
@@ -112,8 +115,8 @@ export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayP
                     ? Math.round(((originalAmount - amount) / originalAmount) * 100)
                     : null
 
-                const price = `${formatPrice(amount)} тмт`
-                const originalPrice = originalAmount ? `${formatPrice(originalAmount)} тмт` : null
+                const price = `${formatPrice(amount, locale)} тмт`
+                const originalPrice = originalAmount ? `${formatPrice(originalAmount, locale)} тмт` : null
 
                 const stockLeft =
                   (Math.abs(product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 145) + 5

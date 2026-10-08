@@ -41,10 +41,10 @@ export default function Home() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return (
-    <main className="bg-apple-canvas text-apple-ink custom-container min-h-screen w-full px-4 py-8 antialiased">
+    <main className="bg-apple-canvas text-apple-ink custom-container min-h-screen w-full px-3 py-5 antialiased sm:px-4 sm:py-8">
       {/* Title Header Section */}
-      <div className="group mb-6 flex w-fit cursor-pointer items-center gap-2 select-none">
-        <h2 className="font-heading text-apple-ink hover:text-apple-primary text-[22px] font-bold tracking-tight transition-colors">
+      <div className="group mb-5 flex w-fit cursor-pointer items-center gap-2 sm:mb-6">
+        <h2 className="font-heading text-apple-ink hover:text-apple-primary text-xl font-bold tracking-tight transition-colors sm:text-[22px]">
           Популярное
         </h2>
         <ChevronRight
@@ -56,13 +56,13 @@ export default function Home() {
       {isError ? (
         <p className="text-apple-ink-muted-48 py-12 text-center text-[14px]">Не удалось загрузить товары.</p>
       ) : isLoading ? (
-        <div className="grid w-full grid-cols-5 gap-x-3 gap-y-5">
+        <div className="grid w-full grid-cols-2 gap-x-2 gap-y-4 sm:grid-cols-3 sm:gap-x-3 sm:gap-y-5 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 12 }).map((_, index) => (
             <div key={index} className="bg-apple-canvas-parchment rounded-apple-lg h-72 animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid w-full grid-cols-5 gap-x-3 gap-y-5">
+        <div className="grid w-full grid-cols-2 gap-x-2 gap-y-4 sm:grid-cols-3 sm:gap-x-3 sm:gap-y-5 lg:grid-cols-4 xl:grid-cols-5">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} reviewSummary={reviewSummaries?.summaries[product.id]} />
           ))}

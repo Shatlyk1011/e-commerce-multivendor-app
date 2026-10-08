@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner'
 
 import { AuthDialog } from '@/components/layout/AuthDialog'
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,6 +36,7 @@ import { cartKeys, useCart } from '@/features/cart/api/queries'
 import { CartItem } from '@/features/cart/components/CartItem'
 import { formatPrice, getCartItemCount, getCartSubtotal } from '@/features/cart/utils'
 import { removeCartId } from '@/lib/cart-cookies'
+import { intlLocale } from '@/lib/i18n'
 import { medusa } from '@/lib/medusa'
 
 import { type DeliveryMethod, completeVendorOrder } from '../api/client'
@@ -84,7 +86,7 @@ const laterTimeSlots = [
   '19:00–20:00',
 ]
 
-function getDeliveryDates(): Array<{ id: DeliveryDate; label: string; date: string }> {
+function getDeliveryDates(locale: 'ru' | 'tk'): Array<{ id: DeliveryDate; label: string; date: string }> {
   return ([1, 2] as DeliveryDate[]).map((offset) => {
     const date = new Date()
     date.setDate(date.getDate() + offset)
@@ -92,7 +94,9 @@ function getDeliveryDates(): Array<{ id: DeliveryDate; label: string; date: stri
     return {
       id: offset,
       label: offset === 1 ? 'Завтра' : 'Послезавтра',
-      date: new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', weekday: 'short' }).format(date),
+      date: new Intl.DateTimeFormat(intlLocale(locale), { day: 'numeric', month: 'long', weekday: 'short' }).format(
+        date,
+      ),
     }
   })
 }
@@ -118,6 +122,7 @@ function SectionTitle({
 }
 
 export function CheckoutPage() {
+  const { locale } = useI18n()
   const router = useRouter()
   const queryClient = useQueryClient()
   const { customer, isAuthenticated } = useAuth()
@@ -159,7 +164,7 @@ export function CheckoutPage() {
   const { isPending: isAddressMutationPending, mutate: mutateAddress } = addressMutation
   const isPickup = selectedDeliveryMethod === 'pickup'
   const requiresAddress = selectedDeliveryMethod === 'courier'
-  const deliveryDates = useMemo(() => getDeliveryDates(), [])
+  const deliveryDates = useMemo(() => getDeliveryDates(locale), [locale])
   const timeSlots = selectedDeliveryDate === 1 ? tomorrowTimeSlots : laterTimeSlots
 
   useEffect(() => {
@@ -532,7 +537,7 @@ export function CheckoutPage() {
                 <div className="border-apple-divider-soft mt-5 space-y-2.5 border-t pt-4 text-[13px]">
                   <div className="text-apple-ink-muted-80 flex justify-between">
                     <span>Товары ({cart.items?.length})</span>
-                    <span>{formatPrice(subtotal, currencyCode)}</span>
+                    <span>{formatPrice(subtotal, currencyCode, locale)}</span>
                   </div>
                   <div className="text-apple-ink-muted-80 flex justify-between">
                     <span>Доставка</span>
@@ -546,7 +551,7 @@ export function CheckoutPage() {
                   </div>
                   <div className="border-apple-divider-soft mt-3 flex justify-between border-t pt-3 text-base font-bold">
                     <span>Итого</span>
-                    <span>{formatPrice(total + deliveryFee, currencyCode)}</span>
+                    <span>{formatPrice(total + deliveryFee, currencyCode, locale)}</span>
                   </div>
                 </div>
                 <Button
@@ -588,7 +593,7 @@ export function CheckoutPage() {
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-apple-ink-muted-48 text-[11px]">Итого</p>
-            <p className="text-apple-ink text-sm font-bold">{formatPrice(total + deliveryFee, currencyCode)}</p>
+            <p className="text-apple-ink text-sm font-bold">{formatPrice(total + deliveryFee, currencyCode, locale)}</p>
           </div>
           <Button disabled={!canComplete || completeMutation.isPending} onClick={() => completeMutation.mutate()}>
             {completeMutation.isPending ? <Loader2 className="animate-spin" /> : 'Оформить'}

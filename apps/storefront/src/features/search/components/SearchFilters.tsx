@@ -127,7 +127,7 @@ export function SearchFilters({ categories, selectedCategoryId, onSelectCategory
   }
 
   return (
-    <aside className="border-apple-divider-soft/50 flex w-[240px] shrink-0 flex-col gap-6 border-r pr-4 select-none max-md:w-full max-md:border-r-0 max-md:pr-0">
+    <aside className="border-apple-divider-soft/50 flex w-[240px] shrink-0 flex-col gap-6 border-r pr-4 max-md:w-full max-md:border-r-0 max-md:pr-0">
       {/* Category Selection Tree */}
       <div className="border-apple-divider-soft border-b pb-4">{renderCategorySection()}</div>
 

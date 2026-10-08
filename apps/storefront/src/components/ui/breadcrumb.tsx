@@ -6,7 +6,7 @@ import { Slot } from 'radix-ui'
 import { cn } from '@/lib/utils'
 
 function Breadcrumb({ ...props }: React.ComponentProps<'nav'>) {
-  return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />
+  return <nav aria-label="Навигационная цепочка" data-slot="breadcrumb" {...props} />
 }
 
 function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
@@ -81,7 +81,7 @@ function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'
       {...props}
     >
       <MoreHorizontal className="size-4" />
-      <span className="sr-only">More</span>
+      <span className="sr-only">Ещё</span>
     </span>
   )
 }

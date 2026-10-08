@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 
 import { AppProviders } from '@/components/providers/AppProviders'
+import { LOCALE_COOKIE, isLocale } from '@/lib/i18n'
 import { siteName, siteUrl } from '@/lib/seo'
 
 import '../../public/fonts.css'
@@ -23,11 +25,13 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const savedLocale = (await cookies()).get(LOCALE_COOKIE)?.value
+  const locale = isLocale(savedLocale) ? savedLocale : 'ru'
   return (
-    <html lang="ru" className="font-sans">
+    <html lang={locale} className="font-sans">
       <body className="antialiased">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders locale={locale}>{children}</AppProviders>
       </body>
     </html>
   )

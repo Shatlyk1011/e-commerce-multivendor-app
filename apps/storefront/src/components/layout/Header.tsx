@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, User, X } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -34,7 +35,7 @@ const CatalogMenu = dynamic(() => import('./CatalogMenu'), {
 const SearchOverlay = dynamic(() => import('./SearchOverlay'), {
   ssr: false,
   loading: () => (
-    <div className="bg-apple-canvas rounded-apple-lg border-apple-hairline absolute top-full left-1/2 z-50 mt-2 flex h-[400px] w-[720px] -translate-x-1/2 items-center justify-center overflow-hidden border shadow-xl">
+    <div className="bg-apple-canvas rounded-apple-lg border-apple-hairline absolute top-full left-0 z-50 mt-2 flex h-[min(70dvh,400px)] w-full items-center justify-center overflow-hidden border shadow-xl lg:left-1/2 lg:h-[400px] lg:w-[720px] lg:-translate-x-1/2">
       <Spinner size="lg" />
     </div>
   ),
@@ -44,16 +45,16 @@ const SearchOverlay = dynamic(() => import('./SearchOverlay'), {
 const CITIES = ['Туркменабад', 'Ашхабад']
 
 export function Header() {
+  const { locale: selectedLang, setLocale: setSelectedLang } = useI18n()
   const { customer, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth()
   const storeCity = useUIStore((state) => state.selectedCity)
   const setSelectedCity = useUIStore((state) => state.setSelectedCity)
 
   const pathname = usePathname()
-  const isCheckout = pathname.includes('checkout')
 
   const selectedCity = storeCity || CITIES[0]
-  const [selectedLang, setSelectedLang] = useState('ru') // 'ru' or 'tk'
   const [searchQuery, setSearchQuery] = useState('')
+  const [languageOpen, setLanguageOpen] = useState(false)
 
   // Catalog Menu state
   const [catalogOpen, setCatalogOpen] = useState(false)
@@ -79,15 +80,15 @@ export function Header() {
   useEffect(() => {
     if (catalogOpen || searchFocused) {
       document.documentElement.style.overflow = 'hidden'
-      document.documentElement.style.scrollbarGutter = 'stable'
+      document.documentElement.style.scrollbarGutter = window.matchMedia('(min-width: 1024px)').matches ? 'stable' : ''
     } else {
       document.documentElement.style.overflow = ''
-      document.documentElement.style.scrollbarGutter = 'initial'
+      document.documentElement.style.scrollbarGutter = ''
     }
 
     return () => {
       document.documentElement.style.overflow = ''
-      document.documentElement.style.scrollbarGutter = 'initial'
+      document.documentElement.style.scrollbarGutter = ''
     }
   }, [catalogOpen, searchFocused])
 
@@ -119,22 +120,25 @@ export function Header() {
   return (
     <header
       className={cn(
-        'bg-apple-canvas border-apple-divider-soft sticky top-0 z-40 w-full border-b select-none',
+        'bg-apple-canvas border-apple-divider-soft sticky top-0 z-40 w-full border-b',
         hiddenHeader && 'hidden',
       )}
     >
       {/* ROW 1: TOP BAR */}
-      <div className={cn('bg-apple-canvas-parchment text-apple-ink-muted-80 w-full px-4 py-1.5 text-[13px]')}>
-        <div className="custom-container mx-auto flex items-center justify-between">
+      <div className="bg-apple-canvas-parchment text-apple-ink-muted-80 w-full px-3 text-[13px] lg:px-4 lg:py-1.5">
+        <div className="custom-container mx-auto flex min-h-11 items-center justify-between max-lg:min-h-auto">
           {/* Top Bar Left: Location & Pick-up points */}
-          <div className="flex items-center gap-6">
+          <div className="flex min-w-0 items-center gap-6">
             {/* City Selector */}
             <Popover>
               <PopoverTrigger asChild>
-                <button className="hover:text-apple-primary flex cursor-pointer items-center gap-1 outline-hidden transition-colors">
+                <button
+                  aria-label={`Выбрать город, сейчас ${selectedCity}`}
+                  className="hover:text-apple-primary flex min-h-11 min-w-0 cursor-pointer items-center gap-1 outline-hidden transition-colors lg:min-h-0"
+                >
                   <MapPin className="text-apple-ink-muted-48 size-4" />
-                  <span className="text-apple-ink-muted-48">Город:</span>
-                  <span className="text-apple-ink hover:text-apple-primary decoration-apple-ink-muted-48 font-medium underline decoration-dotted underline-offset-4 transition-colors">
+                  <span className="text-apple-ink-muted-48 hidden lg:inline">Город:</span>
+                  <span className="text-apple-ink hover:text-apple-primary decoration-apple-ink-muted-48 truncate font-medium underline decoration-dotted underline-offset-4 transition-colors">
                     {selectedCity}
                   </span>
                   <ChevronDown className="text-apple-ink-muted-48 size-3.5" />
@@ -152,7 +156,7 @@ export function Header() {
                       disabled={city === 'Ашхабад'}
                       onClick={() => setSelectedCity(city)}
                       className={cn(
-                        'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center justify-between px-3 py-2 text-left transition-colors disabled:opacity-50',
+                        'rounded-apple-sm hover:bg-apple-canvas-parchment flex min-h-11 w-full items-center justify-between px-3 py-2 text-left transition-colors disabled:opacity-50',
                         selectedCity === city
                           ? 'text-apple-primary bg-apple-canvas-parchment font-semibold'
                           : 'text-apple-ink-muted-80',
@@ -169,17 +173,17 @@ export function Header() {
             {/* Pick-up points */}
             <Link
               href="/pickup-points"
-              className="text-apple-ink-muted-80 hover:text-apple-primary font-medium transition-colors"
+              className="text-apple-ink-muted-80 hover:text-apple-primary hidden font-medium transition-colors lg:inline"
             >
               Пункты выдачи
             </Link>
           </div>
 
           {/* Top Bar Right: Vendor Links & Lang Selector */}
-          <div className="flex items-center gap-6">
+          <div className="flex shrink-0 items-center gap-6">
             <Link
               href="/become-seller"
-              className="text-apple-primary hover:text-apple-primary-focus font-semibold transition-colors"
+              className="text-apple-primary hover:text-apple-primary-focus hidden font-semibold transition-colors lg:inline"
             >
               Стать продавцом
             </Link>
@@ -189,21 +193,26 @@ export function Header() {
             >
               Открыть пункт выдачи
             </Link> */}
-            <Link href="/faq" className="text-apple-ink-muted-80 hover:text-apple-primary transition-colors">
+            <Link
+              href="/faq"
+              className="text-apple-ink-muted-80 hover:text-apple-primary hidden transition-colors lg:inline"
+            >
               Вопрос-ответ
             </Link>
             <Link
               href="/account/orders"
-              className="text-apple-ink-muted-80 hover:text-apple-primary font-medium transition-colors"
+              className="text-apple-ink-muted-80 hover:text-apple-primary hidden font-medium transition-colors lg:inline"
             >
               Мои заказы
             </Link>
 
             {/* Language Selector */}
-            <Popover>
+            <Popover open={languageOpen} onOpenChange={setLanguageOpen}>
               <PopoverTrigger asChild>
-                <button className="text-apple-ink-muted-80 hover:text-apple-primary flex cursor-pointer items-center gap-1.5 outline-hidden transition-colors">
-                  <span className="font-medium">{selectedLang === 'ru' ? 'Русский' : 'Turkmen'}</span>
+                <button className="text-apple-ink-muted-80 hover:text-apple-primary flex min-h-11 cursor-pointer items-center gap-1.5 outline-hidden transition-colors lg:min-h-0">
+                  <span className="font-medium" data-i18n-ignore lang={selectedLang}>
+                    {selectedLang === 'ru' ? 'Русский' : 'Türkmen'}
+                  </span>
                   <ChevronDown className="text-apple-ink-muted-48 size-3.5" />
                 </button>
               </PopoverTrigger>
@@ -212,41 +221,71 @@ export function Header() {
                 align="end"
               >
                 <button
-                  onClick={() => setSelectedLang('ru')}
+                  onClick={() => {
+                    setSelectedLang('ru')
+                    setLanguageOpen(false)
+                  }}
                   className={cn(
-                    'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
+                    'rounded-apple-sm hover:bg-apple-canvas-parchment flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
                     selectedLang === 'ru'
                       ? 'text-apple-ink bg-apple-canvas-parchment font-semibold'
                       : 'text-apple-ink-muted-80',
                   )}
                 >
-                  <span>Русский</span>
+                  <span data-i18n-ignore lang="ru">
+                    Русский
+                  </span>
                   {selectedLang === 'ru' && <Check className="text-apple-primary ml-auto size-3.5" />}
                 </button>
                 <button
-                  onClick={() => setSelectedLang('tk')}
+                  onClick={() => {
+                    setSelectedLang('tk')
+                    setLanguageOpen(false)
+                  }}
                   className={cn(
-                    'rounded-apple-sm hover:bg-apple-canvas-parchment flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
-                    selectedLang === 'uz'
+                    'rounded-apple-sm hover:bg-apple-canvas-parchment flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
+                    selectedLang === 'tk'
                       ? 'text-apple-ink bg-apple-canvas-parchment font-semibold'
                       : 'text-apple-ink-muted-80',
                   )}
                 >
-                  <span>Turkmen</span>
+                  <span data-i18n-ignore lang="tk">
+                    Türkmen
+                  </span>
                   {selectedLang === 'tk' && <Check className="text-apple-primary ml-auto size-3.5" />}
                 </button>
               </PopoverContent>
             </Popover>
           </div>
         </div>
+        <nav
+          aria-label="Дополнительные ссылки"
+          className="custom-container border-apple-divider-soft flex gap-6 border-t lg:hidden"
+        >
+          <Link
+            href="/become-seller"
+            className="text-apple-primary hover:text-apple-primary-focus flex items-center py-2 font-semibold transition-colors"
+          >
+            Стать продавцом
+          </Link>
+          <Link
+            href="/pickup-points"
+            className="text-apple-ink-muted-80 hover:text-apple-primary flex items-center py-2 font-medium transition-colors"
+          >
+            Пункты выдачи
+          </Link>
+        </nav>
       </div>
 
       {/* ROW 2: MAIN HEADER */}
-      <div className={cn('bg-apple-canvas w-full p-4', hiddenHeader && 'hidden')}>
-        <div className="custom-container mx-auto flex items-center gap-6">
+      <div className="bg-apple-canvas w-full px-3 py-2 lg:p-4">
+        <div className="custom-container mx-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 max-lg:justify-start lg:flex-nowrap lg:justify-normal lg:gap-6">
           {/* Logo Brand */}
-          <Link href="/" className="group flex shrink-0 items-center gap-2 select-none">
-            logo
+          <Link
+            href="/"
+            className="group order-2 flex shrink-0 items-center gap-2 font-semibold select-none lg:order-none lg:text-base"
+          >
+            Bugday
           </Link>
 
           {/* Catalog Button */}
@@ -254,20 +293,26 @@ export function Header() {
             variant={catalogOpen ? 'default' : 'secondary'}
             size="sm"
             onClick={() => setCatalogOpen(!catalogOpen)}
-            className="shrink-0 cursor-pointer gap-2 px-4 font-semibold transition-all"
+            aria-label={catalogOpen ? 'Закрыть каталог' : 'Открыть каталог'}
+            aria-expanded={catalogOpen}
+            className="order-1 size-11 shrink-0 cursor-pointer gap-2 px-0 font-semibold transition-all lg:order-none lg:h-9 lg:w-auto lg:px-4"
           >
             {catalogOpen ? <X className="size-4" /> : <Grid2x2 className="size-4" />}
-            <span>Каталог</span>
+            <span className="hidden lg:inline">Каталог</span>
           </Button>
 
           {/* Wide Search Bar */}
-          <OnClickOutside onClickOutside={() => setSearchFocused(false)} classes="relative max-w-full flex-20">
+          <OnClickOutside
+            onClickOutside={() => setSearchFocused(false)}
+            classes="relative order-4 w-full min-w-0 lg:order-none lg:w-auto lg:flex-20"
+          >
             <form
               onSubmit={handleSearchSubmit}
               className="border-apple-hairline rounded-apple-pill focus-within:border-apple-primary-focus focus-within:ring-apple-primary-focus bg-apple-canvas flex h-11 items-center overflow-hidden border transition-all focus-within:ring-1"
             >
               <Input
                 type="text"
+                aria-label="Искать товары и категории"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => {
@@ -276,12 +321,13 @@ export function Header() {
                     setCatalogOpen(false)
                   }
                 }}
-                className="placeholder:text-apple-ink-muted-48 text-apple-ink h-full flex-1 border-none px-4 text-[14px] shadow-none outline-hidden focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="placeholder:text-apple-ink-muted-48 text-apple-ink h-full min-w-0 flex-1 border-none px-4 text-base shadow-none outline-hidden focus-visible:ring-0 focus-visible:ring-offset-0 lg:text-[14px]"
                 placeholder="Искать товары и категории"
               />
               <button
                 type="submit"
-                className="bg-apple-canvas-parchment bord er-apple-hairline hover:bg-apple-surface-pearl text-apple-ink-muted-80 flex h-full w-18 shrink-0 cursor-pointer items-center justify-center border-l transition-all duration-150 active:scale-95"
+                aria-label="Найти"
+                className="bg-apple-canvas-parchment border-apple-hairline hover:bg-apple-surface-pearl text-apple-ink-muted-80 flex h-full w-12 shrink-0 cursor-pointer items-center justify-center border-l transition-all duration-150 active:scale-95 lg:w-18"
               >
                 <Search className="size-5" />
               </button>
@@ -292,12 +338,17 @@ export function Header() {
           </OnClickOutside>
 
           {/* Right Controls: Actions */}
-          <div className="flex flex-5 items-center justify-end gap-2">
+          <div className="order-3 flex items-center justify-end gap-0 max-lg:flex-1 lg:order-none lg:flex-5 lg:gap-2">
             {/* Login Dialog */}
             {isAuthenticated && customer ? (
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="default" size="sm" className="cursor-pointer gap-2.5 font-semibold">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    aria-label="Личный кабинет"
+                    className="size-11 cursor-pointer gap-2.5 p-0 font-semibold lg:h-9 lg:w-auto lg:px-[15px]"
+                  >
                     <User />
                     {/* <span>{customer.first_name || customer.phone_number}</span> */}
                   </Button>
@@ -323,21 +374,27 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="cursor-pointer gap-2.5 px-4 font-semibold"
+                aria-label={isAuthLoading ? 'Проверяем вход' : 'Войти'}
+                className="size-11 cursor-pointer gap-2.5 p-0 font-semibold lg:h-9 lg:w-auto lg:px-4"
                 disabled={isAuthLoading}
                 onClick={() => setLoginOpen(true)}
               >
                 {isAuthLoading ? <Spinner size="sm" /> : <User />}
-                <span>{isAuthLoading ? 'Проверяем…' : 'Войти'}</span>
+                <span className="hidden lg:inline">{isAuthLoading ? 'Проверяем…' : 'Войти'}</span>
               </Button>
             )}
             {!isAuthenticated && loginOpen && <AuthDialog open={loginOpen} onOpenChange={setLoginOpen} />}
 
             {/* Favorites Button */}
-            <Button variant="ghost" size="sm" className="cursor-pointer px-3 font-medium" asChild>
-              <Link href="/account/favorites">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="size-11 cursor-pointer p-0 font-medium lg:h-9 lg:w-auto lg:px-3"
+              asChild
+            >
+              <Link href="/account/favorites" aria-label="Избранное">
                 <Heart className="text-apple-ink-muted-80" />
-                <span>Избранное</span>
+                <span className="hidden lg:inline">Избранное</span>
               </Link>
             </Button>
 

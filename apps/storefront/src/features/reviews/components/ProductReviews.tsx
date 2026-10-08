@@ -4,9 +4,11 @@ import * as React from 'react'
 
 import { BadgeCheck, Star } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth/components/AuthProvider'
+import { intlLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 import { useCreateProductReview, useProductReviews, useReviewEligibility } from '../api/queries'
@@ -29,6 +31,7 @@ function Stars({ rating, className }: { rating: number; className?: string }) {
 }
 
 export function ProductReviews({ productId }: { productId: string }) {
+  const { locale } = useI18n()
   const { isAuthenticated } = useAuth()
   const { data, isLoading } = useProductReviews(productId)
   const { data: eligibility } = useReviewEligibility(productId, isAuthenticated)
@@ -123,7 +126,9 @@ export function ProductReviews({ productId }: { productId: string }) {
                 </span>
               )}
               <time className="text-apple-ink-muted-48 text-xs">
-                {new Intl.DateTimeFormat('ru-RU', { dateStyle: 'medium' }).format(new Date(review.created_at))}
+                {new Intl.DateTimeFormat(intlLocale(locale), { dateStyle: 'medium' }).format(
+                  new Date(review.created_at),
+                )}
               </time>
             </div>
             <p className="text-apple-ink mt-2 text-sm leading-relaxed">{review.comment}</p>

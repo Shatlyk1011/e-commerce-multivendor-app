@@ -6,16 +6,9 @@ import Link from 'next/link'
 
 import { ShoppingBag } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Button } from '@/components/ui/button'
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 
 import { useCart } from '../api/queries'
 import { formatPrice, getCartItemCount, getCartSubtotal } from '../utils'
@@ -28,14 +21,23 @@ export function CartSheet() {
   const [sheet, setSheet] = useState(false)
   return (
     <Sheet open={sheet}>
-      <Button onClick={() => setSheet(true)} variant="ghost" size="sm" className="cursor-pointer px-3 font-medium">
+      <Button
+        onClick={() => setSheet(true)}
+        variant="ghost"
+        size="sm"
+        aria-label={`Корзина, товаров: ${count}`}
+        className="size-11 cursor-pointer p-0 font-medium lg:h-9 lg:w-auto lg:px-3"
+      >
         <div className="relative">
           <ShoppingBag className="text-apple-ink-muted-80" />
-          <span className="bg-apple-primary rounded-apple-full absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center px-1 text-[9px] font-bold text-white">
+          <span
+            aria-live="polite"
+            className="bg-apple-primary rounded-apple-full absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center px-1 text-[9px] font-bold text-white"
+          >
             {count}
           </span>
         </div>
-        <span>Корзина</span>
+        <span className="hidden lg:inline">Корзина</span>
       </Button>
       <SheetContent
         close={() => setSheet(false)}
@@ -102,6 +104,7 @@ function CartBody() {
 }
 
 function CartFooter({ close }: { close: () => void }) {
+  const { locale } = useI18n()
   const { data: cart } = useCart()
   const subtotal = getCartSubtotal(cart)
   const count = getCartItemCount(cart)
@@ -109,7 +112,7 @@ function CartFooter({ close }: { close: () => void }) {
     <div className="border-apple-divider-soft bg-apple-canvas-parchment shrink-0 border-t p-6">
       <div className="mb-4 flex w-full items-center justify-between">
         <span className="text-apple-ink text-[14px] font-medium">Итого:</span>
-        <span className="text-apple-ink font-sans text-[16px] font-bold">{formatPrice(subtotal)}</span>
+        <span className="text-apple-ink font-sans text-[16px] font-bold">{formatPrice(subtotal, 'TMT', locale)}</span>
       </div>
       {count ? (
         <Button variant="default" asChild onClick={close} className="w-full cursor-pointer font-semibold">

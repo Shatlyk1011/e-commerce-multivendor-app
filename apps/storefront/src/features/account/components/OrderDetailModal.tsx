@@ -3,9 +3,11 @@
 import type { StoreOrder } from '@medusajs/types'
 import { Calendar, Clock, MapPin, MessageSquare, Package, Receipt, ShoppingBag, Truck, User } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatPrice } from '@/features/cart/utils'
+import { intlLocale } from '@/lib/i18n'
 
 import { CashPaymentStatusBadge, DeliveryStatusBadge } from './order-status'
 
@@ -32,6 +34,7 @@ function getDeliveryDetails(order: StoreOrder): DeliveryDetails | null {
 }
 
 export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModalProps) {
+  const { locale } = useI18n()
   if (!order) return null
 
   const items = order.items ?? []
@@ -53,7 +56,7 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
               <p className="text-apple-ink-muted-48 text-apple-caption flex items-center gap-1.5 text-xs font-medium sm:text-sm">
                 <Calendar className="text-apple-primary/80 h-3.5 w-3.5 shrink-0" />
                 Оформлен{' '}
-                {new Date(order.created_at).toLocaleDateString('ru-RU', {
+                {new Date(order.created_at).toLocaleDateString(intlLocale(locale), {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric',
@@ -109,13 +112,13 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
                       )}
                       <div className="mt-1 flex items-center gap-2">
                         <span className="text-apple-ink-muted-80 bg-apple-canvas border-apple-hairline rounded border px-2 py-0.5 font-mono text-[11px] font-medium">
-                          {item.quantity} шт. × {formatPrice(item.unit_price, order.currency_code)}
+                          {item.quantity} шт. × {formatPrice(item.unit_price, order.currency_code, locale)}
                         </span>
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
                       <span className="text-apple-ink font-mono text-[14px] font-bold sm:text-[15px]">
-                        {formatPrice(itemTotal, order.currency_code)}
+                        {formatPrice(itemTotal, order.currency_code, locale)}
                       </span>
                     </div>
                   </div>
@@ -193,7 +196,7 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
                         {sm.name || 'Стандартная доставка'}
                       </span>
                       <span className="text-apple-ink-muted-80 font-mono text-[12px]">
-                        {formatPrice(sm.amount, order.currency_code)}
+                        {formatPrice(sm.amount, order.currency_code, locale)}
                       </span>
                     </div>
                   ))
@@ -224,7 +227,7 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
               <div className="flex justify-between">
                 <span>Стоимость товаров ({items.length}):</span>
                 <span className="text-apple-ink font-mono font-medium">
-                  {formatPrice(order.subtotal, order.currency_code)}
+                  {formatPrice(order.subtotal, order.currency_code, locale)}
                 </span>
               </div>
 
@@ -232,7 +235,7 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
                 <div className="flex justify-between">
                   <span>Доставка:</span>
                   <span className="text-apple-ink font-mono font-medium">
-                    {formatPrice(order.shipping_total, order.currency_code)}
+                    {formatPrice(order.shipping_total, order.currency_code, locale)}
                   </span>
                 </div>
               )}
@@ -241,7 +244,7 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
                 <div className="flex justify-between">
                   <span>Налоги:</span>
                   <span className="text-apple-ink font-mono font-medium">
-                    {formatPrice(order.tax_total, order.currency_code)}
+                    {formatPrice(order.tax_total, order.currency_code, locale)}
                   </span>
                 </div>
               )}
@@ -250,7 +253,7 @@ export function OrderDetailModal({ order, open, onOpenChange }: OrderDetailModal
             <div className="border-apple-divider-soft text-apple-ink mt-2 flex items-center justify-between border-t pt-3">
               <span className="text-sm font-bold tracking-tight sm:text-base">Итого к оплате:</span>
               <span className="text-apple-primary font-mono text-lg font-bold tracking-tight sm:text-xl">
-                {formatPrice(order.total, order.currency_code)}
+                {formatPrice(order.total, order.currency_code, locale)}
               </span>
             </div>
           </div>

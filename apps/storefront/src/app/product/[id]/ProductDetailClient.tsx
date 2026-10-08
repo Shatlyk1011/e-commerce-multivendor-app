@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation'
 
 import { Check, Heart, Info, MapPin, Package, ShoppingBag } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -26,12 +27,13 @@ import { ProductShareButton } from '@/features/product/components/ProductShareBu
 import { ProductReviews } from '@/features/reviews/components/ProductReviews'
 import { StoreReviews } from '@/features/store-reviews/components/StoreReviews'
 import { getCartId } from '@/lib/cart-cookies'
+import { type Locale, intlLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 type ProductOptionSelection = Record<string, string>
 
-function formatPrice(amount: number, currencyCode: string) {
-  return new Intl.NumberFormat('ru-RU', {
+function formatPrice(amount: number, currencyCode: string, locale: Locale) {
+  return new Intl.NumberFormat(intlLocale(locale), {
     style: 'currency',
     currency: currencyCode.toUpperCase(),
     maximumFractionDigits: 2,
@@ -39,6 +41,7 @@ function formatPrice(amount: number, currencyCode: string) {
 }
 
 export function ProductDetailClient() {
+  const { locale } = useI18n()
   const params = useParams()
   const handleOrId = Array.isArray(params?.id) ? params.id[0] : params?.id || ''
   const { data: product, isLoading, isError } = useProduct(handleOrId)
@@ -130,7 +133,7 @@ export function ProductDetailClient() {
   const storeName = vendor?.store_name || vendor?.name
 
   return (
-    <main className="custom-container bg-apple-canvas text-apple-ink mx-auto min-h-screen px-4 py-6 antialiased select-none">
+    <main className="custom-container bg-apple-canvas text-apple-ink mx-auto min-h-screen px-4 py-6 antialiased">
       <div className="border-apple-divider-soft mb-6 flex flex-col justify-between gap-4 border-b py-3 text-[13px] md:flex-row md:items-center">
         <Breadcrumb>
           <BreadcrumbList>
@@ -288,7 +291,7 @@ export function ProductDetailClient() {
               {selectedPrice ? (
                 <div className="mb-5 flex items-baseline gap-2">
                   <span className="text-apple-ink font-sans text-[28px] font-semibold tracking-tight">
-                    {formatPrice(selectedPrice.amount, selectedPrice.currency_code)}
+                    {formatPrice(selectedPrice.amount, selectedPrice.currency_code, locale)}
                   </span>
                   <TooltipProvider>
                     <Tooltip>

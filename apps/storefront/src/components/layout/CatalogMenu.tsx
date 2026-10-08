@@ -77,11 +77,11 @@ export default function CatalogMenu({ onClose }: CatalogMenuProps) {
     return (
       <div
         onClick={onClose}
-        className="animate-in fade-in fixed inset-x-0 top-[106px] bottom-0 z-30 flex justify-center bg-black/40 backdrop-blur-xs duration-200"
+        className="animate-in fade-in absolute inset-x-0 top-full z-30 flex h-[calc(100dvh-100%)] justify-center bg-black/40 backdrop-blur-xs duration-200"
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className="bg-apple-canvas border-apple-hairline rounded-b-apple-lg flex h-[580px] w-full max-w-[1240px] items-center justify-center border-b shadow-xl"
+          className="bg-apple-canvas border-apple-hairline lg:rounded-b-apple-lg flex h-full w-full max-w-[1240px] items-center justify-center border-b shadow-xl lg:h-[580px]"
         >
           <Spinner size="lg" />
         </div>
@@ -92,15 +92,15 @@ export default function CatalogMenu({ onClose }: CatalogMenuProps) {
   return (
     <div
       onClick={onClose}
-      className="animate-in fade-in fixed inset-x-0 top-[106px] bottom-0 z-30 flex justify-center bg-black/40 backdrop-blur-xs duration-200"
+      className="animate-in fade-in absolute inset-x-0 top-full z-30 flex h-[calc(100dvh-100%)] justify-center bg-black/40 backdrop-blur-xs duration-200"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-apple-canvas border-apple-hairline rounded-b-apple-lg flex h-[580px] w-full max-w-[1240px] overflow-hidden border-b shadow-xl"
+        className="bg-apple-canvas border-apple-hairline lg:rounded-b-apple-lg flex h-full w-full max-w-[1240px] flex-col overflow-hidden border-b shadow-xl lg:h-[580px] lg:flex-row"
       >
         {/* Left Sidebar: Root Categories (Level 0) */}
-        <div className="bg-apple-canvas-parchment border-apple-divider-soft w-[260px] shrink-0 scrollbar-thin overflow-y-auto border-r p-3">
-          <ul className="flex flex-col gap-1">
+        <div className="bg-apple-canvas-parchment border-apple-divider-soft w-full shrink-0 overflow-x-auto border-b p-2 lg:w-[260px] lg:overflow-y-auto lg:border-r lg:border-b-0 lg:p-3">
+          <ul className="flex gap-1 lg:flex-col">
             {categories.map((category) => {
               const isActive = category.id === activeRootId
               return (
@@ -109,7 +109,7 @@ export default function CatalogMenu({ onClose }: CatalogMenuProps) {
                     variant="ghost"
                     onClick={() => setActiveRootId(category.id)}
                     className={cn(
-                      'w-full justify-start gap-3 px-4 py-2.5 text-[14px] font-medium active:scale-98',
+                      'min-h-11 justify-start gap-2 px-3 py-2.5 text-[14px] font-medium active:scale-98 lg:w-full lg:gap-3 lg:px-4',
                       isActive
                         ? 'bg-apple-primary/10 text-apple-primary hover:bg-apple-primary/15 hover:text-apple-primary font-semibold'
                         : 'text-apple-ink-muted-80 hover:bg-apple-canvas hover:text-apple-ink',
@@ -118,7 +118,7 @@ export default function CatalogMenu({ onClose }: CatalogMenuProps) {
                     <span className={isActive ? 'text-apple-primary' : 'text-apple-ink-muted-48'}>
                       {getCategoryIcon(category.name)}
                     </span>
-                    <span className="truncate">{category.name}</span>
+                    <span className="whitespace-nowrap lg:truncate">{category.name}</span>
                   </Button>
                 </li>
               )
@@ -127,19 +127,19 @@ export default function CatalogMenu({ onClose }: CatalogMenuProps) {
         </div>
 
         {/* Right Content: Subcategories (Level 1) & Children (Level 2) */}
-        <div className="bg-apple-canvas flex-1 overflow-y-auto p-8">
+        <div className="bg-apple-canvas min-h-0 flex-1 overflow-y-auto p-4 lg:p-8">
           {activeCategory ? (
             <div>
               <Link
                 href={`/category/${activeCategory.id}`}
                 onClick={onClose}
-                className="text-apple-ink hover:text-apple-primary font-heading mb-6 block text-[28px] font-semibold tracking-tight transition-colors"
+                className="text-apple-ink hover:text-apple-primary font-heading mb-5 block text-xl font-semibold tracking-tight transition-colors lg:mb-6 lg:text-[28px]"
               >
                 {activeCategory.name}
               </Link>
 
               {activeCategory.category_children && activeCategory.category_children.length > 0 ? (
-                <div className="grid grid-cols-3 gap-x-8 gap-y-10">
+                <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-y-10">
                   {activeCategory.category_children.map((subcat) => (
                     <SubCategoryColumn key={subcat.id} category={subcat} onClose={onClose} />
                   ))}
@@ -174,7 +174,7 @@ function SubCategoryColumn({ category, onClose }: { category: CategoryTreeNode; 
       <Link
         href={`/category/${category.id}`}
         onClick={onClose}
-        className="text-apple-ink hover:text-apple-primary font-heading mb-3 block text-[15px] font-semibold tracking-tight transition-colors"
+        className="text-apple-ink hover:text-apple-primary font-heading mb-3 flex min-h-11 items-center text-[15px] font-semibold tracking-tight transition-colors lg:min-h-0"
       >
         {category.name}
       </Link>
@@ -184,7 +184,7 @@ function SubCategoryColumn({ category, onClose }: { category: CategoryTreeNode; 
             <Link
               href={`/category/${item.id}`}
               onClick={onClose}
-              className="text-apple-ink-muted-80 hover:text-apple-primary text-[13px] font-normal transition-colors"
+              className="text-apple-ink-muted-80 hover:text-apple-primary flex min-h-11 items-center text-[13px] font-normal transition-colors lg:min-h-0"
             >
               {item.name}
             </Link>

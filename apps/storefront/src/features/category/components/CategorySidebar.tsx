@@ -21,7 +21,7 @@ export function CategorySidebar({ categories, selectedId, onSelect }: CategorySi
   const siblings: CategoryTreeNode[] = hasSelection ? (immediateParent?.category_children ?? categories) : categories
 
   return (
-    <div className="flex w-full flex-col gap-6 font-sans select-none">
+    <div className="flex w-full flex-col gap-6 font-sans">
       {/* Category Section */}
       <div>
         <h3 className="font-heading text-apple-ink mb-4 text-[16px] font-semibold">Категории</h3>

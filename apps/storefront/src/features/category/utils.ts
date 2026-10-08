@@ -1,3 +1,5 @@
+import { type Locale, intlLocale } from '@/lib/i18n'
+
 import { CategoryTreeNode } from './api/types'
 
 // Helper to find a category by ID in the tree
@@ -53,6 +55,6 @@ export function getProductWord(count: number) {
 }
 
 // Helper to format large numbers with space separators
-export function formatPrice(amount: number) {
-  return new Intl.NumberFormat('ru-RU').format(amount)
+export function formatPrice(amount: number, locale: Locale = 'ru') {
+  return new Intl.NumberFormat(intlLocale(locale)).format(amount)
 }

@@ -6,11 +6,14 @@ import Link from 'next/link'
 
 import { BadgeCheck, Star } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Button } from '@/components/ui/button'
+import { intlLocale } from '@/lib/i18n'
 
 import { useStoreReviews } from '../api/queries'
 
 export function StoreReviews({ vendorId, storeName }: { vendorId: string; storeName: string }) {
+  const { locale } = useI18n()
   const [offset, setOffset] = useState(0)
   const query = useStoreReviews(vendorId, offset)
   const data = query.data
@@ -62,7 +65,7 @@ export function StoreReviews({ vendorId, storeName }: { vendorId: string; storeN
                     Подтверждённая покупка
                   </span>
                   <time dateTime={review.created_at} className="text-apple-ink-muted-48 text-xs">
-                    {new Date(review.created_at).toLocaleDateString('ru-RU')}
+                    {new Date(review.created_at).toLocaleDateString(intlLocale(locale))}
                   </time>
                 </div>
                 <p className="text-apple-ink mt-2 text-sm leading-relaxed break-words whitespace-pre-wrap">

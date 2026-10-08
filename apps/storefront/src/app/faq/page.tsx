@@ -2,17 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import type { LucideIcon } from 'lucide-react'
-import {
-  ArrowRight,
-  Banknote,
-  CircleHelp,
-  PackageCheck,
-  RotateCcw,
-  ShoppingBag,
-  Store,
-  Truck,
-  UserRound,
-} from 'lucide-react'
+import { ArrowRight, Banknote, PackageCheck, RotateCcw, ShoppingBag, Store, Truck, UserRound } from 'lucide-react'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
@@ -250,49 +240,20 @@ export default function FaqPage() {
         </Breadcrumb>
       </div>
 
-      <section className="custom-container mx-auto px-4 pt-8 pb-16 sm:pt-12 sm:pb-20" aria-labelledby="faq-title">
-        <div className="rounded-apple-lg border-apple-hairline grid overflow-hidden border lg:grid-cols-2">
-          <div className="bg-apple-canvas-parchment flex min-h-[420px] flex-col justify-between p-7 sm:p-12 lg:min-h-[520px] lg:p-16">
-            <div>
-              <Badge variant="outline" size="lg" className="bg-apple-canvas">
-                Центр помощи
-              </Badge>
-              <h1
-                id="faq-title"
-                className="font-heading mt-7 max-w-lg text-[42px] leading-[1.02] font-semibold tracking-[-1.2px] sm:text-[56px]"
-              >
-                Есть вопрос?
-                <br />
-                Начните здесь.
-              </h1>
-            </div>
-            <p className="text-apple-ink-muted-80 mt-12 max-w-md text-[17px] leading-[1.55] tracking-[-0.374px]">
-              Короткие и понятные ответы о покупках, доставке, возвратах и работе с Bugday.
-            </p>
-          </div>
-
-          <div className="bg-apple-surface-tile-1 text-apple-on-dark flex min-h-[420px] flex-col justify-between p-7 sm:p-12 lg:min-h-[520px] lg:p-16">
-            <div className="flex size-12 items-center justify-center rounded-full border border-white/15">
-              <CircleHelp className="text-apple-primary-on-dark size-6" aria-hidden="true" />
-            </div>
-            <div className="mt-14">
-              <p className="text-apple-body-muted text-[13px] font-semibold tracking-wide uppercase">Популярные темы</p>
-              <div className="mt-5 divide-y divide-white/15 border-y border-white/15">
-                <a href="#orders" className="group flex min-h-14 items-center justify-between gap-4 py-4">
-                  <span className="text-[17px] font-semibold tracking-tight">Как оформить заказ</span>
-                  <ArrowRight className="text-apple-primary-on-dark size-4 transition-transform group-hover:translate-x-1" />
-                </a>
-                <a href="#delivery" className="group flex min-h-14 items-center justify-between gap-4 py-4">
-                  <span className="text-[17px] font-semibold tracking-tight">Доставка и получение</span>
-                  <ArrowRight className="text-apple-primary-on-dark size-4 transition-transform group-hover:translate-x-1" />
-                </a>
-                <a href="#sellers" className="group flex min-h-14 items-center justify-between gap-4 py-4">
-                  <span className="text-[17px] font-semibold tracking-tight">Начать продавать</span>
-                  <ArrowRight className="text-apple-primary-on-dark size-4 transition-transform group-hover:translate-x-1" />
-                </a>
-              </div>
-            </div>
-          </div>
+      <section className="custom-container mx-auto px-4 pt-9 pb-10 sm:pt-12 sm:pb-14" aria-labelledby="faq-title">
+        <div className="max-w-3xl">
+          <Badge variant="outline" size="lg">
+            Центр помощи
+          </Badge>
+          <h1
+            id="faq-title"
+            className="font-heading mt-5 text-[36px] leading-[1.08] font-semibold tracking-[-0.8px] sm:text-[48px]"
+          >
+            Вопросы и ответы
+          </h1>
+          <p className="text-apple-ink-muted-80 mt-3 max-w-2xl text-[16px] leading-[1.6] sm:text-[17px]">
+            Выберите тему ниже и найдите ответ о заказах, оплате, доставке, возвратах или работе с Bugday.
+          </p>
         </div>
       </section>
 

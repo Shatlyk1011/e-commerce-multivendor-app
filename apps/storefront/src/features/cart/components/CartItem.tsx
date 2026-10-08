@@ -7,6 +7,7 @@ import Link from 'next/link'
 import type { StoreCartLineItem } from '@medusajs/types'
 import { ImageOff, Loader2, Minus, Plus, Trash2 } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +61,7 @@ function getVariantDetails(item: CartItemProps['item']) {
 }
 
 export function CartItem({ item, isSheet = false }: CartItemProps) {
+  const { locale } = useI18n()
   const cartId = getCartId()
   const updateMutation = useUpdateLineItem()
   const deleteMutation = useDeleteLineItem()
@@ -252,7 +254,7 @@ export function CartItem({ item, isSheet = false }: CartItemProps) {
                 {/* Line total */}
                 <div className="relative text-right">
                   <span className="text-apple-ink font-heading text-[15px] font-bold tracking-[-0.2px]">
-                    {formatPrice(priceTotal)}
+                    {formatPrice(priceTotal, 'TMT', locale)}
                   </span>
 
                   {localQuantity > 1 && (

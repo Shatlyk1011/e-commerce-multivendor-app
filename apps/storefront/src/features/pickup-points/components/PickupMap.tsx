@@ -92,7 +92,7 @@ export function PickupMap({
   if (!mounted) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-[#f5f5f7]">
-        <div className="text-apple-caption text-[#7a7a7a]">Loading map…</div>
+        <div className="text-apple-caption text-[#7a7a7a]">Загрузка карты…</div>
       </div>
     )
   }

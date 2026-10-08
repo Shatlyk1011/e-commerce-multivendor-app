@@ -7,12 +7,14 @@ import Link from 'next/link'
 import type { StoreOrder } from '@medusajs/types'
 import { ChevronRight, Package } from 'lucide-react'
 
+import { useI18n } from '@/components/providers/I18nProvider'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatPrice } from '@/features/cart/utils'
 import { useMyProductReviews } from '@/features/reviews/api/queries'
 import { OrderStores } from '@/features/store-reviews/components/OrderStores'
+import { intlLocale } from '@/lib/i18n'
 
 import { OrderDetailModal } from './OrderDetailModal'
 import { OrderReviewDialog } from './OrderReviewDialog'
@@ -52,6 +54,7 @@ function OrderItemThumbnail({ src, title }: { src?: string | null; title?: strin
 }
 
 export function OrdersTab({ orders }: OrdersTabProps) {
+  const { locale } = useI18n()
   const [filter, setFilter] = useState<OrderFilter>('all')
   const [selectedOrder, setSelectedOrder] = useState<StoreOrder | null>(null)
   const [reviewProduct, setReviewProduct] = useState<{ id: string; title: string; thumbnail?: string | null } | null>(
@@ -153,13 +156,13 @@ export function OrdersTab({ orders }: OrdersTabProps) {
                       <DeliveryStatusBadge order={order} />
                     </div>
                     <p className="text-apple-ink-muted-48 text-apple-caption mt-1">
-                      Оформлен {new Date(order.created_at).toLocaleDateString('ru-RU')}
+                      Оформлен {new Date(order.created_at).toLocaleDateString(intlLocale(locale))}
                     </p>
                   </div>
                   <div className="flex items-center gap-4 text-right max-sm:w-full max-sm:justify-between max-sm:text-left">
                     <div>
                       <span className="text-apple-ink font-mono text-lg font-bold">
-                        {formatPrice(order.total, order.currency_code)}
+                        {formatPrice(order.total, order.currency_code, locale)}
                       </span>
                       <p className="text-apple-ink-muted-48 text-xs">{formatItemCount(itemCount)}</p>
                     </div>
@@ -226,7 +229,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
 
                               {/* Unit Price */}
                               <TableCell className="text-apple-ink-muted-80 py-3 text-right font-mono text-[13px] whitespace-nowrap">
-                                {formatPrice(item.unit_price, order.currency_code)}
+                                {formatPrice(item.unit_price, order.currency_code, locale)}
                               </TableCell>
 
                               {/* Quantity */}
@@ -236,7 +239,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
 
                               {/* Total */}
                               <TableCell className="text-apple-ink py-3 text-right font-mono text-[13px] font-semibold whitespace-nowrap">
-                                {formatPrice(lineTotal, order.currency_code)}
+                                {formatPrice(lineTotal, order.currency_code, locale)}
                               </TableCell>
 
                               {/* Review Action */}
