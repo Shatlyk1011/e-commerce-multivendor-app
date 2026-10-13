@@ -4,6 +4,19 @@ You can extend the Medusa Admin to add widgets and new pages. Your customization
 
 > Learn more about Admin Extensions in [this documentation](https://docs.medusajs.com/learn/fundamentals/admin).
 
+## Orders Table
+
+The `/app/orders` table uses the delivery and cash-payment metadata from the
+order delivery widget. Both views share the types, labels, and fallback values
+in `lib/order-delivery.ts`; the table cells are in
+`components/order-delivery-columns.tsx`.
+
+The built-in Medusa table is customized through
+`patches/@medusajs__dashboard.patch` at the repository root. Its import resolves
+through the `@marketplace/order-delivery-columns` Vite alias in
+`medusa-config.ts`. Keep the source and compiled dashboard changes in that
+patch when upgrading Medusa. The patch also preserves the TMT currency entry.
+
 ## Example: Create a Widget
 
 A widget is a React component that can be injected into an existing page in the admin dashboard.

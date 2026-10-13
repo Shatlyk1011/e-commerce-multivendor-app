@@ -5,31 +5,18 @@ import { useState } from "react";
 
 import { sdk } from "../lib/client";
 
-type DeliveryMethod = "pickup" | "courier";
-type DeliveryStatus =
-  | "awaiting_confirmation"
-  | "preparing"
-  | "ready_for_pickup"
-  | "out_for_delivery"
-  | "picked_up"
-  | "delivered"
-  | "cancelled";
-type CashPaymentStatus = "pending" | "collected" | "refunded" | "cancelled";
-type VendorOrderOperationalStatus = "new" | "courier_handoff" | "cancelled";
+import {
+  cashLabels,
+  deliveryMethodLabels,
+  getCashPaymentStatus,
+  getDeliveryDetails,
+  getDeliveryStatus,
+  statusLabels,
+  type CashPaymentStatus,
+  type DeliveryStatus,
+} from "../lib/order-delivery";
 
-type DeliveryDetails = {
-  method: DeliveryMethod;
-  pickup_point?: {
-    title?: string;
-    address?: string;
-    city?: string;
-    hours?: string;
-  };
-  delivery_date?: string;
-  time_slot?: string;
-  recipient_phone?: string;
-  customer_note?: string;
-};
+type VendorOrderOperationalStatus = "new" | "courier_handoff" | "cancelled";
 
 type OrderWidgetProps = {
   data: {
@@ -51,55 +38,6 @@ type VendorOperationResponse = {
     updated_at?: string;
   } | null;
 };
-
-const statusLabels: Record<DeliveryStatus, string> = {
-  awaiting_confirmation: "Ожидает подтверждения",
-  preparing: "Собирается",
-  ready_for_pickup: "Готов к выдаче",
-  out_for_delivery: "Передан курьеру",
-  picked_up: "Получен",
-  delivered: "Доставлен",
-  cancelled: "Отменен",
-};
-
-const cashLabels: Record<CashPaymentStatus, string> = {
-  pending: "Ожидает оплаты",
-  collected: "Оплачено наличными",
-  refunded: "Возврат наличных",
-  cancelled: "Оплата отменена",
-};
-
-function getDeliveryDetails(
-  metadata?: Record<string, unknown> | null,
-): DeliveryDetails | null {
-  const delivery = metadata?.delivery;
-  if (!delivery || typeof delivery !== "object" || Array.isArray(delivery)) {
-    return null;
-  }
-
-  const method = (delivery as { method?: unknown }).method;
-  return method === "pickup" || method === "courier"
-    ? (delivery as DeliveryDetails)
-    : null;
-}
-
-function getDeliveryStatus(
-  metadata: Record<string, unknown> | null | undefined,
-): DeliveryStatus {
-  const status = metadata?.delivery_status;
-  return typeof status === "string" && status in statusLabels
-    ? (status as DeliveryStatus)
-    : "awaiting_confirmation";
-}
-
-function getCashPaymentStatus(
-  metadata: Record<string, unknown> | null | undefined,
-): CashPaymentStatus {
-  const status = metadata?.cash_payment_status;
-  return typeof status === "string" && status in cashLabels
-    ? (status as CashPaymentStatus)
-    : "pending";
-}
 
 const OrderDeliveryWidget = ({ data }: OrderWidgetProps) => {
   const queryClient = useQueryClient();
@@ -187,7 +125,7 @@ const OrderDeliveryWidget = ({ data }: OrderWidgetProps) => {
           Доставка и оплата
         </Text>
         <Badge size="small" className="mt-1 " color="blue">
-          {delivery.method === "pickup" ? "Самовывоз" : "Курьерская доставка"}
+          {deliveryMethodLabels[delivery.method]}
         </Badge>
       </div>
 

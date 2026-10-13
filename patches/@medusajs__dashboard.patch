@@ -20,7 +20,7 @@ index 46e08fdddee4009386ace2320e2dbef78665f0a4..8163022aa8121b4083a798a6fa0a8656
 +++ b/src/lib/data/currencies.ts
 @@ -7,6 +7,12 @@ export type CurrencyInfo = {
  }
- 
+
  export const currencies: Record<string, CurrencyInfo> = {
 +  TMT: {
 +    code: "TMT",
@@ -31,3 +31,71 @@ index 46e08fdddee4009386ace2320e2dbef78665f0a4..8163022aa8121b4083a798a6fa0a8656
    USD: {
      code: "USD",
      name: "US Dollar",
+diff --git a/dist/order-list-3SSBIUDZ.mjs b/dist/order-list-3SSBIUDZ.mjs
+index 566e84de5b00c00dfc0b836ad4959fdb9b9cd906..e0095a859742eb29a511cff3021ef99f507df7fe 100644
+--- a/dist/order-list-3SSBIUDZ.mjs
++++ b/dist/order-list-3SSBIUDZ.mjs
+@@ -1,3 +1,4 @@
++import { orderDeliveryColumns } from "@marketplace/order-delivery-columns";
+ import {
+   useOrderTableColumns
+ } from "./chunk-QEVXUSKS.mjs";
+@@ -141,7 +142,7 @@ var OrderListTable = () => {
+   });
+   const { orders, count, isError, error, isLoading } = useOrders(
+     {
+-      fields: DEFAULT_FIELDS,
++      fields: `${DEFAULT_FIELDS},metadata`,
+       ...searchParams
+     },
+     {
+@@ -149,7 +150,14 @@ var OrderListTable = () => {
+     }
+   );
+   const filters = useOrderTableFilters();
+-  const columns = useOrderTableColumns({});
++  const baseColumns = useOrderTableColumns({
++    exclude: ["payment_status", "fulfillment_status"]
++  });
++  const columns = [
++    ...baseColumns.slice(0, 4),
++    ...orderDeliveryColumns,
++    ...baseColumns.slice(4)
++  ];
+   const { table } = useDataTable({
+     data: orders ?? [],
+     columns,
+diff --git a/src/routes/orders/order-list/components/order-list-table/order-list-table.tsx b/src/routes/orders/order-list/components/order-list-table/order-list-table.tsx
+index 1e11bba07557ac2f70c6ef5ad4d9a00848141004..9e2e3f941adb8604808eb87a06dc8db6c14f07a3 100644
+--- a/src/routes/orders/order-list/components/order-list-table/order-list-table.tsx
++++ b/src/routes/orders/order-list/components/order-list-table/order-list-table.tsx
+@@ -1,3 +1,4 @@
++import { orderDeliveryColumns } from "@marketplace/order-delivery-columns"
+ import { Button, Container, Heading } from "@medusajs/ui"
+ import { keepPreviousData } from "@tanstack/react-query"
+ import { useTranslation } from "react-i18next"
+@@ -24,7 +25,7 @@ export const OrderListTable = () => {
+
+   const { orders, count, isError, error, isLoading } = useOrders(
+     {
+-      fields: DEFAULT_FIELDS,
++      fields: `${DEFAULT_FIELDS},metadata`,
+       ...searchParams,
+     },
+     {
+@@ -33,7 +34,14 @@ export const OrderListTable = () => {
+   )
+
+   const filters = useOrderTableFilters()
+-  const columns = useOrderTableColumns({})
++  const baseColumns = useOrderTableColumns({
++    exclude: ["payment_status", "fulfillment_status"],
++  })
++  const columns = [
++    ...baseColumns.slice(0, 4),
++    ...orderDeliveryColumns,
++    ...baseColumns.slice(4),
++  ]
+
+   const { table } = useDataTable({
+     data: orders ?? [],

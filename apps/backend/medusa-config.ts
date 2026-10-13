@@ -1,8 +1,21 @@
 import { loadEnv, defineConfig } from "@medusajs/framework/utils";
+import path from "node:path";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
 module.exports = defineConfig({
+  admin: {
+    vite: () => ({
+      resolve: {
+        alias: {
+          "@marketplace/order-delivery-columns": path.resolve(
+            __dirname,
+            "src/admin/components/order-delivery-columns.tsx",
+          ),
+        },
+      },
+    }),
+  },
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     http: {
