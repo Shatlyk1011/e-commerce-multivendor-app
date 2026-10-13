@@ -2,7 +2,7 @@
 
 ## Overview
 Single VDS, all services in Docker Compose. Caddy handles SSL + reverse proxy.
-Only Stripe is external.
+No external payment gateway is integrated.
 
 ## Service Map
 
@@ -23,8 +23,7 @@ Internal Docker Network (not exposed):
         ├── postgres:5432    (PostgreSQL)
         ├── redis:6379       (Redis)
         ├── minio:9000       (S3 API)
-        ├── meilisearch:7700 (Search)
-        └── mailpit:1025     (SMTP)
+        └── meilisearch:7700 (Search)
 ```
 
 ## VDS Requirements
@@ -42,8 +41,6 @@ Internal Docker Network (not exposed):
 | 9000 | MinIO S3 API / Medusa API |
 | 9001 | MinIO Console UI |
 | 7700 | Meilisearch |
-| 1025 | Mailpit SMTP |
-| 8025 | Mailpit Web UI |
 | 3000 | Next.js Storefront |
 | 3001 | Next.js Vendor Portal |
 

@@ -57,17 +57,6 @@ module.exports = defineConfig({
       },
     },
 
-    // ── Email: Self-hosted SMTP ────────────────────────────────
-    {
-      resolve: "@medusajs/notification-sendgrid",  // works with any SMTP via config
-      // OR use a custom SMTP notification provider:
-      // resolve: "./src/modules/smtp-notification",
-      options: {
-        channels: ["email"],
-        from: `noreply@${process.env.DOMAIN}`,
-      },
-    },
-
     // ── Event Bus: Redis ───────────────────────────────────────
     {
       resolve: "@medusajs/event-bus-redis",
@@ -95,15 +84,6 @@ module.exports = defineConfig({
       },
     },
 
-    // ── Payments: Stripe ───────────────────────────────────────
-    {
-      resolve: "@medusajs/payment-stripe",
-      options: {
-        apiKey: process.env.STRIPE_API_KEY,
-        webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-      },
-    },
-
     // ── Custom Marketplace Module ──────────────────────────────
     {
       resolve: "./src/modules/marketplace",
@@ -128,44 +108,4 @@ npm install @medusajs/search-meilisearch
 # Infrastructure modules (Redis-based)
 npm install @medusajs/event-bus-redis @medusajs/cache-redis @medusajs/workflow-engine-redis
 
-# Payments
-npm install @medusajs/payment-stripe
-
-# SMTP notification (if using custom module)
-npm install nodemailer
-```
-
-## Custom SMTP Notification Provider (for Mailpit/Postal)
-
-```typescript
-// src/modules/smtp-notification/index.ts
-import { AbstractNotificationProviderService } from "@medusajs/framework/utils"
-import nodemailer from "nodemailer"
-
-class SmtpNotificationService extends AbstractNotificationProviderService {
-  private transporter: nodemailer.Transporter
-
-  constructor(_, options: { host: string; port: number; from: string }) {
-    super()
-    this.transporter = nodemailer.createTransport({
-      host: options.host,
-      port: options.port,
-      secure: false,
-    })
-    this.from = options.from
-  }
-
-  async send(notification) {
-    const { to, template, data } = notification
-    await this.transporter.sendMail({
-      from: this.from,
-      to,
-      subject: data.subject,
-      html: data.html,
-    })
-    return { id: `smtp-${Date.now()}` }
-  }
-}
-
-export default SmtpNotificationService
 ```

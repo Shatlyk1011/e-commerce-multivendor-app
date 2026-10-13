@@ -54,14 +54,6 @@ services:
     networks:
       - internal
 
-  # ── Email Server (SMTP) ───────────────────────────────────────
-  mailpit:
-    image: axllent/mailpit
-    restart: always
-    networks:
-      - internal
-    # Swap for Postal in production for real email delivery
-
   # ── Medusa Backend ────────────────────────────────────────────
   medusa:
     build:
@@ -73,7 +65,6 @@ services:
       - redis
       - minio
       - meilisearch
-      - mailpit
     env_file: .env
     environment:
       DATABASE_URL: postgres://medusa:${POSTGRES_PASSWORD}@postgres:5432/medusa_db
@@ -84,10 +75,6 @@ services:
       MINIO_BUCKET: medusa-media
       MEILISEARCH_HOST: http://meilisearch:7700
       MEILISEARCH_API_KEY: ${MEILI_MASTER_KEY}
-      SMTP_HOST: mailpit
-      SMTP_PORT: 1025
-      STRIPE_API_KEY: ${STRIPE_API_KEY}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECRET: ${COOKIE_SECRET}
       STORE_CORS: https://shop.${DOMAIN}
@@ -107,7 +94,6 @@ services:
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.${DOMAIN}
       NEXT_PUBLIC_MEILISEARCH_HOST: http://meilisearch:7700
       NEXT_PUBLIC_MEILISEARCH_API_KEY: ${MEILI_PUBLIC_KEY}
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
     depends_on:
       - medusa
     networks:
@@ -182,11 +168,6 @@ MEILI_PUBLIC_KEY=change_me_public_search_key
 # Medusa
 JWT_SECRET=change_me_jwt_secret_32_chars_min
 COOKIE_SECRET=change_me_cookie_secret_32_chars
-
-# Stripe (only external service)
-STRIPE_API_KEY=sk_live_...
-STRIPE_PUBLISHABLE_KEY=pk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
 ## Caddyfile

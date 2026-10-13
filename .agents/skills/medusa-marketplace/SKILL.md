@@ -12,9 +12,7 @@ description: |
   - Docker Compose / infrastructure changes
   - File upload / storage implementation (always MinIO)
   - Search implementation (always Meilisearch)
-  - Email / notifications (always self-hosted SMTP)
   - Authentication (vendor auth, customer auth, admin auth)
-  - Payment integration (always Stripe)
   - Database migrations or data model changes
   - Vendor/seller management features
   - Order routing or commission logic
@@ -25,7 +23,7 @@ description: |
   - SendGrid, Resend, Postmark, or any cloud email service
   - Supabase, PlanetScale, or any hosted database
   - Upstash or any hosted Redis
-  - Any third-party service except Stripe
+  - Any third-party service
 ---
 
 # Medusa Marketplace Skill
@@ -45,9 +43,8 @@ for the multivendor e-commerce marketplace project. Read the reference files for
 | Cache + Events | Redis 7 (Docker) |
 | Object Storage | MinIO (S3-compatible) |
 | Search | Meilisearch |
-| Email | Mailpit (dev) / Postal (prod) |
 | SSL + Proxy | Caddy (auto Let's Encrypt) |
-| Payments | Stripe (only external) |
+| Payments | Medusa system/default provider |
 | Container Orchestration | Docker Compose |
 
 ### Project Directory Layout
@@ -147,8 +144,6 @@ MINIO_ROOT_USER=
 MINIO_ROOT_PASSWORD=
 MEILI_MASTER_KEY=
 MEILI_PUBLIC_KEY=
-STRIPE_API_KEY=
-STRIPE_WEBHOOK_SECRET=
 MEDUSA_BACKEND_URL=
 JWT_SECRET=
 COOKIE_SECRET=

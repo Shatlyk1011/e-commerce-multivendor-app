@@ -46,9 +46,6 @@ export class Vendor {
   @Property({ columnType: "real", default: 10 })
   commission_rate: number = 10         // platform % cut per sale
 
-  @Property({ columnType: "text", nullable: true })
-  stripe_account_id: string | null = null   // Stripe Connect
-
   @OneToMany(() => VendorAdmin, (admin) => admin.vendor, { cascade: ["persist", "soft-remove"] })
   admins = new Collection<VendorAdmin>(this)
 
@@ -128,7 +125,7 @@ export type { VendorAdmin } from "../models/vendor-admin"
 
 // Partial types for create/update inputs
 export type CreateVendorInput = Pick<Vendor, "name" | "handle"> & Partial<Pick<Vendor, "description" | "logo_url" | "commission_rate">>
-export type UpdateVendorInput = { id: string } & Partial<Pick<Vendor, "name" | "description" | "logo_url" | "is_approved" | "commission_rate" | "stripe_account_id">>
+export type UpdateVendorInput = { id: string } & Partial<Pick<Vendor, "name" | "description" | "logo_url" | "is_approved" | "commission_rate">>
 
 export type CreateVendorAdminInput = Pick<VendorAdmin, "email" | "vendor_id"> & Partial<Pick<VendorAdmin, "first_name" | "last_name">>
 ```
@@ -380,7 +377,6 @@ export interface Vendor {
   logo_url: string | null
   is_approved: boolean
   commission_rate: number
-  stripe_account_id: string | null
   created_at: string
   updated_at: string
 }

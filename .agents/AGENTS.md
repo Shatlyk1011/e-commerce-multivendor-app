@@ -15,11 +15,11 @@ This project is a **multivendor e-commerce marketplace** (Ozon-like) built with:
 - **NEVER** recommend or use AWS S3, Cloudflare R2, Supabase, Upstash, Algolia, SendGrid, Resend, or any other third-party cloud service.
 - All storage → **MinIO** (self-hosted, S3-compatible)
 - All search → **Meilisearch** (self-hosted)
-- All email → **self-hosted SMTP** (Mailpit for dev, Postal for prod)
+- Email delivery is not integrated or provisioned in the base setup.
 - Database → **PostgreSQL** in Docker
 - Cache/Queue → **Redis** in Docker
 - SSL/Proxy → **Caddy** (auto Let's Encrypt)
-- **ONLY exception**: Stripe for payment processing
+- Checkout uses Medusa’s system/default payment provider; no external payment gateway is integrated.
 
 ### 2. Infrastructure Pattern
 - All services run in **Docker Compose** on a single VDS

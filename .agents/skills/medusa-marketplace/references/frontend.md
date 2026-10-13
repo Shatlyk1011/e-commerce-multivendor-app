@@ -17,7 +17,6 @@ NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://api.yourdomain.com
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_...   # from Medusa Admin → API Keys
 NEXT_PUBLIC_MEILISEARCH_HOST=https://search.yourdomain.com
 NEXT_PUBLIC_MEILISEARCH_API_KEY=...         # public (search-only) key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 ```
 
 ### Medusa JS SDK Setup (shared utility)
