@@ -13,7 +13,7 @@ export const useUpdateSellerRequest = () => {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: SellerRequestStatus }) =>
       sdk.client.fetch(`/admin/seller-requests/${id}`, { method: "PATCH", body: { status } }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: sellerRequestKeys.all }); toast.success("Request status updated"); },
-    onError: (error: Error) => toast.error(error.message || "Unable to update request"),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: sellerRequestKeys.all }); toast.success("Статус заявки обновлён"); },
+    onError: (error: Error) => toast.error(error.message || "Не удалось обновить заявку"),
   });
 };

@@ -29,7 +29,7 @@ import { ResetPasswordDrawer } from "../../../components/vendors/reset-password-
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return "—";
-  return new Date(dateString).toLocaleDateString(undefined, {
+  return new Date(dateString).toLocaleDateString("ru-RU", {
     dateStyle: "medium",
     // timeStyle: "short",
   });
@@ -62,13 +62,13 @@ const VendorDetailPage = () => {
   if (error || !vendor) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-y-4 p-12">
-        <Text className="text-ui-fg-subtle">Vendor not found.</Text>
+        <Text className="text-ui-fg-subtle">Продавец не найден.</Text>
         <Button
           variant="secondary"
           size="small"
           onClick={() => navigate("/vendors")}
         >
-          Back to Vendors
+          Вернуться к продавцам
         </Button>
       </div>
     );
@@ -103,7 +103,7 @@ const VendorDetailPage = () => {
                   size="small"
                   className="text-ui-fg-subtle hover:text-ui-fg-base"
                 >
-                  Vendors
+                  Продавцы
                 </Text>
               </Link>
               <Text size="small" className="text-ui-fg-muted">
@@ -122,7 +122,7 @@ const VendorDetailPage = () => {
               onClick={() => setDeleteOpen(true)}
             >
               <Trash />
-              Delete Vendor
+              Удалить продавца
             </Button>
           </div>
         </div>
@@ -154,7 +154,7 @@ const VendorDetailPage = () => {
                   size="2xsmall"
                   color={vendor.status === "active" ? "green" : "red"}
                 >
-                  {vendor.status === "active" ? "Active" : "Disabled"}
+                  {vendor.status === "active" ? "Активен" : "Отключён"}
                 </Badge>
                 {vendor.store_name && (
                   <Badge size="2xsmall" color="blue">
@@ -171,14 +171,14 @@ const VendorDetailPage = () => {
           {/* SECTION 1: GENERAL */}
           <Container className="divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <Heading level="h2">General</Heading>
+              <Heading level="h2">Основное</Heading>
               <Button
                 size="small"
                 variant="secondary"
                 onClick={() => setGeneralEditOpen(true)}
               >
                 <PencilSquare />
-                Edit
+                Редактировать
               </Button>
             </div>
 
@@ -188,7 +188,7 @@ const VendorDetailPage = () => {
                   <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Name
+                      Название
                     </Text>
                     <Text
                       size="small"
@@ -204,7 +204,7 @@ const VendorDetailPage = () => {
                   <Hashtag className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Slug
+                      Идентификатор
                     </Text>
                     <Text
                       size="small"
@@ -221,7 +221,7 @@ const VendorDetailPage = () => {
                     <Photo className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                     <div className="flex flex-col gap-y-0.5">
                       <Text size="small" leading="compact" weight="plus">
-                        Logo URL
+                        URL логотипа
                       </Text>
                       <Text
                         size="small"
@@ -240,7 +240,7 @@ const VendorDetailPage = () => {
           {/* SECTION 2: ACCOUNT */}
           <Container className="divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <Heading level="h2">Account</Heading>
+              <Heading level="h2">Аккаунт</Heading>
               <div className="flex items-center gap-x-2">
                 <Button
                   size="small"
@@ -248,7 +248,7 @@ const VendorDetailPage = () => {
                   onClick={() => setResetPasswordOpen(true)}
                 >
                   <LockClosedSolid />
-                  Reset Password
+                  Сбросить пароль
                 </Button>
                 <Button
                   size="small"
@@ -256,7 +256,7 @@ const VendorDetailPage = () => {
                   onClick={() => setAccountEditOpen(true)}
                 >
                   <PencilSquare />
-                  Edit
+                  Редактировать
                 </Button>
               </div>
             </div>
@@ -267,7 +267,7 @@ const VendorDetailPage = () => {
                   <User className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Email
+                      Эл. почта
                     </Text>
                     <Text
                       size="small"
@@ -283,14 +283,14 @@ const VendorDetailPage = () => {
                   <ExclamationCircle className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Status
+                      Статус
                     </Text>
                     <div>
                       <Badge
                         size="2xsmall"
                         color={vendor.status === "active" ? "green" : "red"}
                       >
-                        {vendor.status === "active" ? "Active" : "Disabled"}
+                        {vendor.status === "active" ? "Активен" : "Отключён"}
                       </Badge>
                     </div>
                   </div>
@@ -306,7 +306,7 @@ const VendorDetailPage = () => {
                         weight="plus"
                         className="text-ui-fg-error"
                       >
-                        Reason for Disabling
+                        Причина отключения
                       </Text>
                       <Text size="small" className="text-ui-fg-error-strong">
                         {vendor.status_reason}
@@ -319,7 +319,7 @@ const VendorDetailPage = () => {
                   <Calendar className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Last Login
+                      Последний вход
                     </Text>
                     <Text
                       size="small"
@@ -328,7 +328,7 @@ const VendorDetailPage = () => {
                     >
                       {admin?.last_login
                         ? formatDate(admin.last_login)
-                        : "Never"}
+                        : "Никогда"}
                     </Text>
                   </div>
                 </div>
@@ -339,14 +339,14 @@ const VendorDetailPage = () => {
           {/* SECTION 3: STORE INFORMATION */}
           <Container className="divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <Heading level="h2">Store Information</Heading>
+              <Heading level="h2">Информация о магазине</Heading>
               <Button
                 size="small"
                 variant="secondary"
                 onClick={() => setStoreInfoEditOpen(true)}
               >
                 <PencilSquare />
-                Edit
+                Редактировать
               </Button>
             </div>
 
@@ -356,7 +356,7 @@ const VendorDetailPage = () => {
                   <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Store Name
+                      Название магазина
                     </Text>
                     <Text
                       size="small"
@@ -372,7 +372,7 @@ const VendorDetailPage = () => {
                   <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      City
+                      Город
                     </Text>
                     <Text
                       size="small"
@@ -388,7 +388,7 @@ const VendorDetailPage = () => {
                   <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Address
+                      Адрес
                     </Text>
                     <Text
                       size="small"
@@ -404,7 +404,7 @@ const VendorDetailPage = () => {
                   <BuildingStorefront className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Store Description
+                      Описание магазина
                     </Text>
                     <Text
                       size="small"
@@ -421,7 +421,7 @@ const VendorDetailPage = () => {
           {/* SECTION 4: SYSTEM */}
           <Container className="divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <Heading level="h2">System</Heading>
+              <Heading level="h2">Системная информация</Heading>
             </div>
 
             <div className="px-6 py-4">
@@ -430,7 +430,7 @@ const VendorDetailPage = () => {
                   <Calendar className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Created At
+                      Дата создания
                     </Text>
                     <Text
                       size="small"
@@ -446,7 +446,7 @@ const VendorDetailPage = () => {
                   <Calendar className="text-ui-fg-muted mt-0.5 h-4 w-4 shrink-0" />
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Updated At
+                      Дата обновления
                     </Text>
                     <Text
                       size="small"
@@ -464,7 +464,7 @@ const VendorDetailPage = () => {
                   </div>
                   <div className="flex flex-col gap-y-0.5">
                     <Text size="small" leading="compact" weight="plus">
-                      Vendor ID
+                      ID продавца
                     </Text>
                     <Text
                       size="small"
@@ -510,18 +510,18 @@ const VendorDetailPage = () => {
       <Prompt open={deleteOpen} onOpenChange={setDeleteOpen} variant="danger">
         <Prompt.Content>
           <Prompt.Header>
-            <Prompt.Title>Delete "{vendor.name}"?</Prompt.Title>
+            <Prompt.Title>Удалить «{vendor.name}»?</Prompt.Title>
             <Prompt.Description>
-              This action cannot be undone. The vendor and all associated data
-              will be permanently deleted.
+              Это действие нельзя отменить. Продавец и все связанные данные
+              будут удалены без возможности восстановления.
             </Prompt.Description>
           </Prompt.Header>
           <Prompt.Footer>
             <Prompt.Cancel onClick={() => setDeleteOpen(false)}>
-              Cancel
+              Отмена
             </Prompt.Cancel>
             <Prompt.Action onClick={handleDelete}>
-              {deleteVendor.isPending ? "Deleting..." : "Delete Vendor"}
+              {deleteVendor.isPending ? "Удаление..." : "Удалить продавца"}
             </Prompt.Action>
           </Prompt.Footer>
         </Prompt.Content>

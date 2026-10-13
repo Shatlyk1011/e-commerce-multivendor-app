@@ -47,7 +47,7 @@ export function StoreInfoEditDrawer({
   const handleSubmit = () => {
     const city = formData.city?.trim();
     if (!city) {
-      setCityError("Origin city is required");
+      setCityError("Укажите город отправления");
       return;
     }
 
@@ -70,18 +70,18 @@ export function StoreInfoEditDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <Drawer.Content>
         <Drawer.Header>
-          <Heading className="text-ui-fg-base">Edit Store Information</Heading>
+          <Heading className="text-ui-fg-base">Редактировать информацию о магазине</Heading>
         </Drawer.Header>
 
         <Drawer.Body className="flex flex-1 flex-col gap-y-6 overflow-y-auto p-6">
           {/* Store Name */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-store-name" size="small" weight="plus">
-              Store Name
+              Название магазина
             </Label>
             <Input
               id="edit-store-name"
-              placeholder="e.g. Acme Official Store"
+              placeholder="Например, Официальный магазин"
               value={formData.store_name ?? ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, store_name: e.target.value }))
@@ -92,11 +92,11 @@ export function StoreInfoEditDrawer({
           {/* City */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-store-city" size="small" weight="plus">
-              Origin City
+              Город отправления
             </Label>
             <Input
               id="edit-store-city"
-              placeholder="e.g. Ashgabat"
+              placeholder="Например, Ашхабад"
               value={formData.city ?? ""}
               required
               aria-invalid={!!cityError}
@@ -114,11 +114,11 @@ export function StoreInfoEditDrawer({
           {/* Address */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-store-address" size="small" weight="plus">
-              Address
+              Адрес
             </Label>
             <Input
               id="edit-store-address"
-              placeholder="e.g. 123 Main St, Suite 100"
+              placeholder="Например, ул. Магтымгулы, 100"
               value={formData.address ?? ""}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, address: e.target.value }))
@@ -129,11 +129,11 @@ export function StoreInfoEditDrawer({
           {/* Store Description */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-store-description" size="small" weight="plus">
-              Store Description
+              Описание магазина
             </Label>
             <Textarea
               id="edit-store-description"
-              placeholder="Provide a brief description of the seller store..."
+              placeholder="Добавьте краткое описание магазина..."
               value={formData.store_description ?? ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -153,7 +153,7 @@ export function StoreInfoEditDrawer({
                 variant="secondary"
                 disabled={updateVendor.isPending}
               >
-                Cancel
+                Отмена
               </Button>
             </Drawer.Close>
             <Button
@@ -161,7 +161,7 @@ export function StoreInfoEditDrawer({
               onClick={handleSubmit}
               isLoading={updateVendor.isPending}
             >
-              Save Changes
+              Сохранить изменения
             </Button>
           </div>
         </Drawer.Footer>

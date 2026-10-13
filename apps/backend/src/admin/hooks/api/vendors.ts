@@ -64,10 +64,10 @@ export const useCreateVendor = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() });
-      toast.success("Vendor created successfully");
+      toast.success("Продавец создан");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to create vendor");
+      toast.error(error.message || "Не удалось создать продавца");
     },
   });
 };
@@ -86,10 +86,10 @@ export const useUpdateVendor = (id: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vendorQueryKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() });
-      toast.success("Vendor updated successfully");
+      toast.success("Данные продавца обновлены");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to update vendor");
+      toast.error(error.message || "Не удалось обновить данные продавца");
     },
   });
 };
@@ -107,10 +107,10 @@ export const useDeleteVendor = () => {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vendorQueryKeys.lists() });
-      toast.success("Vendor deleted");
+      toast.success("Продавец удалён");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete vendor");
+      toast.error(error.message || "Не удалось удалить продавца");
     },
   });
 };
@@ -128,10 +128,10 @@ export const useResetVendorPassword = (id: string) => {
         },
       ),
     onSuccess: () => {
-      toast.success("Password reset successfully");
+      toast.success("Пароль успешно сброшен");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to reset password");
+      toast.error(error.message || "Не удалось сбросить пароль");
     },
   });
 };

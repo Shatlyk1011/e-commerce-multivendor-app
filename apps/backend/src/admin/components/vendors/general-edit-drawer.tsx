@@ -44,8 +44,8 @@ export function GeneralEditDrawer({
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name?.trim()) newErrors.name = "Name is required";
-    if (!formData.handle?.trim()) newErrors.handle = "Slug is required";
+    if (!formData.name?.trim()) newErrors.name = "Укажите название";
+    if (!formData.handle?.trim()) newErrors.handle = "Укажите идентификатор";
     return newErrors;
   };
 
@@ -75,7 +75,7 @@ export function GeneralEditDrawer({
       <Drawer.Content>
         <Drawer.Header>
           <Heading className="text-ui-fg-base">
-            Edit General Information
+            Редактировать основные данные
           </Heading>
         </Drawer.Header>
 
@@ -83,7 +83,7 @@ export function GeneralEditDrawer({
           {/* Name */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-vendor-name" size="small" weight="plus">
-              Name <span className="text-ui-fg-error">*</span>
+              Название <span className="text-ui-fg-error">*</span>
             </Label>
             <Input
               id="edit-vendor-name"
@@ -104,7 +104,7 @@ export function GeneralEditDrawer({
           {/* Handle */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-vendor-handle" size="small" weight="plus">
-              Slug <span className="text-ui-fg-error">*</span>
+              Идентификатор <span className="text-ui-fg-error">*</span>
             </Label>
             <div className="bg-ui-bg-field border-ui-border-base flex items-center rounded-md border px-3">
               <Text size="small" className="text-ui-fg-muted pr-2">
@@ -129,7 +129,7 @@ export function GeneralEditDrawer({
               </Text>
             ) : (
               <Text size="small" className="text-ui-fg-subtle">
-                URL-safe slug for this vendor.
+                Идентификатор для URL этого продавца.
               </Text>
             )}
           </div>
@@ -137,7 +137,7 @@ export function GeneralEditDrawer({
           {/* Logo URL */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-vendor-logo" size="small" weight="plus">
-              Logo URL
+              URL логотипа
             </Label>
             <Input
               id="edit-vendor-logo"
@@ -158,7 +158,7 @@ export function GeneralEditDrawer({
                 variant="secondary"
                 disabled={updateVendor.isPending}
               >
-                Cancel
+                Отмена
               </Button>
             </Drawer.Close>
             <Button
@@ -166,7 +166,7 @@ export function GeneralEditDrawer({
               onClick={handleSubmit}
               isLoading={updateVendor.isPending}
             >
-              Save Changes
+              Сохранить изменения
             </Button>
           </div>
         </Drawer.Footer>

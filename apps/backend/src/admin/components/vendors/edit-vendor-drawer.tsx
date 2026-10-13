@@ -47,8 +47,8 @@ export function EditVendorDrawer({
 
   const validate = () => {
     const newErrors: Partial<Record<keyof UpdateVendorInput, string>> = {};
-    if (!formData.name?.trim()) newErrors.name = "Name is required";
-    if (!formData.handle?.trim()) newErrors.handle = "Handle is required";
+    if (!formData.name?.trim()) newErrors.name = "Укажите название";
+    if (!formData.handle?.trim()) newErrors.handle = "Укажите идентификатор";
     return newErrors;
   };
 
@@ -77,14 +77,14 @@ export function EditVendorDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <Drawer.Content>
         <Drawer.Header>
-          <Heading className="text-ui-fg-base">Edit Vendor</Heading>
+          <Heading className="text-ui-fg-base">Редактировать продавца</Heading>
         </Drawer.Header>
 
         <Drawer.Body className="flex flex-1 flex-col gap-y-6 overflow-y-auto p-6">
           {/* Name */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-vendor-name" size="small" weight="plus">
-              Name <span className="text-ui-fg-error">*</span>
+              Название <span className="text-ui-fg-error">*</span>
             </Label>
             <Input
               id="edit-vendor-name"
@@ -105,7 +105,7 @@ export function EditVendorDrawer({
           {/* Handle */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-vendor-handle" size="small" weight="plus">
-              Handle <span className="text-ui-fg-error">*</span>
+              Идентификатор <span className="text-ui-fg-error">*</span>
             </Label>
             <div className="bg-ui-bg-field border-ui-border-base flex items-center rounded-md border px-3">
               <Text size="small" className="text-ui-fg-muted pr-2">
@@ -130,7 +130,7 @@ export function EditVendorDrawer({
               </Text>
             ) : (
               <Text size="small" className="text-ui-fg-subtle">
-                URL-safe slug for this vendor.
+                Идентификатор для URL этого продавца.
               </Text>
             )}
           </div>
@@ -138,7 +138,7 @@ export function EditVendorDrawer({
           {/* Logo URL */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-vendor-logo" size="small" weight="plus">
-              Logo URL
+              URL логотипа
             </Label>
             <Input
               id="edit-vendor-logo"
@@ -159,7 +159,7 @@ export function EditVendorDrawer({
                 variant="secondary"
                 disabled={updateVendor.isPending}
               >
-                Cancel
+                Отмена
               </Button>
             </Drawer.Close>
             <Button
@@ -167,7 +167,7 @@ export function EditVendorDrawer({
               onClick={handleSubmit}
               isLoading={updateVendor.isPending}
             >
-              Save Changes
+              Сохранить изменения
             </Button>
           </div>
         </Drawer.Footer>

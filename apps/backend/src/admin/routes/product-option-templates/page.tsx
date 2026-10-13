@@ -54,13 +54,13 @@ const ProductOptionTemplatesPage = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product-option-templates"] });
-      toast.success("Option template created");
+      toast.success("Шаблон опции создан");
       setTitle("");
       setValuesInput("");
       setCreateOpen(false);
     },
     onError: (error: Error) =>
-      toast.error(error.message || "Unable to create option template"),
+      toast.error(error.message || "Не удалось создать шаблон опции"),
   });
 
   const deleteTemplate = useMutation({
@@ -70,11 +70,11 @@ const ProductOptionTemplatesPage = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product-option-templates"] });
-      toast.success("Option template deleted");
+      toast.success("Шаблон опции удалён");
       setDeleteTarget(null);
     },
     onError: (error: Error) =>
-      toast.error(error.message || "Unable to delete option template"),
+      toast.error(error.message || "Не удалось удалить шаблон опции"),
   });
 
   const handleCreate = () => {
@@ -87,7 +87,7 @@ const ProductOptionTemplatesPage = () => {
       ),
     ];
     if (!title.trim() || values.length === 0) {
-      toast.error("Enter an option name and at least one value");
+      toast.error("Укажите название опции и хотя бы одно значение");
       return;
     }
     createTemplate.mutate({ title: title.trim(), values });
@@ -98,22 +98,22 @@ const ProductOptionTemplatesPage = () => {
       <div className="flex flex-col gap-y-4 p-6">
         <div className="flex items-start justify-between gap-x-4">
           <div>
-            <Heading level="h1">Product option templates</Heading>
+            <Heading level="h1">Шаблоны опций товаров</Heading>
             <Text size="small" className="mt-1 text-ui-fg-subtle">
-              Control the option names and values vendors can use when creating
-              products.
+              Управляйте названиями и значениями опций, доступных продавцам при
+              создании товаров.
             </Text>
           </div>
           <Button size="small" onClick={() => setCreateOpen(true)}>
             <Plus />
-            Add template
+            Добавить шаблон
           </Button>
         </div>
 
         <Container className="p-0">
           <div className="border-b px-6 py-4">
             <Text size="small" leading="compact" weight="plus">
-              Available templates
+              Доступные шаблоны
             </Text>
           </div>
           {isLoading ? (
@@ -152,7 +152,7 @@ const ProductOptionTemplatesPage = () => {
           ) : (
             <div className="px-6 py-10 text-center">
               <Text size="small" className="text-ui-fg-subtle">
-                No templates yet. Add Size, Color, or another option.
+                Шаблонов пока нет. Добавьте размер, цвет или другую опцию.
               </Text>
             </div>
           )}
@@ -170,7 +170,7 @@ const ProductOptionTemplatesPage = () => {
                     variant="secondary"
                     disabled={createTemplate.isPending}
                   >
-                    Cancel
+                  Отмена
                   </Button>
                 </FocusModal.Close>
                 <Button
@@ -178,39 +178,39 @@ const ProductOptionTemplatesPage = () => {
                   isLoading={createTemplate.isPending}
                   onClick={handleCreate}
                 >
-                  Save
+                  Сохранить
                 </Button>
               </div>
             </FocusModal.Header>
             <FocusModal.Body className="flex-1 overflow-auto">
               <div className="mx-auto flex w-full max-w-xl flex-col gap-y-5 py-6">
                 <div>
-                  <Heading level="h2">Add product option template</Heading>
+                  <Heading level="h2">Добавить шаблон опции товара</Heading>
                   <Text size="small" className="mt-1 text-ui-fg-subtle">
-                    Vendors will select this exact name and only the values you
-                    add here.
+                    Продавцы смогут выбирать только это название и добавленные
+                    здесь значения.
                   </Text>
                 </div>
                 <div className="flex flex-col gap-y-2">
-                  <Label htmlFor="option-template-title">Option name</Label>
+                  <Label htmlFor="option-template-title">Название опции</Label>
                   <Input
                     id="option-template-title"
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
-                    placeholder="Size"
+                    placeholder="Размер"
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
-                  <Label htmlFor="option-template-values">Values</Label>
+                  <Label htmlFor="option-template-values">Значения</Label>
                   <textarea
                     id="option-template-values"
                     value={valuesInput}
                     onChange={(event) => setValuesInput(event.target.value)}
-                    placeholder={"S, M, L, XL\nor one value per line"}
+                    placeholder={"S, M, L, XL\nили по одному значению в строке"}
                     className="min-h-28 rounded-md border border-ui-border-base bg-ui-bg-base px-3 py-2 text-sm outline-none focus:border-ui-border-interactive"
                   />
                   <Text size="small" className="text-ui-fg-subtle">
-                    Separate values with commas or new lines.
+                    Разделяйте значения запятыми или переносом строки.
                   </Text>
                 </div>
               </div>
@@ -228,15 +228,15 @@ const ProductOptionTemplatesPage = () => {
       >
         <Prompt.Content>
           <Prompt.Header>
-            <Prompt.Title>Delete {deleteTarget?.title}?</Prompt.Title>
+            <Prompt.Title>Удалить «{deleteTarget?.title}»?</Prompt.Title>
             <Prompt.Description>
-              Vendors will no longer be able to use this option for new
-              products. Existing products are unchanged.
+              Продавцы больше не смогут использовать эту опцию для новых
+              товаров. Существующие товары не изменятся.
             </Prompt.Description>
           </Prompt.Header>
           <Prompt.Footer>
             <Prompt.Cancel onClick={() => setDeleteTarget(null)}>
-              Cancel
+              Отмена
             </Prompt.Cancel>
             <Prompt.Action
               onClick={() =>
@@ -244,7 +244,7 @@ const ProductOptionTemplatesPage = () => {
               }
               disabled={deleteTemplate.isPending}
             >
-              Delete
+              Удалить
             </Prompt.Action>
           </Prompt.Footer>
         </Prompt.Content>
@@ -254,7 +254,7 @@ const ProductOptionTemplatesPage = () => {
 };
 
 export const config = defineRouteConfig({
-  label: "Product options",
+  label: "Опции товаров",
   icon: Tag,
 });
 

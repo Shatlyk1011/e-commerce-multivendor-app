@@ -24,7 +24,7 @@ const colHelper = createDataTableColumnHelper<Vendor>();
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return "—";
-  return new Date(dateString).toLocaleDateString(undefined, {
+  return new Date(dateString).toLocaleDateString("ru-RU", {
     dateStyle: "medium",
     // timeStyle: "short",
   });
@@ -57,7 +57,7 @@ const VendorsPage = () => {
   const columns = useMemo(
     () => [
       colHelper.accessor("name", {
-        header: "Name",
+        header: "Название",
         cell: ({ row }) => (
           <div className="flex items-center gap-x-3">
             {row.original.logo ? (
@@ -82,7 +82,7 @@ const VendorsPage = () => {
       }),
       colHelper.display({
         id: "email",
-        header: "Email",
+        header: "Эл. почта",
         cell: ({ row }) => {
           const admin = row.original.admins?.[0];
           return (
@@ -93,7 +93,7 @@ const VendorsPage = () => {
         },
       }),
       colHelper.accessor("store_name", {
-        header: "Store Name",
+        header: "Название магазина",
         cell: ({ getValue }) => (
           <Text size="small" className="text-ui-fg-subtle">
             {getValue() || "—"}
@@ -101,30 +101,30 @@ const VendorsPage = () => {
         ),
       }),
       colHelper.accessor("status", {
-        header: "Status",
+        header: "Статус",
         cell: ({ getValue }) => {
           const status = getValue() ?? "active";
           return (
             <Badge size="2xsmall" color={status === "active" ? "green" : "red"}>
-              {status === "active" ? "Active" : "Disabled"}
+              {status === "active" ? "Активен" : "Отключён"}
             </Badge>
           );
         },
       }),
       colHelper.display({
         id: "last_login",
-        header: "Last Login",
+        header: "Последний вход",
         cell: ({ row }) => {
           const admin = row.original.admins?.[0];
           return (
             <Text size="small" className="text-ui-fg-subtle">
-              {admin?.last_login ? formatDate(admin.last_login) : "Never"}
+              {admin?.last_login ? formatDate(admin.last_login) : "Никогда"}
             </Text>
           );
         },
       }),
       colHelper.accessor("created_at", {
-        header: "Created At",
+        header: "Дата создания",
         cell: ({ getValue }) => (
           <Text size="small" className="text-ui-fg-subtle">
             {formatDate(getValue())}
@@ -191,14 +191,14 @@ const VendorsPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <Heading level="h1">Vendors</Heading>
+            <Heading level="h1">Продавцы</Heading>
             <Text size="small" className="text-ui-fg-subtle mt-1">
-              Manage marketplace vendors — create, update, and remove sellers.
+              Управляйте продавцами маркетплейса: создавайте, редактируйте и удаляйте их.
             </Text>
           </div>
           <Button size="small" onClick={() => setCreateOpen(true)}>
             <Plus />
-            Create Vendor
+            Создать продавца
           </Button>
         </div>
 
@@ -207,12 +207,12 @@ const VendorsPage = () => {
           <DataTable instance={table}>
             <DataTable.Toolbar className="flex items-center justify-between px-6 py-4">
               <div className="flex items-center gap-x-2">
-                <Heading level="h2">All Vendors</Heading>
+                <Heading level="h2">Все продавцы</Heading>
                 {data?.count !== undefined && (
                   <Badge size="2xsmall">{data.count}</Badge>
                 )}
               </div>
-              <DataTable.Search placeholder="Search vendors..." />
+              <DataTable.Search placeholder="Поиск продавцов..." />
             </DataTable.Toolbar>
             <DataTable.Table />
             <DataTable.Pagination />
@@ -233,18 +233,18 @@ const VendorsPage = () => {
       >
         <Prompt.Content>
           <Prompt.Header>
-            <Prompt.Title>Delete "{deleteTarget?.name}"?</Prompt.Title>
+            <Prompt.Title>Удалить «{deleteTarget?.name}»?</Prompt.Title>
             <Prompt.Description>
-              This action cannot be undone. The vendor and all associated data
-              will be permanently deleted.
+              Это действие нельзя отменить. Продавец и все связанные данные
+              будут удалены без возможности восстановления.
             </Prompt.Description>
           </Prompt.Header>
           <Prompt.Footer>
             <Prompt.Cancel onClick={() => setDeleteTarget(null)}>
-              Cancel
+              Отмена
             </Prompt.Cancel>
             <Prompt.Action onClick={handleConfirmDelete}>
-              {deleteVendor.isPending ? "Deleting..." : "Delete"}
+              {deleteVendor.isPending ? "Удаление..." : "Удалить"}
             </Prompt.Action>
           </Prompt.Footer>
         </Prompt.Content>
@@ -254,7 +254,7 @@ const VendorsPage = () => {
 };
 
 export const config = defineRouteConfig({
-  label: "Vendors",
+  label: "Продавцы",
   icon: BuildingStorefront,
 });
 

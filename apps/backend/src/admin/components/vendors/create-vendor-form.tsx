@@ -71,28 +71,28 @@ export function CreateVendorForm({
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.handle.trim()) newErrors.handle = "Slug is required";
-    if (!formData.city.trim()) newErrors.city = "Origin city is required";
+    if (!formData.name.trim()) newErrors.name = "Укажите название";
+    if (!formData.handle.trim()) newErrors.handle = "Укажите идентификатор";
+    if (!formData.city.trim()) newErrors.city = "Укажите город отправления";
 
     if (!formData.admin.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = "Укажите эл. почту";
     } else if (!/\S+@\S+\.\S+/.test(formData.admin.email)) {
-      newErrors.email = "Invalid email format";
+      newErrors.email = "Неверный формат эл. почты";
     }
 
     if (!formData.admin.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = "Укажите пароль";
     } else if (formData.admin.password.length < 8) {
-      newErrors.password = "Password must contain at least 8 characters";
+      newErrors.password = "Пароль должен содержать не менее 8 символов";
     }
 
     if (formData.admin.password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "Пароли не совпадают";
     }
 
     if (formData.status === "disabled" && !formData.status_reason?.trim()) {
-      newErrors.status_reason = "Reason is required when account is disabled";
+      newErrors.status_reason = "Укажите причину отключения аккаунта";
     }
 
     return newErrors;
@@ -160,7 +160,7 @@ export function CreateVendorForm({
                   variant="secondary"
                   disabled={createVendor.isPending}
                 >
-                  Cancel
+                  Отмена
                 </Button>
               </FocusModal.Close>
               <Button
@@ -168,7 +168,7 @@ export function CreateVendorForm({
                 onClick={handleSubmit}
                 isLoading={createVendor.isPending}
               >
-                Create Vendor
+                Создать продавца
               </Button>
             </div>
           </FocusModal.Header>
@@ -176,26 +176,26 @@ export function CreateVendorForm({
           <FocusModal.Body className="flex flex-1 flex-col items-center overflow-auto py-16">
             <div className="flex w-full max-w-[720px] flex-col gap-y-10">
               <div>
-                <Heading className="text-ui-fg-base">Create Vendor</Heading>
+                <Heading className="text-ui-fg-base">Создать продавца</Heading>
                 <Text size="small" className="text-ui-fg-subtle mt-1">
-                  Add a new vendor store and credentials to the marketplace.
+                  Добавьте магазин продавца и данные для входа в маркетплейс.
                 </Text>
               </div>
 
               {/* SECTION 1: GENERAL */}
               <div className="flex flex-col gap-y-4">
                 <Heading level="h2" className="border-b pb-2">
-                  General
+                  Основное
                 </Heading>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="vendor-name" size="small" weight="plus">
-                      Name <span className="text-ui-fg-error">*</span>
+                      Название <span className="text-ui-fg-error">*</span>
                     </Label>
                     <Input
                       id="vendor-name"
-                      placeholder="e.g. Acme Corporation"
+                      placeholder="Например, Название компании"
                       value={formData.name}
                       onChange={(e) => handleNameChange(e.target.value)}
                       className={errors.name ? "border-ui-border-error" : ""}
@@ -209,7 +209,7 @@ export function CreateVendorForm({
 
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="vendor-handle" size="small" weight="plus">
-                      Slug <span className="text-ui-fg-error">*</span>
+                      Идентификатор <span className="text-ui-fg-error">*</span>
                     </Label>
                     <div className="bg-ui-bg-field border-ui-border-base flex items-center rounded-md border px-3">
                       <Text size="small" className="text-ui-fg-muted pr-2">
@@ -229,7 +229,7 @@ export function CreateVendorForm({
                       </Text>
                     ) : (
                       <Text size="small" className="text-ui-fg-subtle">
-                        Auto-generated from name. Used as store URL handle.
+                        Создаётся из названия. Используется в URL магазина.
                       </Text>
                     )}
                   </div>
@@ -237,7 +237,7 @@ export function CreateVendorForm({
 
                 <div className="flex flex-col gap-y-2">
                   <Label htmlFor="vendor-logo" size="small" weight="plus">
-                    Logo URL
+                    URL логотипа
                   </Label>
                   <Input
                     id="vendor-logo"
@@ -253,13 +253,13 @@ export function CreateVendorForm({
               {/* SECTION 2: ACCOUNT */}
               <div className="flex flex-col gap-y-4">
                 <Heading level="h2" className="border-b pb-2">
-                  Account
+                  Аккаунт
                 </Heading>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="admin-email" size="small" weight="plus">
-                      Email <span className="text-ui-fg-error">*</span>
+                      Эл. почта <span className="text-ui-fg-error">*</span>
                     </Label>
                     <Input
                       id="admin-email"
@@ -285,7 +285,7 @@ export function CreateVendorForm({
 
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="vendor-status" size="small" weight="plus">
-                      Status
+                      Статус
                     </Label>
                     <Select
                       value={formData.status}
@@ -301,8 +301,8 @@ export function CreateVendorForm({
                         <Select.Value />
                       </Select.Trigger>
                       <Select.Content>
-                        <Select.Item value="active">Active</Select.Item>
-                        <Select.Item value="disabled">Disabled</Select.Item>
+                        <Select.Item value="active">Активен</Select.Item>
+                        <Select.Item value="disabled">Отключён</Select.Item>
                       </Select.Content>
                     </Select>
                   </div>
@@ -311,12 +311,12 @@ export function CreateVendorForm({
                 {formData.status === "disabled" && (
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="status-reason" size="small" weight="plus">
-                      Reason for Disabling{" "}
+                      Причина отключения{" "}
                       <span className="text-ui-fg-error">*</span>
                     </Label>
                     <Textarea
                       id="status-reason"
-                      placeholder="Enter description why account is disabled..."
+                      placeholder="Укажите причину отключения аккаунта..."
                       value={formData.status_reason ?? ""}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -341,12 +341,12 @@ export function CreateVendorForm({
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="admin-password" size="small" weight="plus">
-                      Password <span className="text-ui-fg-error">*</span>
+                      Пароль <span className="text-ui-fg-error">*</span>
                     </Label>
                     <Input
                       id="admin-password"
                       type="password"
-                      placeholder="Minimum 8 characters"
+                      placeholder="Минимум 8 символов"
                       value={formData.admin.password}
                       onChange={(e) => {
                         const passVal = e.target.value;
@@ -373,13 +373,13 @@ export function CreateVendorForm({
                       size="small"
                       weight="plus"
                     >
-                      Confirm Password{" "}
+                      Подтвердите пароль{" "}
                       <span className="text-ui-fg-error">*</span>
                     </Label>
                     <Input
                       id="confirm-password"
                       type="password"
-                      placeholder="Confirm password"
+                      placeholder="Подтвердите пароль"
                       value={confirmPassword}
                       onChange={(e) => {
                         setConfirmPassword(e.target.value);
@@ -404,11 +404,11 @@ export function CreateVendorForm({
                       size="small"
                       weight="plus"
                     >
-                      First Name
+                      Имя
                     </Label>
                     <Input
                       id="admin-first-name"
-                      placeholder="e.g. John"
+                      placeholder="Например, Иван"
                       value={formData.admin.first_name}
                       onChange={(e) => {
                         const nameVal = e.target.value;
@@ -422,11 +422,11 @@ export function CreateVendorForm({
 
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="admin-last-name" size="small" weight="plus">
-                      Last Name
+                      Фамилия
                     </Label>
                     <Input
                       id="admin-last-name"
-                      placeholder="e.g. Doe"
+                      placeholder="Например, Иванов"
                       value={formData.admin.last_name}
                       onChange={(e) => {
                         const nameVal = e.target.value;
@@ -443,17 +443,17 @@ export function CreateVendorForm({
               {/* SECTION 3: STORE INFORMATION */}
               <div className="flex flex-col gap-y-4">
                 <Heading level="h2" className="border-b pb-2">
-                  Store Information
+                  Информация о магазине
                 </Heading>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="store-name" size="small" weight="plus">
-                      Store Name
+                      Название магазина
                     </Label>
                     <Input
                       id="store-name"
-                      placeholder="e.g. Acme Official Store"
+                      placeholder="Например, Официальный магазин"
                       value={formData.store_name ?? ""}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -466,11 +466,11 @@ export function CreateVendorForm({
 
                   <div className="flex flex-col gap-y-2">
                     <Label htmlFor="store-city" size="small" weight="plus">
-                      Origin City
+                      Город отправления
                     </Label>
                     <Input
                       id="store-city"
-                      placeholder="e.g. Ashgabat"
+                      placeholder="Например, Ашхабад"
                       value={formData.city ?? ""}
                       required
                       aria-invalid={!!errors.city}
@@ -491,11 +491,11 @@ export function CreateVendorForm({
 
                 <div className="flex flex-col gap-y-2">
                   <Label htmlFor="store-address" size="small" weight="plus">
-                    Address
+                    Адрес
                   </Label>
                   <Input
                     id="store-address"
-                    placeholder="e.g. 123 Main St, Suite 100"
+                    placeholder="Например, ул. Магтымгулы, 100"
                     value={formData.address ?? ""}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -508,11 +508,11 @@ export function CreateVendorForm({
 
                 <div className="flex flex-col gap-y-2">
                   <Label htmlFor="store-description" size="small" weight="plus">
-                    Store Description
+                    Описание магазина
                   </Label>
                   <Textarea
                     id="store-description"
-                    placeholder="Provide a brief description of the seller store..."
+                    placeholder="Добавьте краткое описание магазина..."
                     value={formData.store_description ?? ""}
                     onChange={(e) =>
                       setFormData((prev) => ({

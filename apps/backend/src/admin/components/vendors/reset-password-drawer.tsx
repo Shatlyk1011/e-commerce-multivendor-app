@@ -33,17 +33,17 @@ export function ResetPasswordDrawer({
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!password) {
-      newErrors.password = "Password is required";
+      newErrors.password = "Укажите пароль";
     } else if (password.length < 8) {
-      newErrors.password = "Password must contain at least 8 characters";
+      newErrors.password = "Пароль должен содержать не менее 8 символов";
     }
 
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "Пароли не совпадают";
     }
 
     if (!admin?.email) {
-      newErrors.general = "Vendor email not found";
+      newErrors.general = "Эл. почта продавца не найдена";
     }
 
     return newErrors;
@@ -73,9 +73,9 @@ export function ResetPasswordDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <Drawer.Content>
         <Drawer.Header>
-          <Heading className="text-ui-fg-base">Reset Password</Heading>
+          <Heading className="text-ui-fg-base">Сбросить пароль</Heading>
           <Text size="small" className="text-ui-fg-subtle mt-1">
-            Set a new login password for {admin?.email || "this vendor"}.
+            Укажите новый пароль для входа {admin?.email || "этого продавца"}.
           </Text>
         </Drawer.Header>
 
@@ -91,12 +91,12 @@ export function ResetPasswordDrawer({
           {/* New Password */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="new-password" size="small" weight="plus">
-              New Password <span className="text-ui-fg-error">*</span>
+              Новый пароль <span className="text-ui-fg-error">*</span>
             </Label>
             <Input
               id="new-password"
               type="password"
-              placeholder="Minimum 8 characters"
+              placeholder="Минимум 8 символов"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -114,12 +114,12 @@ export function ResetPasswordDrawer({
           {/* Confirm Password */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="confirm-new-password" size="small" weight="plus">
-              Confirm New Password <span className="text-ui-fg-error">*</span>
+              Подтвердите новый пароль <span className="text-ui-fg-error">*</span>
             </Label>
             <Input
               id="confirm-new-password"
               type="password"
-              placeholder="Confirm new password"
+              placeholder="Подтвердите новый пароль"
               value={confirmPassword}
               onChange={(e) => {
                 setConfirmPassword(e.target.value);
@@ -143,7 +143,7 @@ export function ResetPasswordDrawer({
                 variant="secondary"
                 disabled={resetPassword.isPending}
               >
-                Cancel
+                Отмена
               </Button>
             </Drawer.Close>
             <Button
@@ -151,7 +151,7 @@ export function ResetPasswordDrawer({
               onClick={handleSubmit}
               isLoading={resetPassword.isPending}
             >
-              Reset Password
+              Сбросить пароль
             </Button>
           </div>
         </Drawer.Footer>

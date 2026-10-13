@@ -44,13 +44,13 @@ export function AccountEditDrawer({
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = "Укажите эл. почту";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Invalid email format";
+      newErrors.email = "Неверный формат эл. почты";
     }
 
     if (status === "disabled" && !statusReason.trim()) {
-      newErrors.statusReason = "Reason is required when status is disabled";
+      newErrors.statusReason = "Укажите причину отключения";
     }
 
     return newErrors;
@@ -89,14 +89,14 @@ export function AccountEditDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <Drawer.Content>
         <Drawer.Header>
-          <Heading className="text-ui-fg-base">Edit Account Settings</Heading>
+          <Heading className="text-ui-fg-base">Редактировать настройки аккаунта</Heading>
         </Drawer.Header>
 
         <Drawer.Body className="flex flex-1 flex-col gap-y-6 overflow-y-auto p-6">
           {/* Email */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-admin-email" size="small" weight="plus">
-              Email <span className="text-ui-fg-error">*</span>
+              Эл. почта <span className="text-ui-fg-error">*</span>
             </Label>
             <Input
               id="edit-admin-email"
@@ -118,7 +118,7 @@ export function AccountEditDrawer({
           {/* Status */}
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="edit-vendor-status" size="small" weight="plus">
-              Status
+              Статус
             </Label>
             <Select
               value={status}
@@ -131,8 +131,8 @@ export function AccountEditDrawer({
                 <Select.Value />
               </Select.Trigger>
               <Select.Content>
-                <Select.Item value="active">Active</Select.Item>
-                <Select.Item value="disabled">Disabled</Select.Item>
+                <Select.Item value="active">Активен</Select.Item>
+                <Select.Item value="disabled">Отключён</Select.Item>
               </Select.Content>
             </Select>
           </div>
@@ -141,11 +141,11 @@ export function AccountEditDrawer({
           {status === "disabled" && (
             <div className="flex flex-col gap-y-2">
               <Label htmlFor="edit-status-reason" size="small" weight="plus">
-                Reason for Disabling <span className="text-ui-fg-error">*</span>
+                Причина отключения <span className="text-ui-fg-error">*</span>
               </Label>
               <Textarea
                 id="edit-status-reason"
-                placeholder="Enter description why account is disabled..."
+                placeholder="Укажите причину отключения аккаунта..."
                 value={statusReason}
                 onChange={(e) => {
                   setStatusReason(e.target.value);
@@ -170,7 +170,7 @@ export function AccountEditDrawer({
                 variant="secondary"
                 disabled={updateVendor.isPending}
               >
-                Cancel
+                Отмена
               </Button>
             </Drawer.Close>
             <Button
@@ -178,7 +178,7 @@ export function AccountEditDrawer({
               onClick={handleSubmit}
               isLoading={updateVendor.isPending}
             >
-              Save Changes
+              Сохранить изменения
             </Button>
           </div>
         </Drawer.Footer>
