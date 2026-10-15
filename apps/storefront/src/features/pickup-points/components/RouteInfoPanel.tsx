@@ -50,7 +50,7 @@ export function RouteInfoPanel({ routeInfo, className }: RouteInfoPanelProps) {
           {walking && (
             <div className="text-apple-ink flex items-center gap-1.5 text-[13px] font-semibold">
               <Footprints className="text-apple-ink-muted-48 size-4 shrink-0" aria-hidden="true" />
-              <span>{formatDuration(walking.durationS)}</span>
+              <span>≈ {formatDuration(walking.durationS)}</span>
             </div>
           )}
           {driving && (

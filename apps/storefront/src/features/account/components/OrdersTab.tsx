@@ -5,7 +5,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 import type { StoreOrder } from '@medusajs/types'
-import { ChevronRight, Package } from 'lucide-react'
+import { ChevronRight, MapPin, Package, Truck } from 'lucide-react'
 
 import { useI18n } from '@/components/providers/I18nProvider'
 import { Button } from '@/components/ui/button'
@@ -33,6 +33,37 @@ function formatItemCount(count: number) {
   if (mod10 === 1) return `${count} товар`
   if (mod10 >= 2 && mod10 <= 4) return `${count} товара`
   return `${count} товаров`
+}
+
+type DeliveryMethod = 'pickup' | 'courier'
+
+function getDeliveryMethod(order: StoreOrder): DeliveryMethod | null {
+  const delivery = order.metadata?.delivery
+  if (!delivery || typeof delivery !== 'object' || Array.isArray(delivery)) return null
+
+  const method = (delivery as { method?: unknown }).method
+  return method === 'pickup' || method === 'courier' ? method : null
+}
+
+function DeliveryMethodBadge({ order }: { order: StoreOrder }) {
+  const method = getDeliveryMethod(order)
+  if (!method) return null
+
+  const isPickup = method === 'pickup'
+  const Icon = isPickup ? MapPin : Truck
+
+  return (
+    <span
+      className={
+        isPickup
+          ? 'bg-apple-primary/10 text-apple-primary flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold'
+          : 'bg-apple-surface-pearl text-apple-ink-muted-80 flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold'
+      }
+    >
+      <Icon className="size-3" aria-hidden="true" />
+      {isPickup ? 'Самовывоз' : 'Курьерская доставка'}
+    </span>
+  )
 }
 
 function OrderItemThumbnail({ src, title }: { src?: string | null; title?: string | null }) {
@@ -82,7 +113,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-md:space-y-3">
       {/* Header & Filter Controls */}
       <div className="flex flex-row items-center justify-between gap-4 max-sm:flex-col max-sm:items-start">
         <div>
@@ -94,7 +125,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
 
         {/* Filter Chips */}
         {orders.length > 0 && (
-          <div className="bg-apple-canvas border-apple-hairline flex flex-wrap gap-1.5 rounded-full border p-1">
+          <div className="bg-apple-canvas border-apple-hairline flex flex-wrap gap-1.5 rounded-full border p-1 max-md:grid max-md:w-full max-md:grid-cols-2 max-md:rounded-xl">
             {(
               [
                 { key: 'all', label: 'Все' },
@@ -149,11 +180,12 @@ export function OrdersTab({ orders }: OrdersTabProps) {
                 {/* Order Summary Header */}
                 <div className="border-apple-divider-soft flex flex-row items-center justify-between gap-4 border-b pb-4 max-sm:flex-col max-sm:items-start">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-apple-ink text-base font-semibold">
                         Заказ #{order.display_id || order.id.slice(-6)}
                       </span>
                       <DeliveryStatusBadge order={order} />
+                      <DeliveryMethodBadge order={order} />
                     </div>
                     <p className="text-apple-ink-muted-48 text-apple-caption mt-1">
                       Оформлен {new Date(order.created_at).toLocaleDateString(intlLocale(locale))}
@@ -164,7 +196,9 @@ export function OrdersTab({ orders }: OrdersTabProps) {
                       <span className="text-apple-ink font-mono text-lg font-bold">
                         {formatPrice(order.total, order.currency_code, locale)}
                       </span>
-                      <p className="text-apple-ink-muted-48 text-xs">{formatItemCount(itemCount)}</p>
+                      <p className="text-apple-ink-muted-48 text-xs">
+                        {formatItemCount(itemCount)} · без стоимости доставки
+                      </p>
                     </div>
                     <Button onClick={() => setSelectedOrder(order)} variant="outline" size="xs">
                       О заказе <ChevronRight className="ml-0.5 h-4 w-4" />

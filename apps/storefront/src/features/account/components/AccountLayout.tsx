@@ -69,14 +69,14 @@ export function AccountLayout({ customer, children }: AccountLayoutProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'rounded-apple-sm flex items-center gap-3 px-3.5 py-2.5 text-[14px] font-medium transition-all duration-150 max-md:shrink-0 max-md:rounded-full max-md:px-4',
+                      'rounded-apple-sm flex items-center gap-3 px-3.5 py-2.5 text-[14px] font-medium transition-all duration-150 max-md:flex-1 max-md:shrink-0 max-md:justify-center max-md:rounded-full max-md:px-4',
                       isActive
                         ? 'bg-apple-primary font-semibold text-white shadow-xs'
                         : 'text-apple-ink-muted-80 hover:bg-apple-surface-pearl hover:text-apple-ink',
                     )}
                   >
                     <Icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-white' : 'text-apple-ink-muted-48')} />
-                    <span>{item.label}</span>
+                    <span className="max-md:hidden">{item.label}</span>
                   </Link>
                 )
               })}

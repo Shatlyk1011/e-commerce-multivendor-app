@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import type { UserLocation } from './useUserLocation'
 
 const OSRM_BASE = 'https://router.project-osrm.org/route/v1'
+const WALKING_SPEED_METRES_PER_SECOND = 1.25
 
 export interface RouteResult {
   /** Coordinates as [lat, lng] pairs ready for Leaflet Polyline */
@@ -21,13 +22,16 @@ export interface RouteInfo {
   loading: boolean
 }
 
+const EMPTY_ROUTE_INFO: RouteInfo = { driving: null, walking: null, loading: false }
+
+type RouteState = Omit<RouteInfo, 'loading'> & { routeKey: string | null }
+
 async function fetchRoute(
-  mode: 'driving' | 'walking',
-  from: UserLocation,
+  from: Pick<UserLocation, 'lat' | 'lng'>,
   to: { lat: number; lng: number },
 ): Promise<RouteResult | null> {
   const url =
-    `${OSRM_BASE}/${mode}/` + `${from.lng},${from.lat};${to.lng},${to.lat}` + `?overview=full&geometries=geojson`
+    `${OSRM_BASE}/driving/` + `${from.lng},${from.lat};${to.lng},${to.lat}` + `?overview=full&geometries=geojson`
 
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) })
@@ -49,33 +53,59 @@ async function fetchRoute(
   }
 }
 
+function estimateWalkingRoute(drivingRoute: RouteResult | null): RouteResult | null {
+  if (!drivingRoute) return null
+
+  return {
+    ...drivingRoute,
+    durationS: Math.round(drivingRoute.distanceM / WALKING_SPEED_METRES_PER_SECOND),
+  }
+}
+
 export function useRouteInfo(
   userLocation: UserLocation | null,
   target: { lat: number; lng: number } | null,
 ): RouteInfo {
-  const [info, setInfo] = useState<RouteInfo>({ driving: null, walking: null, loading: false })
+  const [info, setInfo] = useState<RouteState>({ routeKey: null, driving: null, walking: null })
+  const userLat = userLocation?.lat
+  const userLng = userLocation?.lng
+  const targetLat = target?.lat
+  const targetLng = target?.lng
+  const routeKey =
+    userLat === undefined || userLng === undefined || targetLat === undefined || targetLng === undefined
+      ? null
+      : `${userLat},${userLng}:${targetLat},${targetLng}`
 
   useEffect(() => {
-    if (!userLocation || !target) {
-      setInfo({ driving: null, walking: null, loading: false })
+    if (
+      userLat === undefined ||
+      userLng === undefined ||
+      targetLat === undefined ||
+      targetLng === undefined ||
+      !routeKey
+    ) {
       return
     }
 
     let cancelled = false
-    setInfo((prev) => ({ ...prev, loading: true }))
 
-    Promise.all([fetchRoute('driving', userLocation, target), fetchRoute('walking', userLocation, target)]).then(
-      ([driving, walking]) => {
-        if (!cancelled) {
-          setInfo({ driving, walking, loading: false })
-        }
-      },
-    )
+    fetchRoute({ lat: userLat, lng: userLng }, { lat: targetLat, lng: targetLng }).then((driving) => {
+      if (!cancelled) {
+        setInfo({ routeKey, driving, walking: estimateWalkingRoute(driving) })
+      }
+    })
 
     return () => {
       cancelled = true
     }
-  }, [userLocation, target?.lat, target?.lng])
+  }, [routeKey, targetLat, targetLng, userLat, userLng])
 
-  return info
+  if (!routeKey) return EMPTY_ROUTE_INFO
+
+  const hasCurrentRoute = info.routeKey === routeKey
+  return {
+    driving: hasCurrentRoute ? info.driving : null,
+    walking: hasCurrentRoute ? info.walking : null,
+    loading: !hasCurrentRoute,
+  }
 }
