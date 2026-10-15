@@ -8,22 +8,17 @@ const FOOTER_COLUMNS = [
     title: 'О нас',
     links: [
       { label: 'Пункты выдачи', href: '/pickup-points' },
-      { label: 'Вакансии', href: '#' },
-    ],
-  },
-  {
-    title: 'Пользователям',
-    links: [
-      { label: 'Связаться с нами', href: '#' },
       { label: 'Вопросы и ответы', href: '/faq' },
+      // { label: 'Вакансии', href: '#' },
     ],
   },
   {
     title: 'Для предпринимателей',
     links: [
       { label: 'Продавайте с нами', href: '/become-seller' },
+      { label: 'Требования к товарам', href: '/seller-requirements' },
       { label: 'Вход для продавцов', href: '#' },
-      { label: 'Открыть пункт выдачи', href: '#' },
+      // { label: 'Открыть пункт выдачи', href: '#' },
     ],
   },
 ]
@@ -33,7 +28,7 @@ export function Footer() {
     <footer className="bg-apple-canvas-parchment text-apple-ink-muted-80 border-apple-divider-soft mt-auto w-full border-t py-12">
       <div className="mx-auto max-w-[1240px] px-4">
         {/* LINK COLUMNS GRID */}
-        <div className="grid grid-cols-1 gap-8 font-sans md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 font-sans md:grid-cols-2 lg:grid-cols-3">
           {/* Columns 1-3 */}
           {FOOTER_COLUMNS.map((column, idx) => (
             <div key={idx} className="flex flex-col">

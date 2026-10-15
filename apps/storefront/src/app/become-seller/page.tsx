@@ -99,8 +99,13 @@ export default function BecomeVendorPage() {
                     <ArrowRight className="size-4" />
                   </a>
                 </Button>
-                <p className="text-apple-ink-muted-48 text-[13px] leading-relaxed">Заполнение займёт около 2 минут</p>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/seller-requirements">Проверить требования</Link>
+                </Button>
               </div>
+              <p className="text-apple-ink-muted-48 mt-3 text-[13px] leading-relaxed">
+                Заполнение заявки займёт около 2 минут
+              </p>
             </div>
 
             <div className="border-apple-hairline text-apple-ink-muted-48 flex flex-wrap gap-x-6 gap-y-2 border-t py-5 text-[12px]">

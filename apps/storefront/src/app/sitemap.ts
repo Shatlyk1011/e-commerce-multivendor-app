@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl('/category'), changeFrequency: 'daily', priority: 0.8 },
     { url: absoluteUrl('/faq'), changeFrequency: 'monthly', priority: 0.6 },
     { url: absoluteUrl('/become-seller'), changeFrequency: 'monthly', priority: 0.5 },
+    { url: absoluteUrl('/seller-requirements'), changeFrequency: 'monthly', priority: 0.5 },
     { url: absoluteUrl('/pickup-points'), changeFrequency: 'monthly', priority: 0.5 },
   ]
   if (categories.status === 'fulfilled') {
