@@ -24,7 +24,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useAddLineItem } from '@/features/cart/api/queries'
 import { useProduct, useProductVendor } from '@/features/product/api/queries'
 import { ProductShareButton } from '@/features/product/components/ProductShareButton'
-import { ProductReviews } from '@/features/reviews/components/ProductReviews'
 import { StoreReviews } from '@/features/store-reviews/components/StoreReviews'
 import { getCartId } from '@/lib/cart-cookies'
 import { type Locale, intlLocale } from '@/lib/i18n'
@@ -428,7 +427,6 @@ export function ProductDetailClient() {
         </div>
       </div>
 
-      <ProductReviews productId={product.id} />
       {vendor && storeName && <StoreReviews key={vendor.id} vendorId={vendor.id} storeName={storeName} />}
     </main>
   )

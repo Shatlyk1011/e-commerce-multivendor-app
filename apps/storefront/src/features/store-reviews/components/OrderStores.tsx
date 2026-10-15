@@ -56,7 +56,12 @@ export function OrderStores({ orderId }: { orderId: string }) {
               </p>
             </div>
             {(store.review || store.can_review) && (
-              <Button variant="outline" className="min-h-11 max-sm:w-full" onClick={() => setSelectedStore(store)}>
+              <Button
+                variant={store.review ? 'ghost' : 'default'}
+                size="sm"
+                className="max-sm:w-full"
+                onClick={() => setSelectedStore(store)}
+              >
                 {store.review ? 'Изменить отзыв о магазине' : 'Оставить отзыв о магазине'}
               </Button>
             )}
@@ -71,6 +76,13 @@ export function OrderStores({ orderId }: { orderId: string }) {
           {store.review ? (
             <div className="border-apple-divider-soft mt-3 border-t pt-3">
               <p className="text-apple-ink text-xs font-semibold">Ваш отзыв о магазине · {store.review.rating} из 5</p>
+              <p className="text-apple-ink-muted-48 mt-1 text-xs" role="status">
+                {store.review.status === 'approved'
+                  ? 'Опубликован'
+                  : store.review.status === 'rejected'
+                    ? 'Не прошёл проверку. Вы можете изменить и отправить его снова.'
+                    : 'Ожидает проверки администратором'}
+              </p>
               <p className="text-apple-ink-muted-80 mt-1 text-sm break-words whitespace-pre-wrap">
                 {store.review.comment}
               </p>
@@ -80,7 +92,7 @@ export function OrderStores({ orderId }: { orderId: string }) {
               {store.delivery_status === 'cancelled'
                 ? 'Для отменённого заказа отзыв недоступен.'
                 : store.can_review
-                  ? 'Отзыв необязателен. Поделитесь впечатлениями о магазине.'
+                  ? 'Поделитесь впечатлениями о магазине.'
                   : 'Отзыв станет доступен после получения товаров этого магазина.'}
             </p>
           )}

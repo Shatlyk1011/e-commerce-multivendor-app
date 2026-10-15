@@ -1,4 +1,4 @@
-import type { OrderStoresResponse, StoreReview, StoreReviewInput, StoreReviewsResponse } from '@dtc/api-contracts'
+import type { OrderStoresResponse, OwnedStoreReview, StoreReviewInput, StoreReviewsResponse } from '@dtc/api-contracts'
 
 import { medusa } from '@/lib/medusa'
 
@@ -13,12 +13,12 @@ export function getStoreReviews(vendorId: string, offset: number) {
 }
 
 export function createStoreReview(orderId: string, body: StoreReviewInput) {
-  return medusa.client.fetch<{ review: StoreReview }>('/store/store-reviews', {
+  return medusa.client.fetch<{ review: OwnedStoreReview }>('/store/store-reviews', {
     method: 'POST',
     body: { ...body, order_id: orderId },
   })
 }
 
 export function updateStoreReview(reviewId: string, body: StoreReviewInput) {
-  return medusa.client.fetch<{ review: StoreReview }>(`/store/store-reviews/${reviewId}`, { method: 'POST', body })
+  return medusa.client.fetch<{ review: OwnedStoreReview }>(`/store/store-reviews/${reviewId}`, { method: 'POST', body })
 }

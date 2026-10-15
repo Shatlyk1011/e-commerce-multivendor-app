@@ -4,24 +4,19 @@ import { useEffect, useMemo, useRef } from 'react'
 
 import { ChevronRight } from 'lucide-react'
 
-import { HOME_PRODUCT_CARD_FIELDS, useInfiniteProducts } from '@/features/home/API'
+import { PRODUCT_CARD_FIELDS, STOREFRONT_REGION_ID, useInfiniteProducts } from '@/features/home/API'
 import { ProductCard } from '@/features/home/components/ProductCard'
-import { useProductReviewSummaries } from '@/features/reviews/api/queries'
-
-const REGION_ID = 'reg_01KXGMKV3HG9ZR3WTV828AYM9A'
 
 export default function Home() {
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = useInfiniteProducts({
     limit: 12,
     order: '-created_at',
-    fields: HOME_PRODUCT_CARD_FIELDS,
-    region_id: REGION_ID,
+    fields: PRODUCT_CARD_FIELDS,
+    region_id: STOREFRONT_REGION_ID,
   })
 
   const products = useMemo(() => data?.pages.flatMap((page) => page.products) ?? [], [data])
-  const productIds = products.map((product) => product.id)
-  const { data: reviewSummaries } = useProductReviewSummaries(productIds)
 
   useEffect(() => {
     const target = loadMoreRef.current
@@ -64,7 +59,7 @@ export default function Home() {
       ) : (
         <div className="grid w-full grid-cols-2 gap-x-2 gap-y-4 sm:grid-cols-3 sm:gap-x-3 sm:gap-y-5 lg:grid-cols-4 xl:grid-cols-5">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} reviewSummary={reviewSummaries?.summaries[product.id]} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       )}

@@ -5,7 +5,7 @@ import * as React from 'react'
 import Link from 'next/link'
 
 import type { HttpTypes } from '@medusajs/types'
-import { Check, Heart, Loader, ShoppingBag, Star } from 'lucide-react'
+import { Check, Heart, Loader, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useI18n } from '@/components/providers/I18nProvider'
@@ -18,20 +18,25 @@ import {
 } from '@/features/account/api/queries'
 import { useAuth } from '@/features/auth/components/AuthProvider'
 import { useAddLineItem } from '@/features/cart/api/queries'
-import type { ReviewSummary } from '@/features/reviews/api/client'
 import { type Locale, intlLocale } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
+type ProductWithVendor = HttpTypes.StoreProduct & {
+  vendor?: {
+    name?: string | null
+    store_name?: string | null
+  } | null
+}
+
 export interface ProductCardProps {
-  product: HttpTypes.StoreProduct
-  reviewSummary?: ReviewSummary
+  product: ProductWithVendor
 }
 
 function formatPrice(amount: number, locale: Locale) {
   return new Intl.NumberFormat(intlLocale(locale)).format(amount)
 }
 
-export function ProductCard({ product, reviewSummary }: ProductCardProps) {
+export function ProductCard({ product }: ProductCardProps) {
   const { locale, t } = useI18n()
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   const { data: favorites = [] } = useCustomerFavorites(isAuthenticated)
@@ -55,8 +60,7 @@ export function ProductCard({ product, reviewSummary }: ProductCardProps) {
       ? `${formatPrice(originalAmount, locale)} тмт`
       : null
 
-  const rating = reviewSummary?.average_rating
-  const reviewsCount = reviewSummary?.review_count ?? 0
+  const storeName = product.vendor?.store_name || product.vendor?.name || 'Магазин'
 
   return (
     <Card className="group border-apple-hairline/40 bg-apple-canvas rounded-apple-lg relative flex h-full min-w-0 flex-col justify-between gap-0 border p-1 transition-all duration-200">
@@ -86,12 +90,12 @@ export function ProductCard({ product, reviewSummary }: ProductCardProps) {
             aria-label={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
             aria-pressed={isFavorite}
             title={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
-            className="rounded-apple-full bg-apple-canvas/80 hover:bg-apple-canvas border-apple-divider-soft absolute top-1 right-1 z-10 flex size-11 cursor-pointer items-center justify-center border shadow-xs transition-all active:scale-95 sm:top-2.5 sm:right-2.5"
+            className="rounded-apple-full bg-apple-canvas/80 group/link hover:bg-apple-canvas border-apple-divider-soft absolute top-1 right-1 z-10 flex size-9 cursor-pointer items-center justify-center border shadow-xs transition-all active:scale-95 sm:top-2.5 sm:right-2.5"
           >
             <Heart
               className={cn(
-                'size-5 transition-colors',
-                isFavorite ? 'fill-red-500 text-red-500' : 'text-apple-ink-muted-80 hover:text-red-500',
+                'size-4 transition-colors',
+                isFavorite ? 'fill-red-500 text-red-500' : 'text-apple-ink-muted-80 group-hover/link:text-red-500',
               )}
             />
           </button>
@@ -112,15 +116,9 @@ export function ProductCard({ product, reviewSummary }: ProductCardProps) {
             {title}
           </h3>
 
-          {/* Rating and Reviews Row */}
-          <div
-            className="text-apple-ink-muted-48 mt-1 flex items-center gap-1 text-[11px]"
-            aria-label={`Оценка ${rating} из 5 на основе ${reviewsCount} отзывов`}
-          >
-            <Star className="size-3.5 fill-amber-400 stroke-amber-400" strokeWidth={0} aria-hidden="true" />
-            <span className="text-apple-ink font-sans font-semibold">{rating}</span>
-            <span className="font-sans">({reviewsCount} отзывов)</span>
-          </div>
+          <p className="text-apple-ink-muted-48 mt-1 truncate text-[11px]" title={storeName}>
+            {storeName}
+          </p>
         </CardContent>
       </Link>
 

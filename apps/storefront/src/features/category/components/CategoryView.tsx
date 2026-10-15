@@ -8,7 +8,6 @@ import { ChevronRight } from 'lucide-react'
 
 import { useI18n } from '@/components/providers/I18nProvider'
 import { ProductCard } from '@/features/home/components/ProductCard'
-import { useProductReviewSummaries } from '@/features/reviews/api/queries'
 
 import { useCatalogCategories, useProductsByCategory } from '../api/queries'
 import { CategoryTreeNode } from '../api/types'
@@ -50,7 +49,6 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
   })
 
   const products = productsData?.products ?? []
-  const { data: reviewSummaries } = useProductReviewSummaries(products.map((product) => product.id))
   const totalCount = productsData?.count ?? 0
   const hasMore = (page + 1) * PAGE_SIZE < totalCount
 
@@ -187,11 +185,7 @@ export function CategoryView({ categoryId }: CategoryViewProps) {
               <>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                   {products.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      reviewSummary={reviewSummaries?.summaries[product.id]}
-                    />
+                    <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
 

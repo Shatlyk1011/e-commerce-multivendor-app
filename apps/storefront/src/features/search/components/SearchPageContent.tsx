@@ -9,9 +9,8 @@ import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useCategories } from '@/features/category/api/queries'
 import { getProductWord } from '@/features/category/utils'
-import { useProducts } from '@/features/home/API'
+import { PRODUCT_CARD_FIELDS, STOREFRONT_REGION_ID, useProducts } from '@/features/home/API'
 import { ProductCard } from '@/features/home/components/ProductCard'
-import { useProductReviewSummaries } from '@/features/reviews/api/queries'
 import { cn } from '@/lib/utils'
 
 import { SearchFilters } from './SearchFilters'
@@ -58,10 +57,11 @@ export function SearchPageContent() {
     category_id: categoryId || undefined,
     order: SORT_ORDER_MAP[sortOption],
     limit: 40,
+    fields: PRODUCT_CARD_FIELDS,
+    region_id: STOREFRONT_REGION_ID,
   })
 
   const products = data?.products || []
-  const { data: reviewSummaries } = useProductReviewSummaries(products.map((product) => product.id))
 
   // Handle drill down/selection of category from sidebar
   const handleSelectCategory = (catId: string | null) => {
@@ -176,11 +176,7 @@ export function SearchPageContent() {
           ) : (
             <div className="max-xs:grid-cols-1 grid grid-cols-4 gap-4 max-xl:grid-cols-3 max-lg:grid-cols-2">
               {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  reviewSummary={reviewSummaries?.summaries[product.id]}
-                />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )}

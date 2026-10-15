@@ -28,7 +28,9 @@ export function StoreReviewDialog({ store, onClose }: { store: OrderStore; onClo
       <DialogContent className="rounded-apple-lg border-apple-hairline bg-apple-canvas max-w-lg p-6">
         <DialogHeader>
           <DialogTitle>{store.review ? 'Изменить отзыв о магазине' : 'Оставить отзыв о магазине'}</DialogTitle>
-          <DialogDescription>{store.vendor.name}. Отзыв будет виден другим покупателям.</DialogDescription>
+          <DialogDescription>
+            {store.vendor.name}. После отправки администратор проверит отзыв перед публикацией.
+          </DialogDescription>
         </DialogHeader>
         <form
           className="space-y-5"
@@ -101,7 +103,7 @@ export function StoreReviewDialog({ store, onClose }: { store: OrderStore; onClo
               Отмена
             </Button>
             <Button type="submit" className="min-h-11" disabled={mutation.isPending || !comment.trim()}>
-              {mutation.isPending ? 'Сохраняем…' : store.review ? 'Сохранить отзыв' : 'Опубликовать отзыв'}
+              {mutation.isPending ? 'Сохраняем…' : store.review ? 'Отправить на проверку' : 'Отправить отзыв'}
             </Button>
           </div>
         </form>

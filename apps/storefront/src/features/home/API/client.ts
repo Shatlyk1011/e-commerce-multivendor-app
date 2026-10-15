@@ -4,17 +4,22 @@ import { medusa } from '@/lib/medusa'
 
 export type { HttpTypes }
 
-export const HOME_PRODUCT_CARD_FIELDS = [
+export const PRODUCT_CARD_FIELDS = [
   '*variants.calculated_price',
   'id',
   'title',
   'handle',
   'thumbnail',
+  'vendor.id',
+  'vendor.name',
+  'vendor.store_name',
   'variants.id',
   'variants.manage_inventory',
   'variants.allow_backorder',
   '+variants.inventory_quantity',
 ].join(',')
+
+export const STOREFRONT_REGION_ID = 'reg_01KXGMKV3HG9ZR3WTV828AYM9A'
 
 export async function fetchProducts(params?: {
   limit?: number

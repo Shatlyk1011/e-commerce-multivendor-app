@@ -1,5 +1,6 @@
 import type { HttpTypes } from '@medusajs/types'
 
+import { PRODUCT_CARD_FIELDS, STOREFRONT_REGION_ID } from '@/features/home/API'
 import { medusa } from '@/lib/medusa'
 
 import { CategoryTreeNode } from './types'
@@ -83,6 +84,8 @@ export async function fetchProductsByCategory(params?: {
     limit: params?.limit,
     offset: params?.offset,
     category_id: params?.category_id,
+    fields: PRODUCT_CARD_FIELDS,
+    region_id: STOREFRONT_REGION_ID,
   })
   return response
 }

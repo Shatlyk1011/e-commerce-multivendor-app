@@ -40,7 +40,7 @@ export function useSaveStoreReview(vendorId: string, orderId: string, reviewId?:
         client.invalidateQueries({ queryKey: storeReviewKeys.orders }),
         client.invalidateQueries({ queryKey: storeReviewKeys.vendor(vendorId) }),
       ])
-      toast.success(reviewId ? 'Отзыв о магазине обновлён' : 'Отзыв о магазине опубликован')
+      toast.success('Отзыв о магазине отправлен на проверку')
     },
     onError: () => {
       // Refresh eligibility after a concurrent submission or delivery-status change.
