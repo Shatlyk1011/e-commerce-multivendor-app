@@ -1,32 +1,17 @@
 'use client'
 
-import Link from 'next/link'
+import { Clock, X } from 'lucide-react'
 
-import { Clock, TrendingUp, X } from 'lucide-react'
-
-import { useI18n } from '@/components/providers/I18nProvider'
-import { Spinner } from '@/components/ui/spinner'
-import { useProducts } from '@/features/home/API'
-import { type Locale, intlLocale } from '@/lib/i18n'
 import { useSearchStore } from '@/store/use-search-store'
 
 interface SearchOverlayProps {
   onSelectQuery: (query: string) => void
-  onClose: () => void
 }
 
-function formatPrice(amount: number, locale: Locale) {
-  return new Intl.NumberFormat(intlLocale(locale)).format(amount)
-}
-
-export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayProps) {
-  const { locale } = useI18n()
+export default function SearchOverlay({ onSelectQuery }: SearchOverlayProps) {
   const history = useSearchStore((state) => state.history)
   const clearHistory = useSearchStore((state) => state.clearHistory)
   const removeHistoryItem = useSearchStore((state) => state.removeHistoryItem)
-
-  const { data, isLoading } = useProducts({ limit: 6 })
-  const products = data?.products ?? []
 
   const handleQueryClick = (q: string) => {
     onSelectQuery(q)
@@ -34,11 +19,10 @@ export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayP
 
   return (
     <div
-      className="bg-apple-canvas rounded-apple-lg border-apple-hairline divide-apple-divider-soft animate-in fade-in slide-in-from-top-2 absolute top-full left-0 z-50 mt-2 flex h-[min(70dvh,520px)] w-full flex-col divide-y overflow-hidden border shadow-xl duration-150 lg:left-1/2 lg:h-[400px] lg:w-[720px] lg:-translate-x-1/2 lg:flex-row lg:divide-x lg:divide-y-0"
+      className="bg-apple-canvas rounded-apple-lg border-apple-hairline animate-in fade-in slide-in-from-top-2 absolute top-full left-0 z-50 mt-2 flex h-[min(70dvh,520px)] w-full flex-col overflow-hidden border shadow-xl duration-150 lg:left-1/2 lg:h-[400px] lg:w-[720px] lg:-translate-x-1/2"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Left Panel: Search History */}
-      <div className="bg-apple-canvas-parchment/30 flex max-h-40 w-full shrink-0 flex-col p-4 lg:h-full lg:max-h-none lg:w-[260px] lg:p-5">
+      <div className="bg-apple-canvas-parchment/30 flex h-full w-full flex-col p-4 lg:p-5">
         <div className="mb-3.5 flex items-center justify-between">
           <span className="font-heading text-apple-ink text-[15px] font-semibold">История</span>
           {history.length > 0 && (
@@ -82,96 +66,6 @@ export default function SearchOverlay({ onSelectQuery, onClose }: SearchOverlayP
               </li>
             ))}
           </ul>
-        )}
-      </div>
-
-      {/* Right Panel: Popular Products */}
-      <div className="bg-apple-canvas flex min-h-0 flex-1 flex-col p-4 lg:h-full lg:p-5">
-        <div className="mb-3.5 flex items-center gap-1.5">
-          <TrendingUp className="text-apple-primary size-4" />
-          <span className="font-heading text-apple-ink text-[15px] font-semibold">Популярные товары</span>
-        </div>
-
-        {isLoading ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Spinner size="md" />
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-apple-ink-muted-48 flex flex-1 items-center justify-center text-[13px]">
-            Нет популярных товаров
-          </div>
-        ) : (
-          <div className="flex-1 scrollbar-thin overflow-y-auto pr-1">
-            <div className="grid grid-cols-2 gap-3 pb-2">
-              {products.map((product) => {
-                const title = product.title ?? ''
-                const image = product.thumbnail ?? product.images?.[0]?.url ?? ''
-                const variant = product.variants?.[0]
-                const amount = variant?.calculated_price?.calculated_amount ?? 0
-                const originalAmount = variant?.calculated_price?.original_amount ?? null
-
-                const discount =
-                  originalAmount && amount < originalAmount
-                    ? Math.round(((originalAmount - amount) / originalAmount) * 100)
-                    : null
-
-                const price = `${formatPrice(amount, locale)} тмт`
-                const originalPrice = originalAmount ? `${formatPrice(originalAmount, locale)} тмт` : null
-
-                const stockLeft =
-                  (Math.abs(product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 145) + 5
-
-                return (
-                  <Link
-                    key={product.id}
-                    href={`/product/${product.handle || product.id}`}
-                    onClick={onClose}
-                    className="group border-apple-divider-soft/50 rounded-apple-md bg-apple-canvas flex h-full flex-col overflow-hidden border transition-all duration-200 hover:shadow-md active:scale-[0.99]"
-                  >
-                    {/* Image Area */}
-                    <div className="bg-apple-canvas-parchment border-apple-divider-soft/30 relative aspect-[4/3] w-full overflow-hidden border-b">
-                      {image ? (
-                        <img
-                          src={image}
-                          alt={title}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-102"
-                        />
-                      ) : (
-                        <div className="text-apple-ink-muted-48 flex h-full w-full items-center justify-center text-[12px]">
-                          Изображение
-                        </div>
-                      )}
-
-                      {discount && (
-                        <span className="bg-destructive text-apple-on-primary rounded-apple-xs absolute bottom-1.5 left-1.5 px-1.5 py-0.5 text-[10px] font-bold shadow-xs">
-                          -{discount}%
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Content Area */}
-                    <div className="flex min-w-0 flex-1 flex-col p-2.5">
-                      {/* Price Section */}
-                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                        <span className="text-apple-primary text-[14px] font-bold">{price}</span>
-                        {originalPrice && (
-                          <span className="text-apple-ink-muted-48 text-[11px] line-through">{originalPrice}</span>
-                        )}
-                      </div>
-
-                      {/* Stock Remaining */}
-                      <span className="text-destructive mt-1 text-[10px] font-semibold">{stockLeft} шт. осталось</span>
-
-                      {/* Title */}
-                      <p className="text-apple-ink-muted-80 group-hover:text-apple-primary mt-1.5 line-clamp-2 text-[11px] leading-snug font-medium transition-colors">
-                        {title}
-                      </p>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
         )}
       </div>
     </div>

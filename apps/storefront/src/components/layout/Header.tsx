@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
-import { Check, ChevronDown, Grid2x2, Heart, MapPin, Search, User, X } from 'lucide-react'
+import { Check, ChevronDown, Globe2, Grid2x2, Heart, MapPin, Search, User, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useI18n } from '@/components/providers/I18nProvider'
@@ -126,9 +126,9 @@ export function Header() {
     >
       {/* ROW 1: TOP BAR */}
       <div className="bg-apple-canvas-parchment text-apple-ink-muted-80 w-full px-3 text-[13px] lg:px-4 lg:py-1.5">
-        <div className="custom-container mx-auto flex min-h-11 items-center justify-between max-lg:min-h-auto">
+        <div className="custom-container mx-auto flex items-center justify-between gap-3 max-lg:min-h-auto max-md:min-h-11">
           {/* Top Bar Left: Location & Pick-up points */}
-          <div className="flex min-w-0 items-center gap-6">
+          <div className="flex min-w-0 items-center gap-6 max-md:gap-3">
             {/* City Selector */}
             <Popover>
               <PopoverTrigger asChild>
@@ -173,17 +173,17 @@ export function Header() {
             {/* Pick-up points */}
             <Link
               href="/pickup-points"
-              className="text-apple-ink-muted-80 hover:text-apple-primary hidden font-medium transition-colors lg:inline"
+              className="text-apple-ink-muted-80 hover:text-apple-primary hidden min-h-11 items-center font-medium transition-colors max-md:inline-flex lg:inline-flex lg:min-h-0"
             >
               Пункты выдачи
             </Link>
           </div>
 
           {/* Top Bar Right: Vendor Links & Lang Selector */}
-          <div className="flex shrink-0 items-center gap-6">
+          <div className="flex shrink-0 items-center gap-6 max-md:gap-3">
             <Link
               href="/become-seller"
-              className="text-apple-primary hover:text-apple-primary-focus hidden font-semibold transition-colors lg:inline"
+              className="text-apple-primary hover:text-apple-primary-focus hidden min-h-11 items-center font-semibold transition-colors max-md:inline-flex lg:inline-flex lg:min-h-0"
             >
               Стать продавцом
             </Link>
@@ -209,11 +209,16 @@ export function Header() {
             {/* Language Selector */}
             <Popover open={languageOpen} onOpenChange={setLanguageOpen}>
               <PopoverTrigger asChild>
-                <button className="text-apple-ink-muted-80 hover:text-apple-primary flex min-h-11 cursor-pointer items-center gap-1.5 outline-hidden transition-colors lg:min-h-0">
-                  <span className="font-medium" data-i18n-ignore lang={selectedLang}>
+                <button
+                  aria-label={`Выбрать язык, сейчас ${selectedLang === 'ru' ? 'русский' : 'туркменский'}`}
+                  title="Выбрать язык"
+                  className="text-apple-ink-muted-80 hover:text-apple-primary flex min-h-11 cursor-pointer items-center justify-center outline-hidden transition-colors max-md:size-11 md:gap-1.5 lg:min-h-0"
+                >
+                  <Globe2 className="size-4 md:hidden" aria-hidden="true" />
+                  <span className="hidden font-medium md:inline" data-i18n-ignore lang={selectedLang}>
                     {selectedLang === 'ru' ? 'Русский' : 'Türkmen'}
                   </span>
-                  <ChevronDown className="text-apple-ink-muted-48 size-3.5" />
+                  <ChevronDown className="text-apple-ink-muted-48 hidden size-3.5 md:block" />
                 </button>
               </PopoverTrigger>
               <PopoverContent
@@ -260,7 +265,7 @@ export function Header() {
         </div>
         <nav
           aria-label="Дополнительные ссылки"
-          className="custom-container border-apple-divider-soft flex gap-6 border-t lg:hidden"
+          className="custom-container border-apple-divider-soft hidden gap-6 border-t md:flex lg:hidden"
         >
           <Link
             href="/become-seller"
@@ -332,9 +337,7 @@ export function Header() {
                 <Search className="size-5" />
               </button>
             </form>
-            {searchFocused && (
-              <SearchOverlay onSelectQuery={handleSelectQuery} onClose={() => setSearchFocused(false)} />
-            )}
+            {searchFocused && <SearchOverlay onSelectQuery={handleSelectQuery} />}
           </OnClickOutside>
 
           {/* Right Controls: Actions */}
