@@ -12,6 +12,7 @@ import {
 import type {
   OrderStore,
   StoreReview as PublicStoreReview,
+  OwnedStoreReview,
 } from "@dtc/api-contracts";
 import type StoreReview from "../modules/store-review/models/store-review";
 import { STORE_REVIEW_MODULE } from "../modules/store-review";
@@ -82,6 +83,12 @@ export function toPublicStoreReview(
     created_at: new Date(review.created_at).toISOString(),
     updated_at: new Date(review.updated_at).toISOString(),
   };
+}
+
+export function toOwnedStoreReview(
+  review: InferTypeOf<typeof StoreReview>,
+): OwnedStoreReview {
+  return { ...toPublicStoreReview(review), status: review.status };
 }
 
 export async function getOwnedReviewOrder(
@@ -171,7 +178,7 @@ export async function getOrderStores(
           isStoreOrderDelivered(order) &&
           Boolean(order.items?.length) &&
           !review,
-        review: review ? toPublicStoreReview(review) : null,
+        review: review ? toOwnedStoreReview(review) : null,
         items: (order.items ?? []).map((item) => ({
           id: item.id,
           title: item.title,

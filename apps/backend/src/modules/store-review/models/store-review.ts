@@ -10,6 +10,7 @@ const StoreReview = model
     author_name: model.text(),
     rating: model.number(),
     comment: model.text(),
+    status: model.enum(["pending", "approved", "rejected"]).default("pending"),
   })
   .indexes([
     {
@@ -18,6 +19,7 @@ const StoreReview = model
       unique: true,
     },
     { name: "IDX_store_review_vendor", on: ["vendor_id"] },
+    { name: "IDX_store_review_status_created", on: ["status", "created_at"] },
   ]);
 
 export default StoreReview;

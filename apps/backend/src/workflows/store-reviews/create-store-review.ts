@@ -76,6 +76,7 @@ export const createStoreReviewStep = createStep(
         author_name: authorName,
         rating: input.rating,
         comment: input.comment,
+        status: "pending",
       });
       return new StepResponse(review, review.id);
     } catch (error) {

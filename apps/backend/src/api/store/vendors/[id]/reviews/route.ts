@@ -10,7 +10,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     limit: number;
     offset: number;
   };
-  const filters = { vendor_id: req.params.id };
+  const filters = { vendor_id: req.params.id, status: "approved" as const };
   const [reviews, count] = await service.listAndCountStoreReviews(filters, {
     take: limit,
     skip: offset,

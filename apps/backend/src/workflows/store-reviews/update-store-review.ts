@@ -27,11 +27,13 @@ export const updateStoreReviewStep = createStep(
       id: review.id,
       rating: input.rating,
       comment: input.comment,
+      status: "pending",
     });
     return new StepResponse(updated, {
       id: review.id,
       rating: review.rating,
       comment: review.comment,
+      status: review.status,
     });
   },
   async (previous, { container }) => {

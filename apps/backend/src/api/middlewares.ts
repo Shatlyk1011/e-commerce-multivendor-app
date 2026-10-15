@@ -26,6 +26,7 @@ import { favoriteMiddlewares } from "./store/favorites/middlewares";
 import { CreateSellerRequestSchema } from "./store/seller-requests/route";
 import { UpdateSellerRequestSchema } from "./admin/seller-requests/route";
 import { storeReviewMiddlewares } from "./store/store-reviews/middlewares";
+import { adminStoreReviewMiddlewares } from "./admin/store-reviews/middlewares";
 import { VendorUpdateProductSchema } from "./vendors/products/[id]/route";
 import { UpdateVendorProfileSchema } from "./vendors/me/route";
 
@@ -126,6 +127,7 @@ export default defineMiddlewares({
   routes: [
     ...favoriteMiddlewares,
     ...storeReviewMiddlewares,
+    ...adminStoreReviewMiddlewares,
     {
       matcher: "/store/seller-requests",
       method: ["POST"],

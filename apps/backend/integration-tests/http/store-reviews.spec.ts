@@ -24,6 +24,7 @@ medusaIntegrationTestRunner({
       let headers: Record<string, string>;
       let strangerHeaders: Record<string, string>;
       let publicHeaders: Record<string, string>;
+      let adminHeaders: Record<string, string>;
       let parent: OrderDTO;
       let delivered: OrderDTO;
       let pending: OrderDTO;
@@ -53,6 +54,16 @@ medusaIntegrationTestRunner({
           });
         }
         return order;
+      }
+
+      async function moderateReview(id: string, status: "approved" | "rejected") {
+        const response = await api.get("/admin/store-reviews?status=all", { headers: adminHeaders });
+        const review = response.data.reviews.find((entry: { id: string }) => entry.id === id);
+        return api.post(
+          `/admin/store-reviews/${id}`,
+          { status, expected_rating: review.rating, expected_comment: review.comment },
+          { headers: adminHeaders },
+        );
       }
 
       beforeEach(async () => {
@@ -105,6 +116,17 @@ medusaIntegrationTestRunner({
           ...publicHeaders,
           Authorization: `Bearer ${tokenFor(customers[1].id)}`,
         };
+        adminHeaders = {
+          Authorization: `Bearer ${generateJwtToken(
+            {
+              actor_id: "test-admin",
+              actor_type: "user",
+              auth_identity_id: "test-admin-auth",
+              app_metadata: { user_id: "test-admin" },
+            },
+            { secret: config.projectConfig.http.jwtSecret!, expiresIn: "1h" },
+          )}`,
+        };
         parent = await makeOrder(buyerId, undefined, undefined, "preparing");
         delivered = await makeOrder(buyerId, vendorId, parent.id);
         pending = await makeOrder(
@@ -115,7 +137,7 @@ medusaIntegrationTestRunner({
         );
       });
 
-      it("unlocks each store independently and publishes a cash-order review with no private fields", async () => {
+      it("holds a new review for admin approval before publishing it", async () => {
         const response = await api.get(`/store/orders/${parent.id}/stores`, {
           headers,
         });
@@ -134,6 +156,25 @@ medusaIntegrationTestRunner({
         );
         expect(created.status).toBe(201);
         expect(created.data.review.comment).toBe("Good store");
+        expect(created.data.review.status).toBe("pending");
+        const hidden = await api.get(`/store/vendors/${vendorId}/reviews`, {
+          headers: publicHeaders,
+        });
+        expect(hidden.data).toMatchObject({
+          count: 0,
+          reviews: [],
+          summary: { average_rating: null, review_count: 0 },
+        });
+        await expect(api.get("/admin/store-reviews", { headers: publicHeaders }))
+          .rejects.toMatchObject({ response: { status: 401 } });
+        const queue = await api.get("/admin/store-reviews", { headers: adminHeaders });
+        expect(queue.data.reviews[0]).toMatchObject({
+          id: created.data.review.id,
+          vendor_name: "Store A",
+          status: "pending",
+          comment: "Good store",
+        });
+        await moderateReview(created.data.review.id, "approved");
         const published = await api.get(`/store/vendors/${vendorId}/reviews`, {
           headers: publicHeaders,
         });
@@ -161,6 +202,23 @@ medusaIntegrationTestRunner({
             (store: { order_id: string }) => store.order_id === delivered.id,
           ).review.id,
         ).toBe(created.data.review.id);
+        expect(refreshed.data.stores.find(
+          (store: { order_id: string }) => store.order_id === delivered.id,
+        ).review.status).toBe("approved");
+        await api.post(
+          `/store/store-reviews/${created.data.review.id}`,
+          { rating: 1, comment: "Edited after approval" },
+          { headers },
+        );
+        const hiddenAgain = await api.get(`/store/vendors/${vendorId}/reviews`, { headers: publicHeaders });
+        expect(hiddenAgain.data.summary.review_count).toBe(0);
+        const pendingAgain = await api.get("/admin/store-reviews", { headers: adminHeaders });
+        expect(pendingAgain.data.reviews[0].status).toBe("pending");
+        await expect(api.post(
+          `/admin/store-reviews/${created.data.review.id}`,
+          { status: "approved", expected_rating: 5, expected_comment: "Good store" },
+          { headers: adminHeaders },
+        )).rejects.toMatchObject({ response: { status: 409 } });
       });
 
       it("rejects anonymous access, other buyers, unrelated orders, and premature reviews", async () => {
@@ -219,7 +277,9 @@ medusaIntegrationTestRunner({
         const response2 = await api.get(`/store/vendors/${vendorId}/reviews`, {
           headers: publicHeaders,
         });
-        expect(response2.data.count).toBe(2);
+        expect(response2.data.count).toBe(0);
+        const queue = await api.get("/admin/store-reviews", { headers: adminHeaders });
+        expect(queue.data.count).toBe(2);
       });
 
       it("prevents duplicates during simultaneous submissions and restricts editing to the author", async () => {
@@ -239,11 +299,7 @@ medusaIntegrationTestRunner({
         expect(
           requests.filter((result) => result.status === "fulfilled"),
         ).toHaveLength(1);
-        const published = await api.get(`/store/vendors/${vendorId}/reviews`, {
-          headers: publicHeaders,
-        });
-        expect(published.data.count).toBe(1);
-        const reviewId = published.data.reviews[0].id;
+        const reviewId = (requests.find((result) => result.status === "fulfilled") as PromiseFulfilledResult<Awaited<ReturnType<typeof api.post>>>).value.data.review.id;
         await expect(
           api.post(
             `/store/store-reviews/${reviewId}`,
@@ -263,6 +319,9 @@ medusaIntegrationTestRunner({
           { rating: 3, comment: "Updated" },
           { headers },
         );
+        const hidden = await api.get(`/store/vendors/${vendorId}/reviews`, { headers: publicHeaders });
+        expect(hidden.data.count).toBe(0);
+        await moderateReview(reviewId, "approved");
         const updated = await api.get(`/store/vendors/${vendorId}/reviews`, {
           headers: publicHeaders,
         });
@@ -274,6 +333,12 @@ medusaIntegrationTestRunner({
           id: reviewId,
           comment: "Updated",
         });
+        await moderateReview(reviewId, "rejected");
+        const rejected = await api.get(`/store/vendors/${vendorId}/reviews`, { headers: publicHeaders });
+        expect(rejected.data.summary.review_count).toBe(0);
+        await api.post(`/store/store-reviews/${reviewId}`, { rating: 4, comment: "Retry" }, { headers });
+        const owned = await api.get(`/store/orders/${parent.id}/stores`, { headers });
+        expect(owned.data.stores.find((store: { order_id: string }) => store.order_id === delivered.id).review.status).toBe("pending");
       });
 
       it("rejects cancelled store orders and cancelled checkouts", async () => {
@@ -324,11 +389,12 @@ medusaIntegrationTestRunner({
       it("paginates public reviews and keeps store aggregates separate", async () => {
         for (const rating of [2, 4]) {
           const order = await makeOrder(buyerId, vendorId);
-          await api.post(
+          const created = await api.post(
             "/store/store-reviews",
             { order_id: order.id, rating, comment: "Good" },
             { headers },
           );
+          await moderateReview(created.data.review.id, "approved");
         }
         const first = await api.get(
           `/store/vendors/${vendorId}/reviews?limit=1`,

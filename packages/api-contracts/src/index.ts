@@ -1,5 +1,6 @@
 export type {
   StoreReview,
+  OwnedStoreReview,
   StoreReviewInput,
   StoreReviewsResponse,
   OrderStore,

@@ -10,6 +10,8 @@ export type StoreReview = {
 
 export type StoreReviewInput = { rating: number; comment: string }
 
+export type OwnedStoreReview = StoreReview & { status: 'pending' | 'approved' | 'rejected' }
+
 export type StoreReviewsResponse = {
   reviews: StoreReview[]
   count: number
@@ -23,7 +25,7 @@ export type OrderStore = {
   vendor: { id: string; name: string; logo: string | null }
   delivery_status: string | null
   can_review: boolean
-  review: StoreReview | null
+  review: OwnedStoreReview | null
   items: Array<{ id: string; title: string; quantity: number; thumbnail: string | null }>
 }
 

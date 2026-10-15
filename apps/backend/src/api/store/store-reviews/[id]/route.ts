@@ -3,7 +3,7 @@ import type {
   MedusaResponse,
 } from "@medusajs/framework/http";
 import updateStoreReviewWorkflow from "../../../../workflows/store-reviews/update-store-review";
-import { toPublicStoreReview } from "../../../../lib/store-reviews";
+import { toOwnedStoreReview } from "../../../../lib/store-reviews";
 import type { UpdateStoreReviewInput } from "../middlewares";
 
 export async function POST(
@@ -17,5 +17,5 @@ export async function POST(
       review_id: req.params.id,
     },
   });
-  res.json({ review: toPublicStoreReview(result) });
+  res.json({ review: toOwnedStoreReview(result) });
 }
