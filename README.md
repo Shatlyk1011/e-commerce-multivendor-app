@@ -9,7 +9,7 @@ An early-stage, self-hosted multivendor marketplace built on Medusa. It includes
 - **Buyer storefront** — catalogue browsing, product variants, cart and checkout, phone-based customer sign-in, delivery or pickup, favourites, orders, and product/store reviews.
 - **Seller portal** — seller sign-in, product creation with media uploads and option templates, inventory-aware catalogue management, and order fulfilment/status updates.
 - **Marketplace backend** — Medusa API and Admin dashboard, seller applications and vendor administration, vendor/product and vendor/order links, vendor order workflows, reviews, and custom delivery data.
-- **Local platform services** — PostgreSQL, Redis, MinIO-compatible file storage, and Meilisearch.
+- **Local platform services** — PostgreSQL, MinIO-compatible file storage, and Meilisearch.
 
 ## Applications and services
 
@@ -19,7 +19,6 @@ An early-stage, self-hosted multivendor marketplace built on Medusa. It includes
 | Seller portal        | `apps/vendor-portal`   | http://localhost:3001                             | Seller dashboard                           |
 | Medusa API and Admin | `apps/backend`         | http://localhost:9000 / http://localhost:9000/app | Marketplace API and operations dashboard   |
 | PostgreSQL 15        | `postgres:15-alpine`   | `localhost:5433`                                  | Primary database                           |
-| Redis 7              | `redis:7-alpine`       | `localhost:6379`                                  | Cache and event infrastructure             |
 | MinIO                | `minio/minio`          | http://localhost:9010 / http://localhost:9001     | Product and seller media / storage console |
 | Meilisearch          | `getmeili/meilisearch` | http://localhost:7700                             | Search service provisioned for the stack   |
 
@@ -29,7 +28,7 @@ An early-stage, self-hosted multivendor marketplace built on Medusa. It includes
 - **Web apps:** Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4
 - **Client state/data:** TanStack Query and Zustand
 - **Platform:** Node.js 20, pnpm 10, Turborepo, Docker Compose
-- **Data services:** PostgreSQL, Redis, MinIO, Meilisearch
+- **Data services:** PostgreSQL, MinIO, Meilisearch
 
 The repo is a pnpm workspace. Shared API types live in `packages/api-contracts`.
 
@@ -39,7 +38,7 @@ The repo is a pnpm workspace. Shared API types live in `packages/api-contracts`.
 
 - Docker Engine / Docker Desktop with Docker Compose v2
 - At least 8 GB of available memory for a comfortable local build
-- Ports `3000`, `3001`, `5433`, `6379`, `7700`, `9000`, `9001`, and `9010` available on the host
+- Ports `3000`, `3001`, `5433`, `7700`, `9000`, `9001`, and `9010` available on the host
 
 ### First run
 
@@ -84,7 +83,7 @@ docker compose stop
 # Stop and remove containers and network while preserving volumes
 docker compose down
 
-# Delete all local database, search, cache, and media data (irreversible)
+# Delete all local database, search, and media data (irreversible)
 docker compose down -v
 ```
 
@@ -109,7 +108,7 @@ Docker is the recommended way to bring up dependencies locally. To run the three
 corepack enable
 pnpm install
 
-# Configure a local backend database, Redis, MinIO, and CORS values first.
+# Configure a local backend database, MinIO, and CORS values first.
 cp apps/backend/.env.template apps/backend/.env
 
 pnpm backend:dev       # Medusa on :9000
@@ -141,12 +140,12 @@ The extra disk capacity matters because MinIO stores catalogue and seller media.
 
 ### Important: the committed Compose file is development-only
 
-`docker-compose.yml` currently publishes PostgreSQL, Redis, MinIO, Meilisearch, and application ports directly to the host. It also uses development secrets in the file and contains no reverse proxy/TLS configuration. **Do not run it unchanged on an Internet-facing VDS.**
+`docker-compose.yml` currently publishes PostgreSQL, MinIO, Meilisearch, and application ports directly to the host. It also uses development secrets in the file and contains no reverse proxy/TLS configuration. **Do not run it unchanged on an Internet-facing VDS.**
 
 Before a production VDS rollout, create and review a production Compose configuration that:
 
 1. Uses uncommitted secret storage for database, MinIO, Meilisearch, JWT, and cookie credentials; rotate the values that have appeared in Git.
-2. Removes `ports` from PostgreSQL, Redis, and Meilisearch so they are reachable only on the Docker network.
+2. Removes `ports` from PostgreSQL and Meilisearch so they are reachable only on the Docker network.
 3. Adds a reverse proxy such as Caddy or Nginx that is the only public entry point (ports 80/443), terminates TLS, and routes distinct hostnames to the storefront, seller portal, API/Admin, and public media as appropriate.
 4. Sets production CORS origins and public backend/media URLs, restricts MinIO bucket permissions, and uses a real SMS/OTP provider.
 5. Sets up backups for the PostgreSQL and MinIO volumes, monitoring/log rotation, firewall rules, and a tested migration/rollback procedure.

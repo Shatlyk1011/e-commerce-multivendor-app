@@ -10,7 +10,6 @@ loadEnv(process.env.NODE_ENV || "development", process.cwd())
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
-    redisUrl: process.env.REDIS_URL,
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -57,33 +56,6 @@ module.exports = defineConfig({
       },
     },
 
-    // ── Event Bus: Redis ───────────────────────────────────────
-    {
-      resolve: "@medusajs/event-bus-redis",
-      options: {
-        redisUrl: process.env.REDIS_URL,
-      },
-    },
-
-    // ── Cache: Redis ───────────────────────────────────────────
-    {
-      resolve: "@medusajs/cache-redis",
-      options: {
-        redisUrl: process.env.REDIS_URL,
-        ttl: 30,
-      },
-    },
-
-    // ── Workflow Engine: Redis ─────────────────────────────────
-    {
-      resolve: "@medusajs/workflow-engine-redis",
-      options: {
-        redis: {
-          url: process.env.REDIS_URL,
-        },
-      },
-    },
-
     // ── Custom Marketplace Module ──────────────────────────────
     {
       resolve: "./src/modules/marketplace",
@@ -104,8 +76,5 @@ npm install @medusajs/file-s3
 
 # Search
 npm install @medusajs/search-meilisearch
-
-# Infrastructure modules (Redis-based)
-npm install @medusajs/event-bus-redis @medusajs/cache-redis @medusajs/workflow-engine-redis
 
 ```

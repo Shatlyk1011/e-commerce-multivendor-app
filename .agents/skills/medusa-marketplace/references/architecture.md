@@ -21,7 +21,6 @@ Caddy (80/443) — auto Let's Encrypt SSL
 Internal Docker Network (not exposed):
     medusa:9000
         ├── postgres:5432    (PostgreSQL)
-        ├── redis:6379       (Redis)
         ├── minio:9000       (S3 API)
         └── meilisearch:7700 (Search)
 ```
@@ -37,7 +36,6 @@ Internal Docker Network (not exposed):
 | Port | Service |
 |---|---|
 | 5432 | PostgreSQL |
-| 6379 | Redis |
 | 9000 | MinIO S3 API / Medusa API |
 | 9001 | MinIO Console UI |
 | 7700 | Meilisearch |

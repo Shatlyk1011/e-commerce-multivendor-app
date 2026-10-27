@@ -22,7 +22,6 @@ description: |
   - Algolia, Typesense (cloud), or any hosted search
   - SendGrid, Resend, Postmark, or any cloud email service
   - Supabase, PlanetScale, or any hosted database
-  - Upstash or any hosted Redis
   - Any third-party service
 ---
 
@@ -40,7 +39,6 @@ for the multivendor e-commerce marketplace project. Read the reference files for
 | Buyer Storefront | Next.js 14+ (App Router) |
 | Vendor Portal | Next.js 14+ (App Router) |
 | Database | PostgreSQL 15 (Docker) |
-| Cache + Events | Redis 7 (Docker) |
 | Object Storage | MinIO (S3-compatible) |
 | Search | Meilisearch |
 | SSL + Proxy | Caddy (auto Let's Encrypt) |
@@ -86,7 +84,7 @@ Before implementing any feature, read the relevant reference file:
 - **Architecture & Infrastructure**: `references/architecture.md`
 - **Marketplace Module (Vendor data models)**: `references/marketplace-module.md`
 - **Docker Compose & Caddyfile**: `references/infrastructure.md`
-- **MedusaJS config (MinIO, Redis, Meilisearch)**: `references/medusa-config.md`
+- **MedusaJS config (MinIO, Meilisearch)**: `references/medusa-config.md`
 - **Authentication patterns**: `references/auth-patterns.md`
 - **Storefront & Vendor Portal**: `references/frontend.md`
 
@@ -163,7 +161,7 @@ COOKIE_SECRET=
 
 1. **Do NOT** use `s3_force_path_style: false` with MinIO — it will break
 2. **Do NOT** run Next.js in `next build` during development — use `next dev`
-3. **Do NOT** expose PostgreSQL or Redis ports publicly — keep them internal
+3. **Do NOT** expose PostgreSQL or Meilisearch ports publicly — keep them internal
 4. **Do NOT** use the Pages Router in Next.js — only App Router
 5. **Do NOT** store vendor products without linking them via Module Links
 6. **Do NOT** use `any` type in TypeScript — strict mode is enforced

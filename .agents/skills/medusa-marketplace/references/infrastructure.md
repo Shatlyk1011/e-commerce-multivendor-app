@@ -20,15 +20,6 @@ services:
     networks:
       - internal
 
-  # ── Cache + Event Bus ─────────────────────────────────────────
-  redis:
-    image: redis:7-alpine
-    restart: always
-    volumes:
-      - redis_data:/data
-    networks:
-      - internal
-
   # ── Object Storage (S3-compatible) ───────────────────────────
   minio:
     image: minio/minio
@@ -62,13 +53,11 @@ services:
     restart: always
     depends_on:
       - postgres
-      - redis
       - minio
       - meilisearch
     env_file: .env
     environment:
       DATABASE_URL: postgres://medusa:${POSTGRES_PASSWORD}@postgres:5432/medusa_db
-      REDIS_URL: redis://redis:6379
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
@@ -141,7 +130,6 @@ networks:
 
 volumes:
   postgres_data:
-  redis_data:
   minio_data:
   meilisearch_data:
   caddy_data:

@@ -17,7 +17,6 @@ This project is a **multivendor e-commerce marketplace** (Ozon-like) built with:
 - All search → **Meilisearch** (self-hosted)
 - Email delivery is not integrated or provisioned in the base setup.
 - Database → **PostgreSQL** in Docker
-- Cache/Queue → **Redis** in Docker
 - SSL/Proxy → **Caddy** (auto Let's Encrypt)
 - Checkout uses Medusa’s system/default payment provider; no external payment gateway is integrated.
 
@@ -52,7 +51,6 @@ medusa-e-commerce/
 - Next.js: 14+ with App Router (NOT Pages Router)
 - Node.js: 20+
 - PostgreSQL: 15+
-- Redis: 7+
 - TypeScript: strict mode
 
 ### 6. TypeScript Types — MikroORM Entity Classes
