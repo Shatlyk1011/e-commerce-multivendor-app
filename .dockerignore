@@ -8,3 +8,8 @@ node_modules
 **/.turbo
 coverage
 tmp
+
+# Never bake local credentials or generated Medusa output into images
+**/.env
+**/.env.*
+**/.medusa

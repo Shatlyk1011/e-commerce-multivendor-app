@@ -55,3 +55,7 @@ yarn-error.log*
 ehthumbs.db
 Thumbs.db
 **/.DS_Store
+# Ignore environment variants; retain sanitized onboarding templates
+**/.env.*
+!**/.env.example
+!**/.env.template

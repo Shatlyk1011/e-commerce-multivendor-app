@@ -1,16 +1,17 @@
 services:
+  # Local development only. All published ports bind to loopback.
   # ── Database ──────────────────────────────────────────────────
   postgres:
     image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_DB: medusa_db
-      POSTGRES_USER: medusa
-      POSTGRES_PASSWORD: pg_pass_secure_dtc_839
+      POSTGRES_DB: ${POSTGRES_DB:-medusa_db}
+      POSTGRES_USER: ${POSTGRES_USER:-medusa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432" # Exposed on port 5433 to avoid clashing with host Postgres
+      - "127.0.0.1:5433:5432" # Exposed on port 5433 to avoid clashing with host Postgres
 
   # ── Object Storage (S3-compatible) ───────────────────────────
   minio:
@@ -18,11 +19,11 @@ services:
     restart: always
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-medusa_admin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio_secret_pass_7291}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
     ports:
-      - "9010:9000"
-      - "9001:9001"
+      - "127.0.0.1:9010:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
       - minio_data:/data
 
@@ -34,8 +35,8 @@ services:
     depends_on:
       - minio
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-medusa_admin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio_secret_pass_7291}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
       MINIO_BUCKET: ${MINIO_BUCKET:-medusa-media}
     entrypoint:
       - /bin/sh
@@ -50,9 +51,9 @@ services:
     image: getmeili/meilisearch:latest
     restart: always
     environment:
-      MEILI_MASTER_KEY: meili_master_key_secure_92018374
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:?Set MEILI_MASTER_KEY in .env}
     ports:
-      - "7700:7700"
+      - "127.0.0.1:7700:7700"
     volumes:
       - meilisearch_data:/meili_data
 
@@ -70,19 +71,19 @@ services:
       meilisearch:
         condition: service_started
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
     environment:
-      DATABASE_URL: postgres://medusa:pg_pass_secure_dtc_839@postgres:5432/medusa_db
+      DATABASE_URL: postgres://${POSTGRES_USER:-medusa}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-medusa_db}
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-medusa_admin}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minio_secret_pass_7291}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minio_admin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
       MINIO_BUCKET: ${MINIO_BUCKET:-medusa-media}
       MINIO_REGION: us-east-1
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9010/medusa-media}
       MEILISEARCH_HOST: http://meilisearch:7700
-      MEILISEARCH_API_KEY: meili_master_key_secure_92018374
-      JWT_SECRET: supersecretjwt32charsminimumforsecurity
-      COOKIE_SECRET: supersecretcookie32charsminimumforsecurity
+      MEILISEARCH_API_KEY: ${MEILI_MASTER_KEY:?Set MEILI_MASTER_KEY in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      COOKIE_SECRET: ${COOKIE_SECRET:?Set COOKIE_SECRET in .env}
       STORE_CORS: http://localhost:3000
       ADMIN_CORS: http://localhost:9000,http://localhost:5173
       AUTH_CORS: http://localhost:3000,http://localhost:3001,http://localhost:9000
@@ -94,27 +95,32 @@ services:
     build:
       context: .
       dockerfile: apps/storefront/Dockerfile
+      args:
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:-}
+        NEXT_PUBLIC_STOREFRONT_URL: http://localhost:3000
     restart: always
     depends_on:
       - medusa
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
-      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_375224aa579aea26ae27b233572132f02876d210985b6d1a1beab3689f2940cd
-      NEXT_PUBLIC_MEILISEARCH_HOST: http://localhost:7700
-      NEXT_PUBLIC_MEILISEARCH_API_KEY: meili_master_key_secure_92018374
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:-}
 
   # ── Vendor Portal (Next.js — Sellers) ─────────────────────────
   vendor-portal:
     build:
       context: .
       dockerfile: apps/vendor-portal/Dockerfile
+      args:
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:-}
     restart: always
     depends_on:
       - medusa
     ports:
-      - "3001:3001"
+      - "127.0.0.1:3001:3001"
     environment:
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
 
