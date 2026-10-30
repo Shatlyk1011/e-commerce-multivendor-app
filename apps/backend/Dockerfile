@@ -35,10 +35,11 @@ COPY packages/api-contracts/package.json ./packages/api-contracts/
 COPY apps/backend/package.json ./apps/backend/
 
 # Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Skip workspace prepare hooks: Husky is a dev dependency, absent in this stage.
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Copy the built output from builder
-COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+COPY --from=builder /app/apps/backend/.medusa/server ./apps/backend
 
 EXPOSE 9000
 
