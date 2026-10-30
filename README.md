@@ -1,160 +1,169 @@
 # Medusa Marketplace
 
-An early-stage, self-hosted multivendor marketplace built on Medusa. It includes a buyer-facing storefront, a seller portal, and custom Medusa Admin extensions for marketplace operations.
+A self-hosted multivendor marketplace built with Medusa v2, Next.js, and TypeScript. The buyer storefront currently uses the **Bugday** name. This monorepo contains a storefront, seller portal, and marketplace extensions for Medusa Admin.
 
-> **Project status:** engineering MVP / development environment. The local Docker stack is useful for development and demos. It is **not yet safe to expose directly on a public VDS**; see [VDS deployment](#vds-deployment) before deploying it.
+**Status: early engineering MVP.** Suitable for local development and contributions. Customer login uses a fixed development OTP and checkout uses the system payment provider. Do not expose this stack to the Internet or use real customer data yet. See [release readiness](docs/OPEN_SOURCE_READINESS.md).
 
-## What is included
+## Features and limits
 
-- **Buyer storefront** — catalogue browsing, product variants, cart and checkout, phone-based customer sign-in, delivery or pickup, favourites, orders, and product/store reviews.
-- **Seller portal** — seller sign-in, product creation with media uploads and option templates, inventory-aware catalogue management, and order fulfilment/status updates.
-- **Marketplace backend** — Medusa API and Admin dashboard, seller applications and vendor administration, vendor/product and vendor/order links, vendor order workflows, reviews, and custom delivery data.
-- **Local platform services** — PostgreSQL, MinIO-compatible file storage, and Meilisearch.
+These features have implementations in the repository; this is not a claim that every flow has passed end-to-end testing.
 
-## Applications and services
+| Area | Implemented | Current limits |
+| --- | --- | --- |
+| Buyer catalogue | Categories, search UI, product variants, cart, favourites | Meilisearch is provisioned but indexing/search integration is absent |
+| Buyer accounts | Phone sign-in, profile, addresses, order history | OTP accepts `1234`; no SMS is sent |
+| Checkout | Delivery/pickup selection, vendor order grouping, order delivery metadata | System/default payment provider; no live gateway or seller payouts |
+| Reviews | Product review eligibility and editing; store reviews and moderation | Review flows need broader integration coverage |
+| Seller portal | Email/password sign-in, products and media, inventory, orders and fulfilment, store settings | Admin creates accounts and resets passwords; no self-service invitation flow |
+| Marketplace Admin | Vendor management, seller applications, option templates, store review moderation, delivery/order operations | Production operations and audit coverage remain work in progress |
+| Localization | Russian/Turkmen UI resources, Turkmenistan/TMT seed configuration | Market-specific copy, delivery locations, branding and demo content need adaptation |
+| Infrastructure | PostgreSQL, MinIO media bucket, Meilisearch container | Local Compose only; no production TLS/proxy, backup or monitoring stack |
 
-| Component            | Path / image           | Local address                                     | Purpose                                    |
-| -------------------- | ---------------------- | ------------------------------------------------- | ------------------------------------------ |
-| Storefront           | `apps/storefront`      | http://localhost:3000                             | Buyer experience                           |
-| Seller portal        | `apps/vendor-portal`   | http://localhost:3001                             | Seller dashboard                           |
-| Medusa API and Admin | `apps/backend`         | http://localhost:9000 / http://localhost:9000/app | Marketplace API and operations dashboard   |
-| PostgreSQL 15        | `postgres:15-alpine`   | `localhost:5433`                                  | Primary database                           |
-| MinIO                | `minio/minio`          | http://localhost:9010 / http://localhost:9001     | Product and seller media / storage console |
-| Meilisearch          | `getmeili/meilisearch` | http://localhost:7700                             | Search service provisioned for the stack   |
+## Repository and stack
 
-## Technology
+| Path | Purpose | Local URL |
+| --- | --- | --- |
+| `apps/backend` | Medusa 2.17.2 API, Admin, custom modules and workflows | http://localhost:9000 / http://localhost:9000/app |
+| `apps/storefront` | Next.js 16 / React 19 buyer app | http://localhost:3000 |
+| `apps/vendor-portal` | Next.js 16 / React 19 seller app | http://localhost:3001 |
+| `packages/api-contracts` | Shared TypeScript API contracts | — |
+| `patches` | Local Medusa dashboard patch used by pnpm | — |
 
-- **Commerce:** Medusa v2.17 and custom TypeScript modules/workflows
-- **Web apps:** Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4
-- **Client state/data:** TanStack Query and Zustand
-- **Platform:** Node.js 20, pnpm 10, Turborepo, Docker Compose
-- **Data services:** PostgreSQL, MinIO, Meilisearch
+The workspace uses pnpm **10.33.3**, Turborepo, TypeScript, Tailwind CSS 4, TanStack Query and Zustand. Use Node.js **20.9 or newer** (the Dockerfiles use Node 20). PostgreSQL 15, MinIO and Meilisearch run locally in Docker. Allow roughly 8 GB of memory for local builds.
 
-The repo is a pnpm workspace. Shared API types live in `packages/api-contracts`.
+## Local development (recommended)
 
-## Quick start with Docker
+Run commands from the repository root unless stated otherwise. You need Git, Node.js, pnpm and Docker Compose v2. The ports below must be free.
 
-### Prerequisites
-
-- Docker Engine / Docker Desktop with Docker Compose v2
-- At least 8 GB of available memory for a comfortable local build
-- Ports `3000`, `3001`, `5433`, `7700`, `9000`, `9001`, and `9010` available on the host
-
-### First run
+### 1. Install and configure
 
 ```bash
-git clone <your-fork-url> medusa-e-commerce
-cd medusa-e-commerce
-
-# Keep local configuration out of Git. Change every placeholder before a real deployment.
+git clone https://github.com/Shatlyk1011/multivendor-app.git
+cd multivendor-app
+corepack enable
+pnpm install --frozen-lockfile
 cp .env.example .env
+cp apps/backend/.env.template apps/backend/.env
+cp apps/storefront/.env.example apps/storefront/.env.local
+cp apps/vendor-portal/.env.example apps/vendor-portal/.env.local
+```
 
-# Build and start the full local stack.
-docker compose up -d --build
+Generate separate values with `openssl rand -hex 32` for the root `.env` database, MinIO, Meilisearch, JWT and cookie secrets. In `apps/backend/.env`, set:
 
-# Follow startup progress if needed.
+- `DATABASE_URL` to `postgresql://medusa:YOUR_ROOT_POSTGRES_PASSWORD@localhost:5433/medusa_db` (adjust user/database if changed).
+- `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` to the root MinIO credentials.
+- `JWT_SECRET`, `COOKIE_SECRET` and `MEILISEARCH_API_KEY` to the corresponding root values.
+
+Use hex database passwords in this example; other passwords may need URL encoding in `DATABASE_URL`. Environment files are ignored by Git and Docker builds. Templates contain placeholders, not shared working credentials.
+
+### 2. Start dependencies and initialize the database
+
+```bash
+docker compose up -d postgres minio minio-init meilisearch
+docker compose ps
+pnpm --filter @dtc/backend exec medusa db:migrate --execute-safe-links
+pnpm --filter @dtc/backend exec medusa user \
+  -e admin@example.test -p 'REPLACE_WITH_A_LONG_UNIQUE_PASSWORD'
+pnpm backend:dev
+```
+
+Wait for PostgreSQL to accept connections before migrating. Migrations also run the repository's migration scripts, including initial store/catalogue setup. Do not manually rerun `initial-data-seed.ts` or use a legacy seed command as a reset: it creates data and is not designed to be repeated. No admin or seller credentials are seeded.
+
+The seed creates TMT/USD regions, a Default Sales Channel, a publishable API key, shipping setup and sample products. Demo product images reference external Medusa-hosted URLs; uploaded marketplace media uses your MinIO bucket.
+
+### 3. Connect the web apps
+
+Open http://localhost:9000/app and sign in with the admin account you created. Under **Settings → Publishable API Keys**, copy **Default Publishable API Key** and verify that it is linked to **Default Sales Channel**. Set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in both web apps' `.env.local` files. Never place admin credentials or the Meilisearch master key in a `NEXT_PUBLIC_*` variable.
+
+Start each app in a separate terminal:
+
+```bash
+pnpm storefront:dev
+pnpm --filter @dtc/vendor-portal dev
+```
+
+Restart the web apps after changing environment values. For compiled Next.js apps these public values are embedded at build time, so rebuild after changes.
+
+### 4. Try a marketplace flow
+
+1. In Admin, create a vendor and its login credentials from **Vendors**. Seller applications are reviewed separately; submitting an application does not create a working login.
+2. Sign in at http://localhost:3001. Create/publish a product with a variant, price, media and available inventory. Check its sales-channel availability in Admin if it is not visible to buyers.
+3. Open http://localhost:3000, sign in with a test phone number and development code `1234`, and add the vendor product to the cart.
+4. Choose delivery or pickup and complete the system-provider checkout. This does not charge a real card.
+5. Inspect the resulting order in the seller portal and Admin and exercise fulfilment/status updates.
+
+Use a seller-created product to test vendor order routing; the generic seed catalogue does not create seller accounts or vendor/product links.
+
+## Full Docker stack (experimental)
+
+The Compose file also builds the three apps. This path still needs a clean-machine smoke test; use the source workflow above if a build fails. Configure the root `.env` first, then:
+
+```bash
+docker compose build medusa
+docker compose up -d postgres minio minio-init meilisearch
+# One-off commands work before the application can start on an empty database.
+docker compose run --rm medusa pnpm --filter @dtc/backend exec medusa db:migrate --execute-safe-links
+docker compose run --rm medusa pnpm --filter @dtc/backend exec medusa user \
+  -e admin@example.test -p 'REPLACE_WITH_A_LONG_UNIQUE_PASSWORD'
+docker compose up -d medusa
+```
+
+Retrieve the publishable key from Admin as above, save it as `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in the root `.env`, then build the web apps:
+
+```bash
+docker compose up -d --build storefront vendor-portal
 docker compose logs -f medusa
 ```
 
-On the first run, apply database migrations (including the repository's migration scripts) and create an administrator:
+The containers use browser-visible `http://localhost:9000` URLs. This configuration targets a browser on the Docker host, not remote clients. All published ports bind to `127.0.0.1`:
+
+| Service | Host port |
+| --- | --- |
+| PostgreSQL | 5433 |
+| MinIO API / console | 9010 / 9001 |
+| Meilisearch | 7700 |
+| API / storefront / seller portal | 9000 / 3000 / 3001 |
+
+`minio-init` creates `medusa-media` and enables public downloads for that bucket. Do not upload private documents to it. If you change the bucket name, update the public media URL too.
 
 ```bash
-docker compose exec medusa pnpm --filter @dtc/backend exec medusa db:migrate --execute-safe-links
-
-# Replace the email and password before running this command.
-docker compose exec medusa pnpm --filter @dtc/backend exec medusa user \
-  -e admin@example.test -p 'REPLACE_WITH_A_LONG_UNIQUE_PASSWORD'
-```
-
-The migration command runs migration scripts by default. Do **not** run the legacy `db:migrate:scripts` command a second time unless you understand that a script is idempotent; the initial catalogue/setup script is not designed as a repeatable demo reset.
-
-Open the storefront at http://localhost:3000 and sign in to Admin at http://localhost:9000/app. Create seller accounts from the Admin dashboard, then use those credentials at http://localhost:3001.
-
-### Useful Docker commands
-
-```bash
-# Container status and logs
-docker compose ps
-docker compose logs -f
-
-# Stop the stack while preserving data
-docker compose stop
-
-# Stop and remove containers and network while preserving volumes
-docker compose down
-
-# Delete all local database, search, and media data (irreversible)
+docker compose stop       # Stop; preserve containers and data
+docker compose down       # Remove containers/network; preserve volumes
+# DESTRUCTIVE: deletes local database, media and search volumes
 docker compose down -v
 ```
 
-The `minio-init` container creates the `medusa-media` bucket and allows public download access for media URLs. This is convenient locally; restrict storage access and publish only the necessary bucket paths in production.
+Changing PostgreSQL credentials in `.env` does not change the password in an existing database volume. Update the existing database deliberately or use a separate fresh development volume. Never delete a volume containing data you need.
 
-## Credentials and development defaults
-
-| Area                                               | Current behavior                                                                                                                 | What to do before production                                                                                               |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Customer sign-in                                   | The development OTP service accepts code `1234`; it does not send an SMS. This is **not** an email/password login.               | Replace `apps/backend/src/services/otp.ts` with a real OTP delivery and verification provider.                             |
-| Medusa Admin                                       | No account is seeded. The email and password are the values supplied to `medusa user` above.                                     | Create a unique, strong account and protect `/app`.                                                                        |
-| Seller portal                                      | No seller account is seeded. An administrator creates sellers and chooses their password; the UI requires at least 8 characters. | Use a proper invitation/reset flow and strong, unique passwords.                                                           |
-| PostgreSQL, MinIO, Meilisearch, JWT/cookie secrets | The committed Compose file currently contains development values, and several service ports are published to the host.           | Move every secret to uncommitted environment/secret storage, rotate existing values, and remove public data-service ports. |
-
-Never publish the development OTP code, example password, or current Compose credentials as production access details. If this repository has already been shared outside a trusted team, rotate every committed secret before making it public.
-
-## Run from source
-
-Docker is the recommended way to bring up dependencies locally. To run the three apps in watch mode instead:
+## Checks and troubleshooting
 
 ```bash
-corepack enable
-pnpm install
-
-# Configure a local backend database, MinIO, and CORS values first.
-cp apps/backend/.env.template apps/backend/.env
-
-pnpm backend:dev       # Medusa on :9000
-pnpm storefront:dev    # Storefront on :3000
-pnpm --filter @dtc/vendor-portal dev  # Seller portal on :3001
-```
-
-Common workspace commands:
-
-```bash
-pnpm build
 pnpm lint
-pnpm --filter @dtc/backend test:unit
+pnpm build
+pnpm --filter @dtc/storefront check:i18n
+# Requires a dedicated local PostgreSQL instance/user able to create test databases:
+pnpm --filter @dtc/backend test:integration:http
 ```
 
-## VDS deployment
+The HTTP integration suite currently covers store reviews. There are no matching backend unit tests yet; `test:unit` is not a useful release gate. Root `pnpm test` and `backend:seed` do not currently run the HTTP suite or initial seed script. See [contributing](CONTRIBUTING.md) for validation expectations.
 
-### Recommended server baseline
+| Symptom | Check |
+| --- | --- |
+| Database connection refused | PostgreSQL ready; host apps use port 5433, containers use `postgres:5432` |
+| Empty catalogue / rejected Store API calls | Publishable key belongs to this database, has the sales channel, and app was restarted/rebuilt |
+| Upload fails / image missing | MinIO credentials, successful `minio-init`, bucket and `MINIO_PUBLIC_URL` |
+| Browser CORS error | Backend `STORE_CORS` / `AUTH_CORS` include the actual browser origins |
+| Seller cannot sign in | Admin-created vendor account; customer OTP and Admin accounts are separate |
+| Full Docker build fails | Use source setup and include sanitized build logs in an issue; Docker path is experimental |
 
-For a small production deployment, start with Ubuntu 22.04 LTS, Docker 24+ and Docker Compose v2:
+## Production and release roadmap
 
-| Resource | Minimum | Recommended |
-| -------- | ------: | ----------: |
-| CPU      |  4 vCPU |      8 vCPU |
-| Memory   |    8 GB |       16 GB |
-| SSD      |   80 GB |      200 GB |
+Production deployment needs real OTP delivery/verification and abuse protection, payment integration if charging buyers, seller payout/commission design, private data-service networking, TLS/reverse proxy, secret rotation, backups with restore tests, monitoring, and broader authorization/checkout tests. Meilisearch indexing is also unfinished. There is no committed production Caddy configuration.
 
-The extra disk capacity matters because MinIO stores catalogue and seller media.
+Before publishing the repository, complete the separate [open-source readiness checklist](docs/OPEN_SOURCE_READINESS.md), especially history/secret scanning and third-party asset attribution. Publishing source does not require claiming production readiness.
 
-### Important: the committed Compose file is development-only
+## Contributing, security and license
 
-`docker-compose.yml` currently publishes PostgreSQL, MinIO, Meilisearch, and application ports directly to the host. It also uses development secrets in the file and contains no reverse proxy/TLS configuration. **Do not run it unchanged on an Internet-facing VDS.**
+Contributions are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities using [SECURITY.md](SECURITY.md), without posting credentials or customer data in public issues.
 
-Before a production VDS rollout, create and review a production Compose configuration that:
-
-1. Uses uncommitted secret storage for database, MinIO, Meilisearch, JWT, and cookie credentials; rotate the values that have appeared in Git.
-2. Removes `ports` from PostgreSQL and Meilisearch so they are reachable only on the Docker network.
-3. Adds a reverse proxy such as Caddy or Nginx that is the only public entry point (ports 80/443), terminates TLS, and routes distinct hostnames to the storefront, seller portal, API/Admin, and public media as appropriate.
-4. Sets production CORS origins and public backend/media URLs, restricts MinIO bucket permissions, and uses a real SMS/OTP provider.
-5. Sets up backups for the PostgreSQL and MinIO volumes, monitoring/log rotation, firewall rules, and a tested migration/rollback procedure.
-
-`DOMAIN` and Caddy-related placeholders in `.env.example` describe an intended deployment shape, but the currently committed Compose file does not yet implement that production configuration. Treat a production deployment as a separate hardening task rather than following those placeholders as a working VDS guide.
-
-## Known MVP gaps
-
-- Customer authentication uses a fixed development OTP rather than real SMS delivery.
-- The checkout uses Medusa's system/default payment provider; no live payment gateway is wired.
-- Meilisearch is included in Docker but the backend configuration does not yet register a Medusa search/indexing integration.
-- Production reverse proxy, TLS, secret management, backups, monitoring, and private networking are not committed.
+The repository includes the [MIT license](LICENSE), retaining the upstream Medusa copyright notice. Dependency licenses and bundled media/font permissions must be reviewed separately; see [third-party notices](THIRD_PARTY_NOTICES.md). This is an independent marketplace project built on Medusa.
